@@ -1,3 +1,5 @@
+# comment to see how git works
+
 # this sign is used to write explanations in R
 # whenever comes at the beginning of a sentence, it shows in green.
 install.packages("readxl")
