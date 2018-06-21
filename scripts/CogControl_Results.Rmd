@@ -147,24 +147,26 @@ trial_data <- trial_data_all %>%
 
 
 ## Anticipations by block, including only trials with anticipations
-```{r}
+```{r, echo = FALSE}
 block_data <- trial_data_all %>%
-  mutate(block_num = as.factor((as.numeric(trial_number)+2) %/% 3)) %>%
+  mutate(block_num = (as.numeric(trial_number)+2) %/% 3) %>%
   filter(no_anticipation == 0) %>%
   group_by(recording.name, language, 
            trial_type, block_num, age_group, vocab_group) %>%
   rename(cor_anticipation = correct_anticipation) %>%
   summarise(num_trials_contributed = length(cor_anticipation), correct_anticipation = mean(cor_anticipation,na.rm=T)) %>%
   group_by(recording.name, trial_type) %>%
-  mutate(n_blocks = length(unique(block_num)))
-
+  mutate(n_blocks = length(unique(block_num))) %>%
+  mutate(block_num = as.factor(block_num))
+  
+  
 ```
 
 ## Show block means by group and trial type
 ```{r}
 
 block_data %>%
-  group_by(language, trial_type, block_num, age_group) %>%
+  group_by(language, age_group, trial_type, block_num) %>%
   summarise(correct_anticipation = mean(correct_anticipation), num_trials_contributed = mean(num_trials_contributed))
 
 ```
@@ -216,7 +218,7 @@ blocks_figure
 ## ANOVA by block: 7m pre-switch
 ```{r}
 
-#ezDesign(block_data, y = recording.name, x = block_num)
+#ezDesign(block_data, y = recording.name, x = block_num, row = trial_type)
 
 
 pre_7 <- block_data %>%
@@ -242,7 +244,6 @@ pre_7_mono <-  block_data %>%
             within = block_num,
             detailed = TRUE,
             type = 3)
-
   
 pre_7_bi <-  block_data %>%
     filter(age_group == "7 months") %>%
@@ -260,17 +261,185 @@ pre_7_bi <-  block_data %>%
   
 ```
 
-## t-tests by block, language group, age group
+
+
+## ANOVA by block: 7m post-switch
 ```{r}
 
+#ezDesign(block_data, y = recording.name, x = block_num, row = trial_type)
 
-## Bilinguals throwing an error message here - "data are essentially constant"
+
+post_7 <- block_data %>%
+    filter(age_group == "7 months") %>%
+    filter(trial_type == "post-switch") %>%
+    filter(n_blocks == 3) %>%
+    ezANOVA(data = ., 
+            dv = correct_anticipation,
+            wid = recording.name,
+            within = block_num,
+            between = language, 
+            detailed = TRUE,
+            type = 3)
+  
+post_7_mono <-  block_data %>%
+    filter(age_group == "7 months") %>%
+    filter(language == "Monolinguals") %>%
+    filter(trial_type == "post-switch") %>%
+    filter(n_blocks == 3) %>%
+    ezANOVA(data = ., 
+            dv = correct_anticipation,
+            wid = recording.name,
+            within = block_num,
+            detailed = TRUE,
+            type = 3)
+  
+post_7_bi <-  block_data %>%
+    filter(age_group == "7 months") %>%
+    filter(language == "Bilinguals") %>%
+    filter(trial_type == "post-switch") %>%
+    filter(n_blocks == 3) %>%
+    ezANOVA(data = ., 
+            dv = correct_anticipation,
+            wid = recording.name,
+            within = block_num,
+            detailed = TRUE,
+            type = 3)
+
+
+  
+```
+
+
+
+## ANOVA by block: 20m pre-switch
+```{r}
+
+#ezDesign(block_data, y = recording.name, x = block_num, row = trial_type)
+
+
+pre_20 <- block_data %>%
+    filter(age_group == "20 months") %>%
+    filter(trial_type == "pre-switch") %>%
+    filter(n_blocks == 3) %>%
+    ezANOVA(data = ., 
+            dv = correct_anticipation,
+            wid = recording.name,
+            within = block_num,
+            between = language, 
+            detailed = TRUE,
+            type = 3)
+  
+pre_20_mono <-  block_data %>%
+    filter(age_group == "20 months") %>%
+    filter(language == "Monolinguals") %>%
+    filter(trial_type == "pre-switch") %>%
+    filter(n_blocks == 3) %>%
+    ezANOVA(data = ., 
+            dv = correct_anticipation,
+            wid = recording.name,
+            within = block_num,
+            detailed = TRUE,
+            type = 3)
+  
+pre_20_bi <-  block_data %>%
+    filter(age_group == "20 months") %>%
+    filter(language == "Bilinguals") %>%
+    filter(trial_type == "pre-switch") %>%
+    filter(n_blocks == 3) %>%
+    ezANOVA(data = ., 
+            dv = correct_anticipation,
+            wid = recording.name,
+            within = block_num,
+            detailed = TRUE,
+            type = 3)
+
+
+  
+```
+
+
+
+## ANOVA by block: 20m post-switch
+```{r}
+
+#ezDesign(block_data, y = recording.name, x = block_num, row = trial_type)
+
+
+post_20 <- block_data %>%
+    filter(age_group == "20 months") %>%
+    filter(trial_type == "post-switch") %>%
+    filter(n_blocks == 3) %>%
+    ezANOVA(data = ., 
+            dv = correct_anticipation,
+            wid = recording.name,
+            within = block_num,
+            between = language, 
+            detailed = TRUE,
+            type = 3)
+  
+post_20_mono <-  block_data %>%
+    filter(age_group == "20 months") %>%
+    filter(language == "Monolinguals") %>%
+    filter(trial_type == "post-switch") %>%
+    filter(n_blocks == 3) %>%
+    ezANOVA(data = ., 
+            dv = correct_anticipation,
+            wid = recording.name,
+            within = block_num,
+            detailed = TRUE,
+            type = 3)
+  
+post_20_bi <-  block_data %>%
+    filter(age_group == "20 months") %>%
+    filter(language == "Bilinguals") %>%
+    filter(trial_type == "post-switch") %>%
+    filter(n_blocks == 3) %>%
+    ezANOVA(data = ., 
+            dv = correct_anticipation,
+            wid = recording.name,
+            within = block_num,
+            detailed = TRUE,
+            type = 3)
+
+
+  
+```
+
+
+## t-tests compared to chance by trial type, block, language group, age group
+```{r}
 
 block_data %>%
-  filter(language == "Bilinguals") %>%
-  group_by(age_group, trial_type, block_num) %>%
+  filter(age_group != "20 months" | language != "Bilinguals" | trial_type != "pre-switch" | block_num != 3) %>% # No variability in this cell - all 1
+  group_by(age_group, language, trial_type, block_num) %>%
   do(broom::tidy(t.test(.$correct_anticipation, mu = .5, data = .))) %>%
-  mutate(cohen_d = statistic/sqrt(parameter +1))
+  mutate(cohen_d = statistic/sqrt(parameter +1)) %>%
+  mutate_if(is.numeric, funs(round(., 3)))
+
+```
+
+
+## t-tests comparing Blocks 1 and 3, by trial type, language group, age group
+```{r}
+
+block_data %>%
+  filter(block_num !=2) %>%
+  group_by(recording.name, age_group, language, trial_type) %>%
+  mutate(n_blocks = length(block_num)) %>%
+  filter(n_blocks == 2) %>%
+  group_by(age_group, language, trial_type) %>%
+   do(broom::tidy(t.test(.$correct_anticipation ~ .$block_num, data = ., paired = TRUE))) %>%
+  mutate(cohen_d = statistic/sqrt(parameter +1)) %>%
+  mutate_if(is.numeric, funs(round(., 3)))
+
+```
+
+
+```{r}
+
+trial_data %>%
+  filter(age_group == "20 months" && trial_number == 2 && trial_type == "post-switch") %>%
+  do(broom::tidy(t.test(.$correct_anticipation ~ .$language, data = ., paired = FALSE)))
 
 ```
 
