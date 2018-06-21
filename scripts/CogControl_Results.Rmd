@@ -1,0 +1,202 @@
+---
+title: "CogControl Results"
+output: html_notebook
+---
+
+## Clear workspace and load packages
+```{r}
+
+## Clear workspace
+rm(list = ls())
+
+## Load packages
+library(tidyverse)
+library(readxl)
+library(stringr)
+library(tidyr)
+#library(car)
+library(ez)
+
+
+```
+
+## Define minimum looking and minimum trial numbers for this study
+```{r, echo = FALSE}
+
+MIN_LOOK_PROPORTION <- .5
+MIN_NUMBER_TRIALS <- 5
+
+```
+
+
+## Read in data
+```{r, echo = FALSE}
+
+## Read tobii data 
+  Mydata <- read_excel("../data/tobii.June10th.xlsx", na="-")
+
+ #Read in master_subject_list 
+  participants <- read_excel("../data/mslist.xlsx", na="-") %>%
+  separate(lang.group,into = c("language", "group")) %>%
+  filter(keeper == 1) 
+  
+```
+
+## Prep participant dataframe
+
+```{r, echo = FALSE}
+## Change data types to proper ones
+participants <- participants %>%  
+  mutate(age.group = fct_rev(as.factor(age.group))) %>%
+  mutate(language = fct_rev(as.factor(language))) %>%
+  mutate(total.vocab.prod = as.numeric(total.vocab.prod)) %>%
+  mutate(total.concept.prod = as.numeric(total.concept.prod)) %>%
+  mutate(recording.name = as.factor(recording.name)) %>%
+  mutate(gender = as.factor(gender)) %>%
+  group_by(language) %>%
+  mutate(median.byGroup= median(total.concept.prod,na.rm=T)) %>%
+  mutate(vocab.size = ifelse(median.byGroup>total.concept.prod,
+                             "Low", 
+                             "High")) %>%
+  mutate(vocab.size = as.factor(vocab.size)) 
+
+```
+
+
+
+## Fix column names and substitute 0 for NAs in eyetracking data
+```{r, echo = FALSE}
+
+names(Mydata) <- gsub("Total Fixation Duration_Test", "Test", names(Mydata))
+names(Mydata) <- gsub("Total Fixation Duration_Training", "Training", names(Mydata))
+names(Mydata) <- gsub("Circle_Sum", "Circle", names(Mydata))
+names(Mydata) <- gsub("Target_Sum", "Target", names(Mydata))
+names(Mydata) <- gsub("Distractor_Sum", "Distractor", names(Mydata))
+names(Mydata) <- gsub("Test", "Test_", names(Mydata))
+names(Mydata) <- gsub("Training", "Training_", names(Mydata))
+
+Mydata[is.na(Mydata)] <- 0 
+```
+
+## Wrangle to create analyzable data set
+```{r, echo = FALSE}
+
+trial_data_set <- Mydata %>%
+  
+## Convert data from wide to long, and then from long to wide
+  select(recording.name, contains("Circle"), contains("Distractor"), contains("Target")) %>%
+  gather(AOI, looking_time, Test_1_Circle:Training_9_Target) %>%
+  separate(AOI,into = c("trial_type", "trial_number", "AOI")) %>%
+  spread(AOI, looking_time) %>%
+  
+## Change to proper variable types and rename variables
+    mutate(trial_type = fct_rev(as.factor(trial_type))) %>%
+    mutate(trial_number = as.numeric(trial_number)) %>%
+   mutate(trial_type = dplyr::recode(trial_type, "Test" = "post-switch", "Training" = "pre-switch")) %>%
+  
+## Calculate total looking time
+  mutate(All_looking_time = Circle + Distractor + Target) %>%
+  
+## Determine whether baby was attending during minimum proportion of anticipatory period
+  mutate(good_trial = ifelse(All_looking_time >= `MIN_LOOK_PROPORTION`, "good", "bad")) %>%
+  filter(good_trial == "good") %>% 
+  group_by(recording.name, trial_type) %>% 
+  mutate(num_good_trial = length(recording.name)) %>%
+
+## determine whether baby had the minimum bumber of good trials  
+  filter(num_good_trial >= `MIN_NUMBER_TRIALS`) %>%
+  group_by(recording.name) %>% 
+  mutate(good_baby = length(unique(trial_type))) %>%
+  filter(good_baby == 2) %>%
+  
+##categorizing trials as correct, incorrect, or no anticipation
+  mutate(correct_anticipation = ifelse(Target > Distractor, 1, 0)) %>%
+  mutate(incorrect_anticipation = ifelse(Distractor > Target, 1, 0)) %>%
+  mutate(no_anticipation = ifelse(Target + Distractor == 0, 1, 0)) %>%
+  mutate(all_anticipation = 1-no_anticipation) %>%
+  mutate(prop_correct_anticipation = Target/(Target+Distractor)) 
+```
+
+## merge data_set with master.subject.list
+```{r}
+
+trial_data <- merge(trial_data_set, participants, by="recording.name") 
+```
+
+## Check the number of keeper participants in each group
+```{r}
+
+trial_data %>%
+  group_by(age.group, language) %>%
+  summarize(num_participants = length(unique(recording.name)))
+
+```
+
+
+## Anticipations by block, including only trials with anticipations
+```{r}
+block_data <- trial_data %>%
+  mutate(block_num = as.factor((as.numeric(trial_number)+2) %/% 3)) %>%
+  filter(no_anticipation == 0) %>%
+  group_by(recording.name, language, 
+           trial_type, block_num) %>%
+  summarise(prop_correct_anticipation = mean(correct_anticipation,na.rm=T), num_trials_contributed = length(correct_anticipation)) 
+
+```
+
+## Show block means by group and trial type
+```{r}
+
+block_data %>%
+  group_by(language, trial_type, block_num) %>%
+  summarise(prop_correct_anticipation = mean(prop_correct_anticipation), num_trials_contributed = mean(num_trials_contributed))
+
+```
+
+
+
+## Plot results
+
+```{r}
+
+trial_data %>%
+  ggplot(aes(x = trial_number, y = prop_correct_anticipation, color = language, shape =language)) +
+  stat_summary(fun.y = "mean", geom = "point") +
+  stat_smooth() +
+  facet_grid(age.group ~ trial_type)
+
+
+filter(age.group == "7 months") %>% 
+  ggplot (aes(color = Language,  
+              shape = Language, 
+              x = trial_number, 
+              y = proportion)) +
+  geom_point(size= 4) +
+  scale_color_manual(values = c("#ff3300", # bilingual colour
+                                "#070707"))+ # mono colour
+  scale_x_discrete(limits=c(1:9))+
+  #stat_smooth() +
+  stat_smooth(method = "lm", se = FALSE) +
+  facet_grid(age.group ~ trial.type.fig) +
+  theme_bw((base_size=22)) +
+  xlab("Trial number") +
+  ylab("Proportion correct anticipation")
+
+
+  ggplot(data=fig.3, aes(x=blocks_num, 
+                                   y=proportion_anticipation, 
+                                   group=interaction(language,vocab.size), 
+                                   linetype=vocab.size,
+                                   shape=language)) +
+                                   geom_line(size=1.2) + 
+                                   geom_point(size=3, fill="red") +
+                                   scale_shape_manual(values=c(22,21)) +
+                                   scale_x_discrete(limits=c(1:3))+
+                                   facet_grid(language ~ trial_type) + 
+                                   xlab("Block number") +
+                                   ylab("Proportion looking")
+
+
+```
+
+
