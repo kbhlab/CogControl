@@ -438,7 +438,7 @@ block_data %>%
 ```{r}
 
 trial_data %>%
-  filter(age_group == "20 months" && trial_number == 2 && trial_type == "post-switch") %>%
+  filter(age_group == "20 months" & trial_number == 2 & trial_type == "post-switch") %>%
   do(broom::tidy(t.test(.$correct_anticipation ~ .$language, data = ., paired = FALSE)))
 
 ```
