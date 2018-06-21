@@ -48,6 +48,7 @@ MIN_NUMBER_TRIALS <- 5
 ## Change data types to proper ones
 participants <- participants %>%  
   mutate(age.group = fct_rev(as.factor(age.group))) %>%
+  rename(age_group = age.group) %>%
   mutate(language = fct_rev(as.factor(language))) %>%
   mutate(total.vocab.prod = as.numeric(total.vocab.prod)) %>%
   mutate(total.concept.prod = as.numeric(total.concept.prod)) %>%
@@ -55,10 +56,10 @@ participants <- participants %>%
   mutate(gender = as.factor(gender)) %>%
   group_by(language) %>%
   mutate(median.byGroup= median(total.concept.prod,na.rm=T)) %>%
-  mutate(vocab.size = ifelse(median.byGroup>total.concept.prod,
+  mutate(vocab_group = ifelse(median.byGroup>total.concept.prod,
                              "Low", 
                              "High")) %>%
-  mutate(vocab.size = as.factor(vocab.size)) 
+  mutate(vocab_group = as.factor(vocab_group)) 
 
 ```
 
@@ -76,6 +77,9 @@ names(Mydata) <- gsub("Test", "Test_", names(Mydata))
 names(Mydata) <- gsub("Training", "Training_", names(Mydata))
 
 Mydata[is.na(Mydata)] <- 0 
+
+Mydata$recording.name = as.factor(Mydata$recording.name) # Make recording name a factor
+
 ```
 
 ## Wrangle to create analyzable data set
@@ -120,27 +124,39 @@ trial_data_set <- Mydata %>%
 ## merge data_set with master.subject.list
 ```{r}
 
-trial_data <- merge(trial_data_set, participants, by="recording.name") 
+trial_data_all <- merge(trial_data_set, participants, by="recording.name") 
 ```
 
 ## Check the number of keeper participants in each group
 ```{r}
 
-trial_data %>%
-  group_by(age.group, language) %>%
+trial_data_all %>%
+  group_by(age_group, language) %>%
   summarize(num_participants = length(unique(recording.name)))
 
 ```
 
+## Only including trials with any anticipation
+```{r}
+trial_data <- trial_data_all %>%
+  filter(no_anticipation == 0)
+
+
+```
+
+
 
 ## Anticipations by block, including only trials with anticipations
 ```{r}
-block_data <- trial_data %>%
+block_data <- trial_data_all %>%
   mutate(block_num = as.factor((as.numeric(trial_number)+2) %/% 3)) %>%
   filter(no_anticipation == 0) %>%
   group_by(recording.name, language, 
-           trial_type, block_num) %>%
-  summarise(prop_correct_anticipation = mean(correct_anticipation,na.rm=T), num_trials_contributed = length(correct_anticipation)) 
+           trial_type, block_num, age_group, vocab_group) %>%
+  rename(cor_anticipation = correct_anticipation) %>%
+  summarise(num_trials_contributed = length(cor_anticipation), correct_anticipation = mean(cor_anticipation,na.rm=T)) %>%
+  group_by(recording.name, trial_type) %>%
+  mutate(n_blocks = length(unique(block_num)))
 
 ```
 
@@ -148,54 +164,113 @@ block_data <- trial_data %>%
 ```{r}
 
 block_data %>%
-  group_by(language, trial_type, block_num) %>%
-  summarise(prop_correct_anticipation = mean(prop_correct_anticipation), num_trials_contributed = mean(num_trials_contributed))
+  group_by(language, trial_type, block_num, age_group) %>%
+  summarise(correct_anticipation = mean(correct_anticipation), num_trials_contributed = mean(num_trials_contributed))
 
 ```
 
 
 
-## Plot results
+## Plot results by trial
 
 ```{r}
 
-trial_data %>%
-  ggplot(aes(x = trial_number, y = prop_correct_anticipation, color = language, shape =language)) +
+trial_figure <- trial_data %>%
+  ggplot(aes(x = trial_number, y = correct_anticipation, color = language, shape =language, linetype = language)) +
   stat_summary(fun.y = "mean", geom = "point") +
-  stat_smooth() +
-  facet_grid(age.group ~ trial_type)
-
-
-filter(age.group == "7 months") %>% 
-  ggplot (aes(color = Language,  
-              shape = Language, 
-              x = trial_number, 
-              y = proportion)) +
-  geom_point(size= 4) +
+  stat_smooth(se = FALSE) +
+  facet_grid(age_group ~ trial_type) +
+  scale_x_discrete(limits = c(1:9)) +
+  scale_y_continuous(limits = c(0:1)) +
+  theme_bw(base_size=22) +
   scale_color_manual(values = c("#ff3300", # bilingual colour
-                                "#070707"))+ # mono colour
-  scale_x_discrete(limits=c(1:9))+
-  #stat_smooth() +
-  stat_smooth(method = "lm", se = FALSE) +
-  facet_grid(age.group ~ trial.type.fig) +
-  theme_bw((base_size=22)) +
-  xlab("Trial number") +
+                                "#070707")) + # mono colour
+    xlab("Trial number") +
   ylab("Proportion correct anticipation")
 
+trial_figure
 
-  ggplot(data=fig.3, aes(x=blocks_num, 
-                                   y=proportion_anticipation, 
-                                   group=interaction(language,vocab.size), 
-                                   linetype=vocab.size,
-                                   shape=language)) +
-                                   geom_line(size=1.2) + 
-                                   geom_point(size=3, fill="red") +
-                                   scale_shape_manual(values=c(22,21)) +
-                                   scale_x_discrete(limits=c(1:3))+
-                                   facet_grid(language ~ trial_type) + 
-                                   xlab("Block number") +
-                                   ylab("Proportion looking")
+#ggsave("../figures/CogControl_trials.pdf", trial_figure, device = "pdf")
 
+```
+
+
+## Plot results by block
+
+```{r}
+blocks_figure <- block_data %>%
+  ggplot(aes(x = block_num, y = correct_anticipation, fill = language)) +
+  stat_summary(fun.y = "mean", geom = "bar", position = "dodge") +
+  facet_grid(age_group ~ trial_type) +
+  scale_y_continuous(limits = c(0:1)) +
+  theme_bw(base_size=22) +
+  scale_color_manual(values = c("#ff3300", # bilingual colour
+                                "#070707")) + # mono colour
+  xlab("Block number") +
+  ylab("Proportion correct anticipation")
+
+blocks_figure
+```
+
+
+## ANOVA by block: 7m pre-switch
+```{r}
+
+#ezDesign(block_data, y = recording.name, x = block_num)
+
+
+pre_7 <- block_data %>%
+    filter(age_group == "7 months") %>%
+    filter(trial_type == "pre-switch") %>%
+    filter(n_blocks == 3) %>%
+    ezANOVA(data = ., 
+            dv = correct_anticipation,
+            wid = recording.name,
+            within = block_num,
+            between = language, 
+            detailed = TRUE,
+            type = 3)
+  
+pre_7_mono <-  block_data %>%
+    filter(age_group == "7 months") %>%
+    filter(language == "Monolinguals") %>%
+    filter(trial_type == "pre-switch") %>%
+    filter(n_blocks == 3) %>%
+    ezANOVA(data = ., 
+            dv = correct_anticipation,
+            wid = recording.name,
+            within = block_num,
+            detailed = TRUE,
+            type = 3)
+
+  
+pre_7_bi <-  block_data %>%
+    filter(age_group == "7 months") %>%
+    filter(language == "Bilinguals") %>%
+    filter(trial_type == "pre-switch") %>%
+    filter(n_blocks == 3) %>%
+    ezANOVA(data = ., 
+            dv = correct_anticipation,
+            wid = recording.name,
+            within = block_num,
+            detailed = TRUE,
+            type = 3)
+
+
+  
+```
+
+## t-tests by block, language group, age group
+```{r}
+
+
+## Bilinguals throwing an error message here - "data are essentially constant"
+
+block_data %>%
+  filter(language == "Bilinguals") %>%
+  group_by(age_group, trial_type, block_num) %>%
+  do(broom::tidy(t.test(.$correct_anticipation, mu = .5, data = .))) %>%
+  mutate(cohen_d = statistic/sqrt(parameter +1))
 
 ```
 
