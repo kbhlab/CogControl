@@ -26,6 +26,7 @@ library(lme4)
 library(effects)
 library(emmeans)
 library(apaTables)
+library(here)
 options(scipen = 999)
 
 kovacs09 <- "Kovács & Mehler 2009"
@@ -745,6 +746,41 @@ summary(model_7pre_s)
 ```
 
 
+
+```{r echo = FALSE}
+#tobii_full_export <- read_tsv(here("data", "keepers_only.tsv")) 
+tobii_full_cleaned <- tobii_full_export %>% 
+  #head(n = 25000) %>% # uncomment this line to test code changes on a subset of the full dataset since running the whole thing takes ages!
+  select(StudioTestName, RecordingName, RecordingDuration, MediaName, RecordingTimestamp, StudioEvent, FixationIndex, GazeEventType, GazeEventDuration, `AOI[Target]Hit`:`AOI[Circle]Hit_35`, `GazePointX (ADCSpx)`, `GazePointY (ADCSpx)`, PupilLeft, PupilRight, ValidityLeft, ValidityRight) %>%
+  pivot_longer(`AOI[Target]Hit`:`AOI[Circle]Hit_35`, names_to = "AOI", values_to = "looking") %>%
+  mutate(AOI = case_when(grepl("Target", AOI) ~ "aoi_target",
+         grepl("Circle", AOI) ~ "aoi_circle",
+         grepl("Distractor", AOI) ~ "aoi_distractor")) %>%
+  filter(!is.na(looking)) %>%
+  mutate(looking = as.numeric(looking)) %>%
+  pivot_wider(names_from = "AOI", values_from = "looking") %>%
+  rename(gaze_point_X = `GazePointX (ADCSpx)`, gaze_point_y = `GazePointY (ADCSpx)`, timestamp = RecordingTimestamp) %>%
+  mutate(trial_num = parse_number(MediaName)) %>%
+  mutate(trial_type = case_when(str_detect(MediaName, "Training") ~ "pre-switch",
+                                str_detect(MediaName, "Test") ~ "post-switch")) %>%
+  mutate(trial_name = str_c(trial_type, trial_num, sep = "_")) %>%
+  mutate(trial_unique = str_c(RecordingName, MediaName, sep = "_")) %>%
+  group_by(RecordingName) %>%
+  mutate(run_length_id = data.table::rleid(trial_unique)) %>%
+  ungroup() %>%
+  mutate(trackloss = case_when(is.na(gaze_point_X) ~ TRUE,
+                               is.na(gaze_point_y) ~ TRUE,
+                               ValidityLeft > 1 & ValidityRight > 1 ~ TRUE,
+                               TRUE ~ FALSE))
+colnames(tobii_full_cleaned) <- to_snake_case(colnames(tobii_full_cleaned))
+
+save(tobii_full_cleaned, file = here("data", "tobii_full_cleaned.Rda"))
+  
+proportion_trials <- inner_join(tobii_full_cleaned, ms_list, by = "recording_name") %>% 
+  mutate(recording_name = as.factor(recording_name))
+
+```
+
 ```{r echo = FALSE}
 #huge_data_cleaned <- huge_data %>%
 # huge_data_shortened <- huge_data %>% head(n = 25000) %>%
@@ -769,14 +805,14 @@ summary(model_7pre_s)
 #   select(RecordingName, trial_num, trial_type, ts_rescaled, Target, Circle, Distractor, SegmentStart, SegmentEnd, SegmentDuration, RecordingTimestamp, RecordingDuration)
 # colnames(huge_data_cleaned) <- to_snake_case(colnames(huge_data_cleaned))
 # huge_data_cleaned <- huge_data_cleaned %>% mutate(recording_name = as.factor(recording_name))
-# save(huge_data_shortened, file = "./huge_data_shortened")
+# save(huge_data_shortened, file = "./huge_data_shortened.Rda")
 
-load(here("data", "tobii_ts_data.Rda"))
+#load(here("data", "tobii_ts_data.Rda"))
 
 
-proportion_trials <- inner_join(tobii_ts_data, ms_list, by = "recording_name") %>% 
-  mutate(recording_name = as.factor(recording_name)) %>%
-  filter(trial_num <= 9) # S14 from CogControl 20 was exported from Tobii with duplicate segments and so we need to remove these
+#proportion_trials <- inner_join(tobii_ts_data, ms_list, by = "recording_name") %>% 
+#  mutate(recording_name = as.factor(recording_name)) %>%
+#  filter(trial_num <= 9) # S14 from CogControl 20 was exported from Tobii with duplicate segments and so we need to remove these
 
 ```
 
