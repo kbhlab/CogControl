@@ -738,15 +738,32 @@ summary(model_7pre_s)
 
 #Full Time Series Data - trying to make figures like in http://rpubs.com/mcfrank/mb2-pilot
 
-(this takes ages to run from scratch, so I've commented it out and saved the final dataset as a .Rda object to load in)
 
 ```{r echo = FALSE}
-#huge_data <- read_tsv(here("data", "2019-12-16_tobii_ts_data.tsv")) 
+#this code is mostly copied from the rpubs link above, to try to get a similar graph
+
+proportion_summary <- proportion_trials %>%
+  filter(target + distractor == 1) %>%
+  group_by(trial_type, language, ts_rescaled, trial_num) %>%
+  summarise(target = mean(target, na.rm = TRUE),
+            distractor = mean(distractor, na.rm = TRUE)) %>%
+  mutate(proportion_to_target = target / (target + distractor)) %>%
+  gather(region, looking, target, distractor) 
+
+
+ggplot(proportion_summary, aes(x = ts_rescaled, y = looking, color = region)) + 
+  geom_point() +
+  facet_grid(trial_num ~ trial_type)
 
 ```
 
+Well, that did not work well. The output from Tobii doesn't have a consistent frame rate (sometimes it's 16 ms between each row, sometimes it's 17 or 18), and the timestamps are also not always the same time difference from the beginning of each trial. 
 
 
+
+
+
+Load in and clean full, time-series data from Tobii. 
 ```{r echo = FALSE}
 #tobii_full_export <- read_tsv(here("data", "keepers_only.tsv")) 
 tobii_full_cleaned <- tobii_full_export %>% 
@@ -771,13 +788,53 @@ tobii_full_cleaned <- tobii_full_export %>%
   mutate(trackloss = case_when(is.na(gaze_point_X) ~ TRUE,
                                is.na(gaze_point_y) ~ TRUE,
                                ValidityLeft > 1 & ValidityRight > 1 ~ TRUE,
-                               TRUE ~ FALSE))
+                               TRUE ~ FALSE)) %>%
+  mutate(RecordingName = case_when(RecordingName == "Cogcontrol20_S116_48375" ~ "CogControl20_S116_48375",
+                                   RecordingName != "Cogcontrol20_S116_48375" ~ RecordingName)) #fix typo from Tobii
 colnames(tobii_full_cleaned) <- to_snake_case(colnames(tobii_full_cleaned))
 
-save(tobii_full_cleaned, file = here("data", "tobii_full_cleaned.Rda"))
+#save(tobii_full_cleaned, file = here("data", "tobii_full_cleaned.Rda"))
+
+load(here("data", "tobii_full_cleaned.Rda"))
   
 proportion_trials <- inner_join(tobii_full_cleaned, ms_list, by = "recording_name") %>% 
   mutate(recording_name = as.factor(recording_name))
+
+```
+Use eyetrackingR to get time bins to try to make a better graphic like M. Frank's...
+
+```{r echo = FALSE}
+library(eyetrackingR)
+
+proportion_trials <- proportion_trials %>%
+  filter(!is.na(media_name)) #remove inexplicable line with no media name
+
+eyetracking_data <- make_eyetrackingr_data(proportion_trials, 
+                               participant_column = "recording_name",
+                               trial_column = "trial_name",
+                               time_column = "timestamp",
+                               trackloss_column = "trackloss",
+                               aoi_columns = c('aoi_target', 'aoi_circle', 'aoi_distractor'),
+                               treat_non_aoi_looks_as_missing = TRUE)
+
+###PICK UP HERE### must go back and add in the columns to indicate trial start/end!
+response_window <- subset_by_window(eyetracking_data,
+                                    window_start_time = 15500,
+                                    window_end_time = 21000, rezero = TRUE, remove = TRUE)
+
+time_series_Data <- make_time_sequence_data(eyetracking_data,
+                                         time_bin_size = 200,
+                                         predictor_columns = c("language", "age_group", "vocab_group", "trial_type"),
+                                         aois = "aoi_target",
+                                         summarize_by = "recording_name")
+
+```
+
+
+(this takes ages to run from scratch, so I've commented it out and saved the final dataset as a .Rda object to load in)
+
+```{r echo = FALSE}
+#huge_data <- read_tsv(here("data", "2019-12-16_tobii_ts_data.tsv")) 
 
 ```
 
@@ -815,24 +872,3 @@ proportion_trials <- inner_join(tobii_full_cleaned, ms_list, by = "recording_nam
 #  filter(trial_num <= 9) # S14 from CogControl 20 was exported from Tobii with duplicate segments and so we need to remove these
 
 ```
-
-```{r echo = FALSE}
-#this code is mostly copied from the rpubs link above, to try to get a similar graph
-
-proportion_summary <- proportion_trials %>%
-  filter(target + distractor == 1) %>%
-  group_by(trial_type, language, ts_rescaled, trial_num) %>%
-  summarise(target = mean(target, na.rm = TRUE),
-            distractor = mean(distractor, na.rm = TRUE)) %>%
-  mutate(proportion_to_target = target / (target + distractor)) %>%
-  gather(region, looking, target, distractor) 
-
-
-ggplot(proportion_summary, aes(x = ts_rescaled, y = looking, color = region)) + 
-  geom_point() +
-  facet_grid(trial_num ~ trial_type)
-
-```
-
-Well, that did not work well. The output from Tobii doesn't have a consistent frame rate (sometimes it's 16 ms between each row, sometimes it's 17 or 18), and the timestamps are also not always the same time difference from the beginning of each trial. 
-
