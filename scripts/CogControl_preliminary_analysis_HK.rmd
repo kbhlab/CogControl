@@ -27,6 +27,7 @@ library(effects)
 library(emmeans)
 library(apaTables)
 library(here)
+library(eyetrackingR)
 options(scipen = 999)
 
 kovacs09 <- "Kovács & Mehler 2009"
@@ -741,6 +742,10 @@ summary(model_7pre_s)
 
 ```{r echo = FALSE}
 #this code is mostly copied from the rpubs link above, to try to get a similar graph
+load(here("data", "tobii_ts_data.Rda"))
+
+proportion_trials <- inner_join(tobii_ts_data, ms_list, by = "recording_name") %>%
+  mutate(recording_name = as.factor(recording_name))
 
 proportion_summary <- proportion_trials %>%
   filter(target + distractor == 1) %>%
@@ -765,46 +770,67 @@ Well, that did not work well. The output from Tobii doesn't have a consistent fr
 
 Load in and clean full, time-series data from Tobii. 
 ```{r echo = FALSE}
-#tobii_full_export <- read_tsv(here("data", "keepers_only.tsv")) 
-tobii_full_cleaned <- tobii_full_export %>% 
-  #head(n = 25000) %>% # uncomment this line to test code changes on a subset of the full dataset since running the whole thing takes ages!
-  select(StudioTestName, RecordingName, RecordingDuration, MediaName, RecordingTimestamp, StudioEvent, FixationIndex, GazeEventType, GazeEventDuration, `AOI[Target]Hit`:`AOI[Circle]Hit_35`, `GazePointX (ADCSpx)`, `GazePointY (ADCSpx)`, PupilLeft, PupilRight, ValidityLeft, ValidityRight) %>%
-  pivot_longer(`AOI[Target]Hit`:`AOI[Circle]Hit_35`, names_to = "AOI", values_to = "looking") %>%
-  mutate(AOI = case_when(grepl("Target", AOI) ~ "aoi_target",
-         grepl("Circle", AOI) ~ "aoi_circle",
-         grepl("Distractor", AOI) ~ "aoi_distractor")) %>%
-  filter(!is.na(looking)) %>%
-  mutate(looking = as.numeric(looking)) %>%
-  pivot_wider(names_from = "AOI", values_from = "looking") %>%
-  rename(gaze_point_X = `GazePointX (ADCSpx)`, gaze_point_y = `GazePointY (ADCSpx)`, timestamp = RecordingTimestamp) %>%
-  mutate(trial_num = parse_number(MediaName)) %>%
-  mutate(trial_type = case_when(str_detect(MediaName, "Training") ~ "pre-switch",
-                                str_detect(MediaName, "Test") ~ "post-switch")) %>%
-  mutate(trial_name = str_c(trial_type, trial_num, sep = "_")) %>%
-  mutate(trial_unique = str_c(RecordingName, MediaName, sep = "_")) %>%
-  group_by(RecordingName) %>%
-  mutate(run_length_id = data.table::rleid(trial_unique)) %>%
-  ungroup() %>%
-  mutate(trackloss = case_when(is.na(gaze_point_X) ~ TRUE,
-                               is.na(gaze_point_y) ~ TRUE,
-                               ValidityLeft > 1 & ValidityRight > 1 ~ TRUE,
-                               TRUE ~ FALSE)) %>%
-  mutate(RecordingName = case_when(RecordingName == "Cogcontrol20_S116_48375" ~ "CogControl20_S116_48375",
-                                   RecordingName != "Cogcontrol20_S116_48375" ~ RecordingName)) #fix typo from Tobii
-colnames(tobii_full_cleaned) <- to_snake_case(colnames(tobii_full_cleaned))
+tobii_full_export <- read_tsv(here("data", "tobii_2019-12-18.tsv"))
+
+save(tobii_full_export, file = here("data", "tobii_full_export.Rda"))
+
+
+ tobii_full_cleaned <- tobii_full_export %>%
+   #head(n = 25000) %>% # uncomment this line to test code changes on a subset of the full dataset since running the whole thing takes ages!
+   select(StudioTestName, RecordingName, RecordingDuration, MediaName, RecordingTimestamp, StudioEvent, FixationIndex, GazeEventType, GazeEventDuration, `AOI[Target]Hit`:`AOI[Circle]Hit_35`, `GazePointX (ADCSpx)`, `GazePointY (ADCSpx)`, PupilLeft, PupilRight, ValidityLeft, ValidityRight) %>%
+   mutate(circle = rowSums(.[grep("Circle", names(.))], na.rm = TRUE),
+          target = rowSums(.[grep("Target", names(.))], na.rm = TRUE),
+          distractor = rowSums(.[grep("Distractor", names(.))], na.rm = TRUE)) %>%
+   select(-(`AOI[Target]Hit`:`AOI[Circle]Hit_35`)) %>%
+   # pivot_longer(circle:distractor, names_to = "AOI", values_to = "looking") %>%
+   # mutate(AOI = case_when(grepl("Target", AOI) ~ "aoi_target", #these lines are redundant since rowsumming
+   #         grepl("Circle", AOI) ~ "aoi_circle",
+   #         grepl("Distractor", AOI) ~ "aoi_distractor")) %>%
+   # filter(!is.na(looking)) %>%
+   # pivot_wider(names_from = "AOI", values_from = "looking") %>%
+   # mutate(looking = as.numeric(looking)) %>%
+   rename(gaze_point_X = `GazePointX (ADCSpx)`, gaze_point_y = `GazePointY (ADCSpx)`, timestamp = RecordingTimestamp) %>%
+   mutate(trial_num = parse_number(MediaName)) %>%
+   mutate(trial_type = case_when(str_detect(MediaName, "Training") ~ "pre-switch",
+                                 str_detect(MediaName, "Test") ~ "post-switch")) %>%
+   mutate(trial_name = str_c(trial_type, trial_num, sep = "_")) %>%
+   mutate(trial_unique = str_c(RecordingName, MediaName, sep = "_")) %>%
+   group_by(RecordingName) %>%
+   mutate(run_length_id = data.table::rleid(trial_unique)) %>%
+   ungroup() %>%
+   mutate(trackloss = case_when(is.na(gaze_point_X) ~ TRUE,
+                                is.na(gaze_point_y) ~ TRUE,
+                                ValidityLeft > 1 & ValidityRight > 1 ~ TRUE,
+                                TRUE ~ FALSE)) %>%
+   mutate(RecordingName = case_when(RecordingName == "Cogcontrol20_S116_48375" ~ "CogControl20_S116_48375",
+                                    RecordingName != "Cogcontrol20_S116_48375" ~ RecordingName)) #fix typo from Tobii
+  
+
+
+ colnames(tobii_full_cleaned) <- to_snake_case(colnames(tobii_full_cleaned))
 
 #save(tobii_full_cleaned, file = here("data", "tobii_full_cleaned.Rda"))
 
-load(here("data", "tobii_full_cleaned.Rda"))
-  
-proportion_trials <- inner_join(tobii_full_cleaned, ms_list, by = "recording_name") %>% 
+#load(here("data", "tobii_full_cleaned.Rda"))
+
+full_data_merged <- inner_join(tobii_full_cleaned, ms_list, by = "recording_name") %>%
   mutate(recording_name = as.factor(recording_name))
+
+proportion_trials <- full_data_merged %>% 
+  group_by(recording_name, trial_name, language, trial_type, age_group, vocab_group, total_vocab_prod) %>%
+  summarize(target_ms = sum(target * gaze_event_duration),
+            distractor_ms = sum(distractor * gaze_event_duration),
+            circle_ms = sum(circle * gaze_event_duration)) %>%
+  mutate(total_ms = target_ms + distractor_ms + circle_ms)
+
+
+##full_data_anticipation_period <- proportion_trials %>% 
 
 ```
 Use eyetrackingR to get time bins to try to make a better graphic like M. Frank's...
 
 ```{r echo = FALSE}
-library(eyetrackingR)
+
 
 proportion_trials <- proportion_trials %>%
   filter(!is.na(media_name)) #remove inexplicable line with no media name
@@ -817,10 +843,10 @@ eyetracking_data <- make_eyetrackingr_data(proportion_trials,
                                aoi_columns = c('aoi_target', 'aoi_circle', 'aoi_distractor'),
                                treat_non_aoi_looks_as_missing = TRUE)
 
-###PICK UP HERE### must go back and add in the columns to indicate trial start/end!
+###PICK UP HERE### 
 response_window <- subset_by_window(eyetracking_data,
-                                    window_start_time = 15500,
-                                    window_end_time = 21000, rezero = TRUE, remove = TRUE)
+                                    window_start_col = "trial_start",
+                                    window_end_col = "trial_end", rezero = TRUE, remove = TRUE)
 
 time_series_Data <- make_time_sequence_data(eyetracking_data,
                                          time_bin_size = 200,
