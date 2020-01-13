@@ -780,7 +780,7 @@ Load in and clean full, time-series data from Tobii. (This script has saved the 
 
 #save(tobii_full_export, file = here("data", "tobii_full_export.Rda"))
 
-load(here("data", "tobii_full_export.Rda"))
+#load(here("data", "tobii_full_export.Rda"))
 
  tobii_full_cleaned <- tobii_full_export %>%
    #head(n = 2500) %>% # uncomment this line to test code changes on a subset of the full dataset since running the whole thing takes ages!
@@ -791,7 +791,7 @@ load(here("data", "tobii_full_export.Rda"))
           target = rowSums(.[grep("Target", names(.))], na.rm = TRUE), #collapse all 36 AOI columns into one
           distractor = rowSums(.[grep("Distractor", names(.))], na.rm = TRUE)) %>% #collapse all 36 AOI columns into one
    select(-(`AOI[Target]Hit`:`AOI[Circle]Hit_35`)) %>% #get rid of unneeded AOI columns now
-   rename(gaze_point_X = `GazePointX (ADCSpx)`, gaze_point_y = `GazePointY (ADCSpx)`, timestamp = `RecordingTimestamp`, order = StudioTestName) %>% #fix names
+   rename(gaze_point_X = `GazePointX (ADCSpx)`, gaze_point_y = `GazePointY (ADCSpx)`, timestamp = `RecordingTimestamp`, order = StudioTestName) %>% #fix names (newname = oldname)
    mutate(trial_num = parse_number(MediaName)) %>% #get trial number
    mutate(trial_type = case_when(str_detect(MediaName, "Training") ~ "pre-switch", #get trial type
                                  str_detect(MediaName, "Test") ~ "post-switch")) %>% #get trial type
@@ -808,15 +808,12 @@ load(here("data", "tobii_full_export.Rda"))
    mutate(aoi_target_x_left = case_when(order == "Order 1" & trial_type == "pre-switch" ~ 10,
                                         order == "Order 1" & trial_type == "post-switch" ~ 1260,
                                         order == "Order 2" & trial_type == "pre-switch" ~ 1260,
-                                        order == "Order 2" & trial_type == "post-switch" ~ 10,
-                                        TRUE ~ NA),
-          aoi_target_y_top = 270,
-          aoi_target_x_length = 645,
-          aoi_target_y_length = 650)
-  
- tobii_full_cleaned <- tobii_full_cleaned %>% 
-   mutate(aoi_target_x_right = aoi_target_x_left + aoi_target_x_length,
-          aoi_target_y_bottom = aoi_target_y_length - aoi_target_y_top)
+                                        order == "Order 2" & trial_type == "post-switch" ~ 10)) %>%
+  mutate(aoi_target_y_top = 270) %>%
+  mutate(aoi_target_x_length = 645) %>%
+  mutate(aoi_target_y_length = 650) %>%
+  mutate(aoi_target_x_right = aoi_target_x_left + aoi_target_x_length) %>%
+  mutate(aoi_target_y_bottom = aoi_target_y_top + aoi_target_y_length)
           
           
 
