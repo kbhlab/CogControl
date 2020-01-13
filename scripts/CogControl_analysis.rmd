@@ -22,6 +22,7 @@ library(ggplot2)
 library(car)
 library(ez)
 library(snakecase)
+library(janitor)
 library(lme4)
 library(effects)
 library(emmeans)
@@ -75,8 +76,8 @@ ms_list <- ms_list %>%
   mutate(recording_name = as_factor(recording_name)) %>%
   mutate(gender = as.factor(gender)) %>%
   group_by(language) %>%
-  mutate(median_by_group = median(total_concept_prod,na.rm = T)) %>%
-  mutate(vocab_group = ifelse(median_by_group > total_concept_prod,
+  mutate(median_by_group = median(total_vocab_prod,na.rm = T)) %>%
+  mutate(vocab_group = ifelse(median_by_group > total_vocab_prod,
                               "Low", 
                               "High")) %>%
   mutate(vocab_group = as.factor(vocab_group)) 
@@ -792,6 +793,7 @@ Load in and clean full, time-series data from Tobii. (This script has saved the 
           distractor = rowSums(.[grep("Distractor", names(.))], na.rm = TRUE)) %>% #collapse all 36 AOI columns into one
    select(-(`AOI[Target]Hit`:`AOI[Circle]Hit_35`)) %>% #get rid of unneeded AOI columns now
    rename(gaze_point_X = `GazePointX (ADCSpx)`, gaze_point_y = `GazePointY (ADCSpx)`, timestamp = `RecordingTimestamp`, order = StudioTestName) %>% #fix names (newname = oldname)
+  mutate(MediaName = gsub(".wmv", "", MediaName)) %>% # Drops the .wmv part.
    mutate(trial_num = parse_number(MediaName)) %>% #get trial number
    mutate(trial_type = case_when(str_detect(MediaName, "Training") ~ "pre-switch", #get trial type
                                  str_detect(MediaName, "Test") ~ "post-switch")) %>% #get trial type
@@ -800,42 +802,75 @@ Load in and clean full, time-series data from Tobii. (This script has saved the 
    group_by(RecordingName) %>%
    mutate(run_length_id = data.table::rleid(trial_unique)) %>%
    ungroup() %>%
+  filter(!is.na(ValidityLeft) & !is.na(ValidityRight)) %>% #gets rid of blippy rows that duplicate some info and don't have meaningful validity data or gaze point info
+  filter(RecordingName != "test") %>% #gets rid of a "test" recording that somehow got exported
    mutate(trackloss = case_when(is.na(gaze_point_X) ~ TRUE,
                                 is.na(gaze_point_y) ~ TRUE,
                                 ValidityLeft > 1 & ValidityRight > 1 ~ TRUE,
                                 TRUE ~ FALSE)) %>%
-   mutate(media_name = as.factor(media_name)) %>%
+   mutate(MediaName = as.factor(MediaName)) %>%
+  #make target aoi coordinates
    mutate(aoi_target_x_left = case_when(order == "Order 1" & trial_type == "pre-switch" ~ 10,
                                         order == "Order 1" & trial_type == "post-switch" ~ 1260,
                                         order == "Order 2" & trial_type == "pre-switch" ~ 1260,
                                         order == "Order 2" & trial_type == "post-switch" ~ 10)) %>%
-  mutate(aoi_target_y_top = 270) %>%
-  mutate(aoi_target_x_length = 645) %>%
-  mutate(aoi_target_y_length = 650) %>%
+  mutate(aoi_target_x_length = case_when(!is.na(trial_type) ~ 645)) %>%
   mutate(aoi_target_x_right = aoi_target_x_left + aoi_target_x_length) %>%
-  mutate(aoi_target_y_bottom = aoi_target_y_top + aoi_target_y_length)
+  mutate(aoi_target_y_top = case_when(!is.na(trial_type) ~ 270)) %>%
+  mutate(aoi_target_y_length = case_when(!is.na(trial_type) ~ 650)) %>%
+  mutate(aoi_target_y_bottom = aoi_target_y_top + aoi_target_y_length) %>%
+  #make distractor aoi coordinates
+  mutate(aoi_distractor_x_left = case_when(order == "Order 1" & trial_type == "pre-switch" ~ 1260,
+                                        order == "Order 1" & trial_type == "post-switch" ~ 10,
+                                        order == "Order 2" & trial_type == "pre-switch" ~ 10,
+                                        order == "Order 2" & trial_type == "post-switch" ~ 1260)) %>%
+  mutate(aoi_distractor_x_length = case_when(!is.na(trial_type) ~ 645)) %>%
+  mutate(aoi_distractor_x_right = aoi_distractor_x_left + aoi_distractor_x_length) %>%
+  mutate(aoi_distractor_y_top = case_when(!is.na(trial_type) ~ 270)) %>%
+  mutate(aoi_distractor_y_length = case_when(!is.na(trial_type) ~ 650)) %>%
+  mutate(aoi_distractor_y_bottom = aoi_distractor_y_top + aoi_distractor_y_length) %>%
+  mutate(aoi_circle_x_left = case_when(!is.na(trial_type) ~ 758)) %>%
+  mutate(aoi_circle_x_length = case_when(!is.na(trial_type) ~ 385)) %>%
+  mutate(aoi_circle_x_right = case_when(!is.na(trial_type) ~ aoi_circle_x_left + aoi_circle_x_length)) %>%  
+  mutate(aoi_circle_y_top = case_when(!is.na(trial_type) ~ 400)) %>%
+  mutate(aoi_circle_y_length = case_when(!is.na(trial_type) ~ 385)) %>%
+  mutate(aoi_circle_y_bottom = case_when(!is.na(trial_type) ~ aoi_circle_x_left + aoi_circle_x_length)) %>%  
+  clean_names() %>%
+  filter(!is.na(media_name)) %>% #remove lines with no media name
+  filter(!is.na(trial_unique)) %>% #remove NA unique trials (gets rid of times outside our trial windows)
+  filter(is.na(studio_event)) %>% #get rid of MovieStart and MovieEnd lines since they have duplicate timestamps
+  mutate(remove_row = case_when(timestamp == 66398 & trial_unique == "CogControl20_S01_42270_Test_Target_Right_4.wmv" & is.na(validity_left) ~ "remove",
+                                timestamp == 85782 & trial_unique == "CogControl20_S01_42270_Test_Target_Right_7.wmv" & is.na(validity_left) ~ "remove",
+                                timestamp == 35816 & trial_unique == "CogControl7_S24_44771_Training_Target_Left_7.wmv" & is.na(validity_left) ~ "remove",
+                                TRUE ~ "keep"))%>% #this gets rid of 3 rows with duplicate timestamps, but inexplicably without the fixation gaze data, that are preventing the eyetrackingR code from running correctly
+  filter(remove_row == "keep") %>%
+  group_by(trial_unique) %>%
+  #make time stamps start from 0 for each trial
+  mutate(trial_start = min(timestamp)) %>%
+  mutate(trial_end = max(timestamp)) %>%
+  mutate(trial_from_zero = timestamp - trial_start) %>%
+  mutate(gaze_data_length = trial_from_zero - lag(trial_from_zero, default = 0)) %>%
+  ungroup() %>%
+  #get AOI look per time point
+  mutate(look_target = case_when(gaze_point_x > aoi_target_x_left & gaze_point_x < aoi_target_x_right & gaze_point_y > aoi_target_y_top & gaze_point_y < aoi_target_y_bottom ~ 1,
+                                 TRUE ~ 0)) %>%
+  mutate(look_distractor = case_when(gaze_point_x > aoi_distractor_x_left & gaze_point_x < aoi_distractor_x_right & gaze_point_y > aoi_distractor_y_top & gaze_point_y < aoi_distractor_y_bottom ~ 1,
+                                 TRUE ~ 0)) %>%
+  mutate(look_circle = case_when(gaze_point_x > aoi_circle_x_left & gaze_point_x < aoi_circle_x_right & gaze_point_y > aoi_circle_y_top & gaze_point_y < aoi_circle_y_bottom ~ 1,
+                                 TRUE ~ 0)) %>%
+  mutate(look_any = case_when(look_target == 1 | look_distractor == 1 | look_circle == 1 ~ 1,
+                              TRUE ~ 0))
+  
+    
           
-          
 
- colnames(tobii_full_cleaned) <- to_snake_case(colnames(tobii_full_cleaned))
- tobii_full_cleaned$media_name <- gsub(".wmv", "", tobii_full_cleaned$media_name) # Drops the .wmv part.
+save(tobii_full_cleaned, file = here("data", "tobii_full_cleaned.Rda"))
 
-
-#save(tobii_full_cleaned, file = here("data", "tobii_full_cleaned.Rda"))
-
-load(here("data", "tobii_full_cleaned.Rda"))
+#load(here("data", "tobii_full_cleaned.Rda"))
 
 full_data_merged <- inner_join(tobii_full_cleaned, ms_list, by = "recording_name") %>%
   mutate(recording_name = as.factor(recording_name))
 
-
-# Prepping AOI (area of interest) file
-aoi$target_x.bottomright = aoi.KBH$eyes.x.topleft + aoi.KBH$eyes.x.length
-aoi.KBH$eyes.y.bottomright = aoi.KBH$eyes.y.topleft + aoi.KBH$eyes.y.length
-aoi.KBH$mouth.x.bottomright = aoi.KBH$mouth.x.topleft + aoi.KBH$mouth.x.length
-aoi.KBH$mouth.y.bottomright = aoi.KBH$mouth.y.topleft + aoi.KBH$mouth.y.length
-aoi.KBH$face.x.bottomright = aoi.KBH$face.x.topleft + aoi.KBH$face.x.length
-aoi.KBH$face.y.bottomright = aoi.KBH$face.y.topleft + aoi.KBH$face.y.length
 
 
 
@@ -859,17 +894,7 @@ Use eyetrackingR to get time bins to try to make a better graphic like M. Frank'
 
 
 full_data_merged <- full_data_merged %>%
-  filter(!is.na(media_name)) %>% #remove lines with no media name
-  filter(!is.na(trial_unique)) %>% #remove NA unique trials (gets rid of times outside our trial windows)
-  filter(is.na(studio_event)) %>% #get rid of MovieStart and MovieEnd lines since they have duplicate timestamps
-  group_by(recording_name, trial_unique) %>%
-  mutate(trial_start = min(timestamp)) %>%
-  mutate(trial_end = max(timestamp)) %>%
-  mutate(remove_row = case_when(timestamp == 66398 & trial_unique == "CogControl20_S01_42270_Test_Target_Right_4.wmv" & is.na(validity_left) ~ "remove",
-                                timestamp == 85782 & trial_unique == "CogControl20_S01_42270_Test_Target_Right_7.wmv" & is.na(validity_left) ~ "remove",
-                                timestamp == 35816 & trial_unique == "CogControl7_S24_44771_Training_Target_Left_7.wmv" & is.na(validity_left) ~ "remove",
-                                TRUE ~ "keep"))%>% #this gets rid of 3 rows with duplicate timestamps, but inexplicably without the fixation gaze data, that are preventing the eyetrackingR code from running correctly
-  filter(remove_row == "keep")
+  
  
 
 
