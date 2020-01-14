@@ -781,7 +781,7 @@ Load in and clean full, time-series data from Tobii. (This script has saved the 
 
 #save(tobii_full_export, file = here("data", "tobii_full_export.Rda"))
 
-#load(here("data", "tobii_full_export.Rda"))
+load(here("data", "tobii_full_export.Rda"))
 
  tobii_full_cleaned <- tobii_full_export %>%
    #head(n = 2500) %>% # uncomment this line to test code changes on a subset of the full dataset since running the whole thing takes ages!
@@ -829,6 +829,7 @@ Load in and clean full, time-series data from Tobii. (This script has saved the 
   mutate(aoi_distractor_y_top = case_when(!is.na(trial_type) ~ 270)) %>%
   mutate(aoi_distractor_y_length = case_when(!is.na(trial_type) ~ 650)) %>%
   mutate(aoi_distractor_y_bottom = aoi_distractor_y_top + aoi_distractor_y_length) %>%
+  #make circle aoi coordinates
   mutate(aoi_circle_x_left = case_when(!is.na(trial_type) ~ 758)) %>%
   mutate(aoi_circle_x_length = case_when(!is.na(trial_type) ~ 385)) %>%
   mutate(aoi_circle_x_right = case_when(!is.na(trial_type) ~ aoi_circle_x_left + aoi_circle_x_length)) %>%  
