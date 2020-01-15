@@ -843,8 +843,8 @@ load(here("data", "tobii_full_export.Rda"))
   mutate(remove_row = case_when(timestamp == 66398 & trial_unique == "CogControl20_S01_42270_Test_Target_Right_4.wmv" & is.na(validity_left) ~ "remove",
                                 timestamp == 85782 & trial_unique == "CogControl20_S01_42270_Test_Target_Right_7.wmv" & is.na(validity_left) ~ "remove",
                                 timestamp == 35816 & trial_unique == "CogControl7_S24_44771_Training_Target_Left_7.wmv" & is.na(validity_left) ~ "remove",
-                                TRUE ~ "keep"))%>% #this gets rid of 3 rows with duplicate timestamps, but inexplicably without the fixation gaze data, that are preventing the eyetrackingR code from running correctly
-  filter(remove_row == "keep") %>%
+                                TRUE ~ "keep"))%>% #this identifies 3 rows with duplicate timestamps, but inexplicably without the fixation gaze data, that are preventing the eyetrackingR code from running correctly
+  filter(remove_row == "keep") %>% #get rid of those 3 weird rows
   group_by(trial_unique) %>%
   #make time stamps start from 0 for each trial
   mutate(trial_start = min(timestamp)) %>%
@@ -894,7 +894,7 @@ Use eyetrackingR to get time bins to try to make a better graphic like M. Frank'
 ```{r echo = FALSE}
 
 
-full_data_merged <- full_data_merged %>%
+
   
  
 
@@ -902,22 +902,22 @@ full_data_merged <- full_data_merged %>%
 eyetracking_data <- make_eyetrackingr_data(full_data_merged, 
                                participant_column = "recording_name",
                                trial_column = "trial_name",
-                               time_column = "timestamp",
+                               time_column = "trial_from_zero",
                                trackloss_column = "trackloss",
                                aoi_columns = c('target', 'circle', 'distractor'),
                                treat_non_aoi_looks_as_missing = TRUE)
 
 
 response_window <- subset_by_window(eyetracking_data,
-                                    window_start_col = "trial_start",
-                                    window_end_col = "trial_end", rezero = TRUE, remove = TRUE)
+                                    window_start_time = 2150,
+                                    window_end_time = 3150, rezero = TRUE, remove = TRUE)
 
-time_series_data <- make_time_sequence_data(eyetracking_data,
-                                         time_bin_size = 250,
+time_series_data <- make_time_sequence_data(response_window,
+                                         time_bin_size = 50,
                                          predictor_columns = c("language", "age_group", "vocab_group", "trial_type", "trial_num"),
                                          aois = c("target", "distractor"))
 
-plot1 <- plot(time_series_data)
+plot1 <- plot(time_series_data, predictor_column = "age_group")
 
 plot1
 
