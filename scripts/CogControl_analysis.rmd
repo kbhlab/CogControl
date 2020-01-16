@@ -776,16 +776,18 @@ Well, that did not work well. The output from Tobii doesn't have a consistent fr
 
 Load in and clean full, time-series data from Tobii. (This script has saved the Tobii data as a .RDA file to save time)
 ```{r echo = FALSE}
-#tobii_full_export <- read_tsv(here("data", "tobii_2019-12-18.tsv"),
-#                                   col_types = cols(LocalTimeStamp = col_character()))
+# data_tobii_full_export <- read_tsv(here("data", "tobii_2019-12-18.tsv"),
+#                                    col_types = cols(LocalTimeStamp = col_character()))
+# 
+# save(data_tobii_full_export, file = here("data", "data_tobii_full_export.Rda"))
 
-#save(tobii_full_export, file = here("data", "tobii_full_export.Rda"))
+load(here("data", "data_tobii_full_export.Rda"))
 
-load(here("data", "tobii_full_export.Rda"))
+###----------------------------------------------------------------------CLEAN DATA----------------------------------------------------------------------------
 
- tobii_full_cleaned <- tobii_full_export %>%
-   #head(n = 2500) %>% # uncomment this line to test code changes on a subset of the full dataset since running the whole thing takes ages!
-   select(StudioTestName, RecordingName, RecordingDuration, MediaName, RecordingTimestamp, StudioEvent, FixationIndex, GazeEventType, GazeEventDuration, `AOI[Target]Hit`:`AOI[Circle]Hit_35`, `GazePointX (ADCSpx)`, `GazePointY (ADCSpx)`, ValidityLeft, ValidityRight) %>%
+ data_tobii_full_cleaned <- data_tobii_full_export %>%
+   #head(n = 2500) %>% # uncomment this line to test code changes on a subset of the full dataset since running the whole thing takes awhile
+   select(StudioTestName, RecordingName, RecordingDuration, MediaName, RecordingTimestamp, StudioEvent, FixationIndex, GazeEventType, GazeEventDuration, `AOI[Target]Hit`:`AOI[Circle]Hit_35`, `GazePointX (ADCSpx)`, `GazePointY (ADCSpx)`, ValidityLeft, ValidityRight) %>% # choose only needed columns
       mutate(RecordingName = case_when(RecordingName == "Cogcontrol20_S116_48375" ~ "CogControl20_S116_48375",
                                     RecordingName != "Cogcontrol20_S116_48375" ~ RecordingName)) %>% #fix typo from Tobii
    mutate(circle = rowSums(.[grep("Circle", names(.))], na.rm = TRUE), #collapse all 36 AOI columns into one
@@ -793,23 +795,23 @@ load(here("data", "tobii_full_export.Rda"))
           distractor = rowSums(.[grep("Distractor", names(.))], na.rm = TRUE)) %>% #collapse all 36 AOI columns into one
    select(-(`AOI[Target]Hit`:`AOI[Circle]Hit_35`)) %>% #get rid of unneeded AOI columns now
    rename(gaze_point_X = `GazePointX (ADCSpx)`, gaze_point_y = `GazePointY (ADCSpx)`, timestamp = `RecordingTimestamp`, order = StudioTestName) %>% #fix names (newname = oldname)
-  mutate(MediaName = gsub(".wmv", "", MediaName)) %>% # Drops the .wmv part.
+  mutate(MediaName = gsub(".wmv", "", MediaName)) %>% # drops the .wmv part.
    mutate(trial_num = parse_number(MediaName)) %>% #get trial number
-   mutate(trial_type = case_when(str_detect(MediaName, "Training") ~ "pre-switch", #get trial type
-                                 str_detect(MediaName, "Test") ~ "post-switch")) %>% #get trial type
-   mutate(trial_name = str_c(trial_type, trial_num, sep = "_")) %>%
-   mutate(trial_unique = str_c(RecordingName, MediaName, sep = "_")) %>%
-   group_by(RecordingName) %>%
-   mutate(run_length_id = data.table::rleid(trial_unique)) %>%
-   ungroup() %>%
+   mutate(trial_type = as.factor(case_when(str_detect(MediaName, "Training") ~ "pre-switch", #get trial type
+                                 str_detect(MediaName, "Test") ~ "post-switch"))) %>% #get trial type
+   mutate(trial_name = as.factor(str_c(trial_type, trial_num, sep = "_"))) %>% #combine trial number and trial type into a trial name (for example, "post-switch_3"")
+   mutate(trial_unique = as.factor(str_c(RecordingName, MediaName, sep = "_"))) %>% #get a trial identifier that is unique to each participant, trial number, and trial type
+   # group_by(RecordingName) %>% # don't think this rleid bit is actually needed
+   # mutate(run_length_id = data.table::rleid(trial_unique)) %>%
+   # ungroup() %>%
   filter(!is.na(ValidityLeft) & !is.na(ValidityRight)) %>% #gets rid of blippy rows that duplicate some info and don't have meaningful validity data or gaze point info
   filter(RecordingName != "test") %>% #gets rid of a "test" recording that somehow got exported
-   mutate(trackloss = case_when(is.na(gaze_point_X) ~ TRUE,
+   mutate(trackloss = case_when(is.na(gaze_point_X) ~ TRUE, #creates a trackloss column that will be used in the eyetrackingR functions
                                 is.na(gaze_point_y) ~ TRUE,
                                 ValidityLeft > 1 & ValidityRight > 1 ~ TRUE,
                                 TRUE ~ FALSE)) %>%
    mutate(MediaName = as.factor(MediaName)) %>%
-  #make target aoi coordinates
+  ###-------------------------------------------------------------------make target aoi coordinates:
    mutate(aoi_target_x_left = case_when(order == "Order 1" & trial_type == "pre-switch" ~ 10,
                                         order == "Order 1" & trial_type == "post-switch" ~ 1260,
                                         order == "Order 2" & trial_type == "pre-switch" ~ 1260,
@@ -819,7 +821,7 @@ load(here("data", "tobii_full_export.Rda"))
   mutate(aoi_target_y_top = case_when(!is.na(trial_type) ~ 270)) %>%
   mutate(aoi_target_y_length = case_when(!is.na(trial_type) ~ 650)) %>%
   mutate(aoi_target_y_bottom = aoi_target_y_top + aoi_target_y_length) %>%
-  #make distractor aoi coordinates
+  ###-------------------------------------------------------------------make distractor aoi coordinates:
   mutate(aoi_distractor_x_left = case_when(order == "Order 1" & trial_type == "pre-switch" ~ 1260,
                                         order == "Order 1" & trial_type == "post-switch" ~ 10,
                                         order == "Order 2" & trial_type == "pre-switch" ~ 10,
@@ -829,16 +831,16 @@ load(here("data", "tobii_full_export.Rda"))
   mutate(aoi_distractor_y_top = case_when(!is.na(trial_type) ~ 270)) %>%
   mutate(aoi_distractor_y_length = case_when(!is.na(trial_type) ~ 650)) %>%
   mutate(aoi_distractor_y_bottom = aoi_distractor_y_top + aoi_distractor_y_length) %>%
-  #make circle aoi coordinates
+  ###-------------------------------------------------------------------make circle aoi coordinates:
   mutate(aoi_circle_x_left = case_when(!is.na(trial_type) ~ 758)) %>%
   mutate(aoi_circle_x_length = case_when(!is.na(trial_type) ~ 385)) %>%
   mutate(aoi_circle_x_right = case_when(!is.na(trial_type) ~ aoi_circle_x_left + aoi_circle_x_length)) %>%  
   mutate(aoi_circle_y_top = case_when(!is.na(trial_type) ~ 400)) %>%
   mutate(aoi_circle_y_length = case_when(!is.na(trial_type) ~ 385)) %>%
   mutate(aoi_circle_y_bottom = case_when(!is.na(trial_type) ~ aoi_circle_x_left + aoi_circle_x_length)) %>%  
-  clean_names() %>%
+  clean_names() %>% #makes everything snake case 
   filter(!is.na(media_name)) %>% #remove lines with no media name
-  filter(!is.na(trial_unique)) %>% #remove NA unique trials (gets rid of times outside our trial windows)
+  filter(!is.na(trial_unique)) %>% #remove NA unique trials (gets rid of times outside our trial windows that aren't interesting to us)
   filter(is.na(studio_event)) %>% #get rid of MovieStart and MovieEnd lines since they have duplicate timestamps
   mutate(remove_row = case_when(timestamp == 66398 & trial_unique == "CogControl20_S01_42270_Test_Target_Right_4.wmv" & is.na(validity_left) ~ "remove",
                                 timestamp == 85782 & trial_unique == "CogControl20_S01_42270_Test_Target_Right_7.wmv" & is.na(validity_left) ~ "remove",
@@ -846,38 +848,74 @@ load(here("data", "tobii_full_export.Rda"))
                                 TRUE ~ "keep"))%>% #this identifies 3 rows with duplicate timestamps, but inexplicably without the fixation gaze data, that are preventing the eyetrackingR code from running correctly
   filter(remove_row == "keep") %>% #get rid of those 3 weird rows
   group_by(trial_unique) %>%
-  #make time stamps start from 0 for each trial
   mutate(trial_start = min(timestamp)) %>%
   mutate(trial_end = max(timestamp)) %>%
-  mutate(trial_from_zero = timestamp - trial_start) %>%
-  mutate(gaze_data_length = trial_from_zero - lag(trial_from_zero, default = 0)) %>%
+  mutate(trial_from_zero = timestamp - trial_start) %>% #make time stamps start from 0 for each trial
+  mutate(gaze_data_length = trial_from_zero - lag(trial_from_zero, default = 0)) %>% #this just gives us an idea of how long there is between each consecutive timestamp--there are about 10 odd lengths of over 200 ms, but most are between 14 and 19 ms, as we would expect
   ungroup() %>%
-  #get AOI look per time point
+  ###-------------------------------------------------------------------get AOI look per time point:
   mutate(look_target = case_when(gaze_point_x > aoi_target_x_left & gaze_point_x < aoi_target_x_right & gaze_point_y > aoi_target_y_top & gaze_point_y < aoi_target_y_bottom ~ 1,
-                                 TRUE ~ 0)) %>%
+                                 TRUE ~ 0)) %>% #looks to target
   mutate(look_distractor = case_when(gaze_point_x > aoi_distractor_x_left & gaze_point_x < aoi_distractor_x_right & gaze_point_y > aoi_distractor_y_top & gaze_point_y < aoi_distractor_y_bottom ~ 1,
-                                 TRUE ~ 0)) %>%
+                                 TRUE ~ 0)) %>% #looks to distractor
   mutate(look_circle = case_when(gaze_point_x > aoi_circle_x_left & gaze_point_x < aoi_circle_x_right & gaze_point_y > aoi_circle_y_top & gaze_point_y < aoi_circle_y_bottom ~ 1,
-                                 TRUE ~ 0)) %>%
+                                 TRUE ~ 0)) %>% #looks to circle
   mutate(look_any = case_when(look_target == 1 | look_distractor == 1 | look_circle == 1 ~ 1,
-                              TRUE ~ 0))
-  
-    
+                              TRUE ~ 0)) #looks to either target, distractor, or circle
           
 
-save(tobii_full_cleaned, file = here("data", "tobii_full_cleaned.Rda"))
+save(data_tobii_full_cleaned, file = here("data", "data_tobii_full_cleaned.Rda"))
 
-#load(here("data", "tobii_full_cleaned.Rda"))
+#load(here("data", "data_tobii_full_cleaned.Rda"))
 
-full_data_merged <- inner_join(tobii_full_cleaned, ms_list, by = "recording_name") %>%
+###----------------------------------------------------------------------CREATE MERGED FULL DATA----------------------------------------------------------------------------  
+
+
+data_full_merged <- inner_join(data_tobii_full_cleaned, ms_list, by = "recording_name") %>%
   mutate(recording_name = as.factor(recording_name))
 
 
+###----------------------------------------------------------------------CREATE ANTICIPATION PERIOD DATA----------------------------------------------------------------------------  
+
+data_anticipation <- data_full_merged %>%
+  filter(trial_from_zero >= 2150 & trial_from_zero <= 3150) %>% #filter to just the aniticpatory period, which is 150 ms after the offset of the 1000 ms cue, and lasts for 1000 ms
+  group_by(trial_unique) %>%
+  mutate(prop_fixations = mean(look_any)) %>%
+  filter(prop_fixations >= MIN_LOOK_PROPORTION) %>% #removes trials where the child did not fixate on anything for at least 50% of the anticipation period
+  group_by(recording_name, trial_type) %>% 
+  mutate(num_good_trials = length(unique(trial_num))) %>%
+  filter(num_good_trials >= MIN_NUMBER_TRIALS) %>% #removes babies who don't have the minimum number of trials 
+  group_by(recording_name) %>%
+  mutate(num_trial_types = length(unique(trial_type))) %>%
+  filter(num_trial_types == 2) %>% #removes babies who don't have data in both trial types
+  ungroup()
+
+final_sample_ids <- data_anticipation %>% #used for creating data_full_trials object for plotting whole trial
+  select(recording_name) %>%
+  unique()
+
+data_full_trials <- data_full_merged %>%
+  inner_join(final_sample_ids, by = "recording_name") # this is the full time series data, but only for infants that made it through to the final anticipation-period sample. Will be used for ploting time series data of whole trial
+  
+###----------------------------------------------------------------------CREATE 7 MONTH OLD DATA----------------------------------------------------------------------------  
+
+data_7_anticipation <- data_anticipation %>%
+  filter(age_group == "7 months")
+
+data_7_full_trials <- data_full_trials %>%
+  filter(age_group == "7 months")
 
 
+###----------------------------------------------------------------------CREATE 20 MONTH OLD DATA----------------------------------------------------------------------------  
+
+data_20_anticipation <- data_anticipation %>%
+  filter(age_group == "20 months")
+
+data_20_full_trials <- data_full_trials %>%
+  filter(age_group == "20 months")
 
 
-proportion_trials <- full_data_merged %>% 
+proportion_trials <- data_full_merged %>% 
   group_by(recording_name, trial_name, language, trial_type, age_group, vocab_group, total_vocab_prod) %>%
   summarize(target_ms = sum(target * gaze_event_duration),
             distractor_ms = sum(distractor * gaze_event_duration),
@@ -894,12 +932,7 @@ Use eyetrackingR to get time bins to try to make a better graphic like M. Frank'
 ```{r echo = FALSE}
 
 
-
-  
- 
-
-
-eyetracking_data <- make_eyetrackingr_data(full_data_merged, 
+data_eyetracking_full <- make_eyetrackingr_data(data_full_trials, 
                                participant_column = "recording_name",
                                trial_column = "trial_name",
                                time_column = "trial_from_zero",
@@ -908,31 +941,59 @@ eyetracking_data <- make_eyetrackingr_data(full_data_merged,
                                treat_non_aoi_looks_as_missing = TRUE)
 
 
-response_window <- subset_by_window(eyetracking_data,
-                                    window_start_time = 2150,
-                                    window_end_time = 3150, rezero = TRUE, remove = TRUE)
+trackloss <- trackloss_analysis(data = data_eyetracking_full)
 
-time_series_data <- make_time_sequence_data(response_window,
-                                         time_bin_size = 50,
+data_eyetracking_clean <- clean_by_trackloss(data = data_eyetracking_full, trial_prop_thresh = .25)
+
+
+##Don't really need to do the below anymore, since my new code in the previous section already subsets the data by the anticipation period
+
+# response_window_7 <- subset_by_window(data_7_eyetracking,
+#                                     window_start_time = 2150,
+#                                     window_end_time = 3150, rezero = TRUE, remove = TRUE)
+# 
+# response_window_20 <- subset_by_window(data_20_eyetracking,
+#                                     window_start_time = 2150,
+#                                     window_end_time = 3150, rezero = TRUE, remove = TRUE)
+
+
+data_time_series <- make_time_sequence_data(data_eyetracking_clean,
+                                         time_bin_size = 100,
                                          predictor_columns = c("language", "age_group", "vocab_group", "trial_type", "trial_num"),
                                          aois = c("target", "distractor"))
 
-plot1 <- plot(time_series_data, predictor_column = "age_group")
-
-plot1
 
 
-time_series_summary <- time_series_data %>%
-  group_by(trial_type, language, time, trial_num) %>%
-  summarise(target = mean(aoi == "target", na.rm=TRUE),
-            distractor = mean(aoi == "distractor", na.rm=TRUE)) %>%
-  mutate(proportion_to_target = target / (target + distractor)) %>%
-  gather(region, looking, target, distractor) 
+plot7_full_trial <- data_time_series %>%
+  filter(age_group == "7 months") %>%
+  plot(predictor_column = "trial_type")
+
+plot7_full_trial
+
+plot20_full_trial <- data_time_series %>%
+  filter(age_group == "20 months") %>%
+  plot(predictor_column = "trial_type")
+
+plot20_full_trial
 
 
-ggplot(proportion_summary, aes(x = ts_rescaled, y = looking, color = region)) + 
-  geom_point() +
-  facet_grid(trial_num ~ trial_type)
+time_series_summary <- data_time_series %>%
+  pivot_wider(names_from = AOI, values_from = Prop) %>%
+  mutate(trial_type = fct_rev(trial_type)) %>%
+  group_by(trial_type, language, Time, trial_num) %>%
+  summarise(target = mean(target, na.rm=TRUE),
+            distractor = mean(distractor, na.rm=TRUE))  %>%
+  pivot_longer(cols = c(target, distractor), names_to = "aoi", values_to = "prop_looking") %>%
+  mutate(aoi = factor(aoi, levels = c("target", "distractor"))) 
+  
+
+
+plot_full_trials <- time_series_summary %>%
+  ggplot(aes(x = Time, y = prop_looking, color = aoi)) + 
+  geom_line() +
+  facet_grid(trial_num ~ trial_type) +
+  annotate("rect", xmin = 2150, xmax = 3150, ymin = -Inf, ymax = Inf, fill = "red", alpha = 0.1)
+  #geom_vline(xintercept = 2150, col = "red", lty = 2)
 
 ```
 
