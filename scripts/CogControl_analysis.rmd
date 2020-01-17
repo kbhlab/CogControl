@@ -804,13 +804,19 @@ load(here("data", "data_tobii_full_export.Rda"))
    # group_by(RecordingName) %>% # don't think this rleid bit is actually needed
    # mutate(run_length_id = data.table::rleid(trial_unique)) %>%
    # ungroup() %>%
-  filter(!is.na(ValidityLeft) & !is.na(ValidityRight)) %>% #gets rid of blippy rows that duplicate some info and don't have meaningful validity data or gaze point info
   filter(RecordingName != "test") %>% #gets rid of a "test" recording that somehow got exported
-   mutate(trackloss = case_when(is.na(gaze_point_X) ~ TRUE, #creates a trackloss column that will be used in the eyetrackingR functions
+  mutate(MediaName = as.factor(MediaName)) %>%
+  group_by(trial_unique) %>%
+  mutate(trial_start = min(timestamp)) %>%
+  mutate(trial_end = max(timestamp)) %>%
+  mutate(trial_from_zero = timestamp - trial_start) %>% #make time stamps start from 0 for each trial
+  ungroup() %>%
+  filter(!is.na(ValidityLeft) & !is.na(ValidityRight)) %>% #gets rid of Movie Start and Movie End rows that duplicate some info and don't have meaningful validity data or gaze point info
+  mutate(trackloss = case_when(is.na(gaze_point_X) ~ TRUE, #creates a trackloss column that will be used in the eyetrackingR functions
                                 is.na(gaze_point_y) ~ TRUE,
                                 ValidityLeft > 1 & ValidityRight > 1 ~ TRUE,
                                 TRUE ~ FALSE)) %>%
-   mutate(MediaName = as.factor(MediaName)) %>%
+  clean_names() %>% #makes everything snake case 
   ###-------------------------------------------------------------------make target aoi coordinates:
    mutate(aoi_target_x_left = case_when(order == "Order 1" & trial_type == "pre-switch" ~ 10,
                                         order == "Order 1" & trial_type == "post-switch" ~ 1260,
@@ -838,7 +844,6 @@ load(here("data", "data_tobii_full_export.Rda"))
   mutate(aoi_circle_y_top = case_when(!is.na(trial_type) ~ 400)) %>%
   mutate(aoi_circle_y_length = case_when(!is.na(trial_type) ~ 385)) %>%
   mutate(aoi_circle_y_bottom = case_when(!is.na(trial_type) ~ aoi_circle_x_left + aoi_circle_x_length)) %>%  
-  clean_names() %>% #makes everything snake case 
   filter(!is.na(media_name)) %>% #remove lines with no media name
   filter(!is.na(trial_unique)) %>% #remove NA unique trials (gets rid of times outside our trial windows that aren't interesting to us)
   filter(is.na(studio_event)) %>% #get rid of MovieStart and MovieEnd lines since they have duplicate timestamps
@@ -847,12 +852,7 @@ load(here("data", "data_tobii_full_export.Rda"))
                                 timestamp == 35816 & trial_unique == "CogControl7_S24_44771_Training_Target_Left_7.wmv" & is.na(validity_left) ~ "remove",
                                 TRUE ~ "keep"))%>% #this identifies 3 rows with duplicate timestamps, but inexplicably without the fixation gaze data, that are preventing the eyetrackingR code from running correctly
   filter(remove_row == "keep") %>% #get rid of those 3 weird rows
-  group_by(trial_unique) %>%
-  mutate(trial_start = min(timestamp)) %>%
-  mutate(trial_end = max(timestamp)) %>%
-  mutate(trial_from_zero = timestamp - trial_start) %>% #make time stamps start from 0 for each trial
-  mutate(gaze_data_length = trial_from_zero - lag(trial_from_zero, default = 0)) %>% #this just gives us an idea of how long there is between each consecutive timestamp--there are about 10 odd lengths of over 200 ms, but most are between 14 and 19 ms, as we would expect
-  ungroup() %>%
+
   ###-------------------------------------------------------------------get AOI look per time point:
   mutate(look_target = case_when(gaze_point_x > aoi_target_x_left & gaze_point_x < aoi_target_x_right & gaze_point_y > aoi_target_y_top & gaze_point_y < aoi_target_y_bottom ~ 1,
                                  TRUE ~ 0)) %>% #looks to target
@@ -865,6 +865,7 @@ load(here("data", "data_tobii_full_export.Rda"))
           
 
 save(data_tobii_full_cleaned, file = here("data", "data_tobii_full_cleaned.Rda"))
+
 
 #load(here("data", "data_tobii_full_cleaned.Rda"))
 
@@ -946,18 +947,14 @@ trackloss <- trackloss_analysis(data = data_eyetracking_full)
 data_eyetracking_clean <- clean_by_trackloss(data = data_eyetracking_full, trial_prop_thresh = .25)
 
 
-##Don't really need to do the below anymore, since my new code in the previous section already subsets the data by the anticipation period
 
-# response_window_7 <- subset_by_window(data_7_eyetracking,
-#                                     window_start_time = 2150,
-#                                     window_end_time = 3150, rezero = TRUE, remove = TRUE)
-# 
-# response_window_20 <- subset_by_window(data_20_eyetracking,
-#                                     window_start_time = 2150,
-#                                     window_end_time = 3150, rezero = TRUE, remove = TRUE)
+full_trial <- subset_by_window(data_eyetracking_full,
+                                     window_start_time = 0,
+                                     window_end_time = 5000, rezero = TRUE, remove = TRUE)
 
 
-data_time_series <- make_time_sequence_data(data_eyetracking_clean,
+
+data_time_series <- make_time_sequence_data(full_trial,
                                          time_bin_size = 100,
                                          predictor_columns = c("language", "age_group", "vocab_group", "trial_type", "trial_num"),
                                          aois = c("target", "distractor"))
@@ -980,20 +977,59 @@ plot20_full_trial
 time_series_summary <- data_time_series %>%
   pivot_wider(names_from = AOI, values_from = Prop) %>%
   mutate(trial_type = fct_rev(trial_type)) %>%
-  group_by(trial_type, language, Time, trial_num) %>%
+  group_by(trial_type, language, age_group, Time, trial_num) %>%
   summarise(target = mean(target, na.rm=TRUE),
             distractor = mean(distractor, na.rm=TRUE))  %>%
   pivot_longer(cols = c(target, distractor), names_to = "aoi", values_to = "prop_looking") %>%
-  mutate(aoi = factor(aoi, levels = c("target", "distractor"))) 
+  mutate(aoi = factor(aoi, levels = c("target", "distractor")))  %>%
+  mutate(trial_labels = paste0("Trial ", trial_num))
   
 
 
+plot_full_trials_7 <- time_series_summary %>%
+  filter(age_group == "7 months") %>%
+  ggplot(aes(x = Time, y = prop_looking, color = aoi, linetype = language)) + 
+  geom_line() +
+  facet_grid(trial_labels ~ trial_type) +
+  annotate("rect", xmin = 2150, xmax = 3150, ymin = -Inf, ymax = Inf, fill = "red", alpha = 0.07) +
+  annotate("text", x = 2650, y = 0.9, label = "Anticipation \n Period", size = 2.5, color = "#927774") +
+  ggtitle("7 month olds") +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  xlab("Time from trial start (ms)") +
+  ylab("Proportion looking")
+
+
+
+plot_full_trials_20 <- time_series_summary %>%
+  filter(age_group == "20 months") %>%
+  ggplot(aes(x = Time, y = prop_looking, color = aoi, linetype = language)) + 
+  geom_line() +
+  facet_grid(trial_labels ~ trial_type) +
+  annotate("rect", xmin = 2150, xmax = 3150, ymin = -Inf, ymax = Inf, fill = "red", alpha = 0.07) +
+  annotate("text", x = 2650, y = 0.9, label = "Anticipation \n Period", size = 2.5, color = "#927774") +
+  ggtitle("20 month olds") +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  xlab("Time from trial start (ms)")  +
+  ylab("Proportion looking")
+
+
 plot_full_trials <- time_series_summary %>%
-  ggplot(aes(x = Time, y = prop_looking, color = aoi)) + 
+  ggplot(aes(x = Time, y = prop_looking, color = aoi, linetype = language)) + 
   geom_line() +
   facet_grid(trial_num ~ trial_type) +
-  annotate("rect", xmin = 2150, xmax = 3150, ymin = -Inf, ymax = Inf, fill = "red", alpha = 0.1)
-  #geom_vline(xintercept = 2150, col = "red", lty = 2)
+  annotate("rect", xmin = 2150, xmax = 3150, ymin = -Inf, ymax = Inf, fill = "red", alpha = 0.07) +
+  annotate("text", x = 2650, y = 0.9, label = "Anticipation \n Period", size = 2, color = "#927774")
+
+plot_full_trials_7
+plot_full_trials_20
+plot_full_trials
+
+
+ggsave("full_trials_7.png", plot = plot_full_trials_7, device = "png", width = 15, height = 10, units = "in",
+  dpi = 300)
+
+ggsave("full_trials_20.png", plot = plot_full_trials_20, device = "png", width = 15, height = 10, units = "in",
+  dpi = 300)
 
 ```
 
