@@ -960,19 +960,20 @@ data_time_series <- make_time_sequence_data(full_trial,
                                          aois = c("target", "distractor"))
 
 
+#-----------------------------------------------------------EyetrackingR Plots - not as flexible as ggplot so will try below with ggplot
+# plot7_full_trial <- data_time_series %>%
+#   filter(age_group == "7 months") %>%
+#   plot(predictor_column = "trial_type")
+# 
+# plot7_full_trial
+# 
+# plot20_full_trial <- data_time_series %>%
+#   filter(age_group == "20 months") %>%
+#   plot(predictor_column = "trial_type")
+# 
+# plot20_full_trial
 
-plot7_full_trial <- data_time_series %>%
-  filter(age_group == "7 months") %>%
-  plot(predictor_column = "trial_type")
-
-plot7_full_trial
-
-plot20_full_trial <- data_time_series %>%
-  filter(age_group == "20 months") %>%
-  plot(predictor_column = "trial_type")
-
-plot20_full_trial
-
+#----------------------------------------------------------Create nested data for easily plotting more than one of the same plot by a group
 
 time_series_summary <- data_time_series %>%
   pivot_wider(names_from = AOI, values_from = Prop) %>%
@@ -982,54 +983,28 @@ time_series_summary <- data_time_series %>%
             distractor = mean(distractor, na.rm=TRUE))  %>%
   pivot_longer(cols = c(target, distractor), names_to = "aoi", values_to = "prop_looking") %>%
   mutate(aoi = factor(aoi, levels = c("target", "distractor")))  %>%
-  mutate(trial_labels = paste0("Trial ", trial_num))
-  
-
-
-plot_full_trials_7 <- time_series_summary %>%
-  filter(age_group == "7 months") %>%
-  ggplot(aes(x = Time, y = prop_looking, color = aoi, linetype = language)) + 
+  mutate(trial_labels = paste0("Trial ", trial_num)) %>%
+  group_by(age_group) %>%
+  nest() %>%
+  mutate(plot = map2(data, age_group, ~ ggplot(data = .x, aes(x = Time, y = prop_looking, color = aoi, linetype = language)) + 
   geom_line() +
   facet_grid(trial_labels ~ trial_type) +
-  annotate("rect", xmin = 2150, xmax = 3150, ymin = -Inf, ymax = Inf, fill = "red", alpha = 0.07) +
-  annotate("text", x = 2650, y = 0.9, label = "Anticipation \n Period", size = 2.5, color = "#927774") +
-  ggtitle("7 month olds") +
-  theme(plot.title = element_text(hjust = 0.5)) +
-  xlab("Time from trial start (ms)") +
-  ylab("Proportion looking")
-
-
-
-plot_full_trials_20 <- time_series_summary %>%
-  filter(age_group == "20 months") %>%
-  ggplot(aes(x = Time, y = prop_looking, color = aoi, linetype = language)) + 
-  geom_line() +
-  facet_grid(trial_labels ~ trial_type) +
-  annotate("rect", xmin = 2150, xmax = 3150, ymin = -Inf, ymax = Inf, fill = "red", alpha = 0.07) +
-  annotate("text", x = 2650, y = 0.9, label = "Anticipation \n Period", size = 2.5, color = "#927774") +
-  ggtitle("20 month olds") +
+  annotate("rect", xmin = 2200, xmax = 3200, ymin = -Inf, ymax = Inf, fill = "red", alpha = 0.07) +
+  annotate("text", x = 2700, y = 0.9, label = "Anticipation \n Period", size = 2.5, color = "#927774") +
+  ggtitle(age_group) +
   theme(plot.title = element_text(hjust = 0.5)) +
   xlab("Time from trial start (ms)")  +
-  ylab("Proportion looking")
+  ylab("Proportion looking")))
+  
+time_series_summary$plot[[1]]
+time_series_summary$plot[[2]]
 
-
-plot_full_trials <- time_series_summary %>%
-  ggplot(aes(x = Time, y = prop_looking, color = aoi, linetype = language)) + 
-  geom_line() +
-  facet_grid(trial_num ~ trial_type) +
-  annotate("rect", xmin = 2150, xmax = 3150, ymin = -Inf, ymax = Inf, fill = "red", alpha = 0.07) +
-  annotate("text", x = 2650, y = 0.9, label = "Anticipation \n Period", size = 2, color = "#927774")
-
-plot_full_trials_7
-plot_full_trials_20
-plot_full_trials
-
-
-ggsave("full_trials_7.png", plot = plot_full_trials_7, device = "png", width = 15, height = 10, units = "in",
-  dpi = 300)
-
-ggsave("full_trials_20.png", plot = plot_full_trials_20, device = "png", width = 15, height = 10, units = "in",
-  dpi = 300)
+# ggsave("full_trials_7_200.png", path = here("figures"), plot = time_series_summary$plot[[1]], device = "png", width = 15, height = 10, units = "in",
+#   dpi = 300)
+# 
+# ggsave("full_trials_20_200.png", path = here("figures"), plot = time_series_summary$plot[[2]], device = "png", width = 15, height = 10, units = "in",
+#   dpi = 300)
+# 
 
 ```
 
