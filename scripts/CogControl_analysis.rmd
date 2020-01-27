@@ -37,13 +37,13 @@ kovacs09 <- "Kovács & Mehler 2009"
 MIN_LOOK_PROPORTION <- .5
 MIN_NUMBER_TRIALS <- 5
 
-## Read tobii data 
+## Read tobii data  ---  order 1 has target on left during pre-switch, 2 has target on right during pre-switch
 tobii_data_order1 <- read_csv(here("data", "2019-10-24_CogControl_tobii_data_ORDER1.csv"), na = "-") %>% 
   mutate(order = "1") %>% 
-  filter(X1 != "All Recordings") #order one has target on left during pre-switch
+  filter(X1 != "All Recordings") #remove summary row
 tobii_data_order2 <- read_csv(here("data", "2019-10-24_CogControl_tobii_data_ORDER2.csv"), na = "-") %>% 
   mutate(order = "2") %>% 
-  filter(X1 != "All Recordings") #order one has target on right during pre-switch
+  filter(X1 != "All Recordings") #remove summary row
 
 names(tobii_data_order1)[1] <- "recording_name" #reads in with "X1" as the first column since no value from Tobii
 names(tobii_data_order2)[1] <- "recording_name" #reads in with "X1" as the first column since no value from Tobii
@@ -55,8 +55,8 @@ ms_list <- read_csv(here("data", "2019_CogControl_MSL.csv"), na = "-") %>%
 colnames(ms_list) <- to_snake_case(colnames(ms_list)) #make everything snake case so it's easier to remember variable names
 
 ## Merge tobii orders
-tobii_data <- bind_rows(tobii_data_order1, tobii_data_order2)
-rm(tobii_data_order1, tobii_data_order2) #don't need these anymore since we've just merged them
+tobii_data <- bind_rows(tobii_data_order1, tobii_data_order2) #combine tobii orders
+rm(tobii_data_order1, tobii_data_order2) #don't need these independent objects anymore since we've just merged them
 
 ## Clean tobii data
 names(tobii_data) <- gsub("Total Fixation Duration_Test", "Test_", names(tobii_data))
@@ -65,7 +65,7 @@ names(tobii_data) <- gsub("Circle_Sum", "Circle", names(tobii_data))
 names(tobii_data) <- gsub("Target_Sum", "Target", names(tobii_data))
 names(tobii_data) <- gsub("Distractor_Sum", "Distractor", names(tobii_data))
 tobii_data[is.na(tobii_data)] <- 0
-tobii_data$recording_name = as.factor(tobii_data$recording_name)
+tobii_data$recording_name <- as.factor(tobii_data$recording_name)
 
 ## Prep MSL data
 ms_list <- ms_list %>%  
@@ -781,7 +781,7 @@ Load in and clean full, time-series data from Tobii. (This script has saved the 
 # 
 # save(data_tobii_full_export, file = here("data", "data_tobii_full_export.Rda"))
 
-load(here("data", "data_tobii_full_export.Rda"))
+load(here("data", "data_tobii_full_export.Rda")) #full export data is saved as RDA file since the csv is too large for GitHub
 
 ###----------------------------------------------------------------------CLEAN DATA----------------------------------------------------------------------------
 
