@@ -269,7 +269,7 @@ time_series_full_trial$plot[[2]]
 time_series_antic <- data_time_series_antic %>%
   pivot_wider(names_from = AOI, values_from = Prop) %>%
   mutate(trial_type = fct_rev(trial_type)) %>%
-  group_by(trial_type, language, age_group, Time, trial_num) %>%
+  group_by(trial_type, language, age_group, trial_num) %>%
   summarise(target = mean(target, na.rm=TRUE),
             distractor = mean(distractor, na.rm=TRUE))  %>%
   pivot_longer(cols = c(target, distractor), names_to = "aoi", values_to = "prop_looking") %>%
@@ -277,12 +277,12 @@ time_series_antic <- data_time_series_antic %>%
   mutate(trial_labels = paste0("Trial ", trial_num)) %>%
   group_by(age_group) %>%
   nest() %>%
-  mutate(plot = map2(data, age_group, ~ ggplot(data = .x, aes(x = Time, y = prop_looking, color = aoi, linetype = language)) + 
-  geom_line() +
-  facet_grid(trial_labels ~ trial_type) +
+  mutate(plot = map2(data, age_group, ~ ggplot(data = .x, aes(x = trial_num, y = prop_looking, color = aoi, linetype = language)) + 
+  geom_smooth(se = FALSE) +
+  facet_grid( ~ trial_type) +
   ggtitle(age_group) +
   theme(plot.title = element_text(hjust = 0.5)) +
-  xlab("Time from start of anticipation period (ms)")  +
+  xlab("Trial Number")  +
   ylab("Proportion looking")))
   
 time_series_antic$plot[[1]]
@@ -290,6 +290,83 @@ time_series_antic$plot[[2]]
 
 
 ```
+
+
+
+
+```{r models, echo = FALSE}
+
+
+
+model_data <- data_time_series_antic %>%
+  mutate(language_c = ifelse(language == "Monolinguals", -.5, .5)) %>% # sum-code and centre predictors 
+  mutate(language_c = as.numeric(scale(language_c, center = TRUE, scale = FALSE))) %>% #  sum-code and centre predictors 
+  mutate(trial_type_c = ifelse(trial_type == "pre-switch", -.5, .5)) %>%
+  mutate(trial_type_c = as.numeric(scale(trial_type_c, center = TRUE, scale = FALSE))) %>%
+  mutate(time_scaled = Time / 100) #rescale time to help with large eigenvalue thing as done here: https://bit.ly/2O3tQne 
+
+
+###----------------------------------------------------------------------PRE-SWITCH 7-------------------------------------------------------------  
+  
+model_pre_7_data <- model_data %>%
+  filter(trial_type == "pre-switch") %>%
+  filter(age_group == "7 months")
+
+
+model_pre_7 <- glmer(Prop ~ language * time_scaled + (1 | recording_name), data = model_pre_7_data, family = "binomial")
+
+summary(model_pre_7)
+
+plot(model_pre_7) # question: is this problematic?
+
+
+###----------------------------------------------------------------------POST-SWITCH 7-------------------------------------------------------------  
+
+model_post_7_data <- model_data %>%
+  filter(trial_type == "post-switch") %>%
+  filter(age_group == "7 months")
+
+model_post_7 <- glmer(Prop ~ language * time_scaled + (1 | recording_name), data = model_post_7_data, family = "binomial")
+
+summary(model_post_7)
+
+plot(model_post_7)
+
+model_post_7_data$prediction <- predict(model_post_7, model_post_7_data)
+
+# in logit space...
+ggplot(model_post_7_data, aes(x=time_scaled, y=prediction, color=language)) +
+                            stat_summary(fun.y='mean', geom='line')
+
+
+###----------------------------------------------------------------------PRE-SWITCH 20-------------------------------------------------------------  
+  
+model_pre_20_data <- model_data %>%
+  filter(trial_type == "pre-switch") %>%
+  filter(age_group == "20 months")
+
+
+model_pre_20 <- glmer(Prop ~ language * time_scaled + (1 | recording_name), data = model_pre_20_data, family = "binomial")
+
+summary(model_pre_20)
+
+plot(model_pre_20) # question: is this problematic?
+
+
+###----------------------------------------------------------------------POST-SWITCH 20-------------------------------------------------------------  
+
+model_post_20_data <- model_data %>%
+  filter(trial_type == "post-switch") %>%
+  filter(age_group == "20 months")
+
+model_post_20 <- glmer(Prop ~ language * time_scaled + (1 | recording_name), data = model_post_20_data, family = "binomial")
+
+summary(model_post_20)
+
+plot(model_post_20)
+
+```
+
 
 
 
