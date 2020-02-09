@@ -4,6 +4,7 @@ author: "Hilary Killam"
 date: "January 27, 2020"
 output: html_document
 ---
+##Setup
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE)
@@ -35,10 +36,11 @@ MIN_NUMBER_TRIALS <- 5
 
 ```
 
+##Load Data
 
 ```{r load_data, include = FALSE}
 
-###----------------------------------------------------------------------LOAD DATA----------------------------------------------------------------------------
+###-----------------------------------------------------------LOAD DATA--------------------------------------------------------
 
 load(here("data", "tobii_full_export.Rda")) #full export data is saved as RDA file since the csv is too large for GitHub
 
@@ -50,9 +52,11 @@ colnames(ms_list) <- to_snake_case(colnames(ms_list)) #make everything snake cas
 
 ```
 
+##Clean Data
+
 ```{r clean_data, include = FALSE}
 
-###----------------------------------------------------------------------PREP MSL DATA------------------------------------------------------------------------
+###--------------------------------------------------------PREP MSL DATA------------------------------------------------------
 
 ms_list <- ms_list %>%  
   mutate(age_group = fct_rev(as.factor(age_group))) %>%
@@ -66,10 +70,15 @@ ms_list <- ms_list %>%
   mutate(vocab_group = ifelse(median_by_group > total_vocab_prod,
                               "Low", 
                               "High")) %>%
-  mutate(vocab_group = as.factor(vocab_group)) 
+  mutate(vocab_group = factor(vocab_group, levels = c("Low", "High"))) %>%
+  ungroup()
 
 
-###----------------------------------------------------------------------PREP TOBII DATA-------------------------------------------------------------- 
+###-----------------------------------------------------------------PREP TOBII DATA----------------------------------------------
+
+  ###-------------------------------------------------------------------set factor levels:
+trial_name_levels <- c("pre-switch_1", "pre-switch_2", "pre-switch_3", "pre-switch_4", "pre-switch_5", "pre-switch_6", "pre-switch_7", "pre-switch_8", "pre-switch_9", "post-switch_1", "post-switch_2", "post-switch_3", "post-switch_4", "post-switch_5", "post-switch_6", "post-switch_7", "post-switch_8", "post-switch_9")
+
 
 data_tobii_cleaned <- tobii_full_export %>%
    #head(n = 2500) %>% # uncomment this line to test code changes on a subset of the full dataset since running the whole thing takes awhile
@@ -79,9 +88,9 @@ data_tobii_cleaned <- tobii_full_export %>%
   rename(gaze_point_X = `GazePointX (ADCSpx)`, gaze_point_y = `GazePointY (ADCSpx)`, timestamp = `RecordingTimestamp`, order = StudioTestName) %>% #fix names (newname = oldname)
   mutate(MediaName = gsub(".wmv", "", MediaName)) %>% # drops the .wmv part.
   mutate(trial_num = parse_number(MediaName)) %>% #get trial number
-  mutate(trial_type = as.factor(case_when(str_detect(MediaName, "Training") ~ "pre-switch", #get trial type
-                                 str_detect(MediaName, "Test") ~ "post-switch"))) %>% #get trial type
-  mutate(trial_name = as.factor(str_c(trial_type, trial_num, sep = "_"))) %>% #combine trial number and trial type into a trial name (for example, "post-switch_3"")
+  mutate(trial_type = factor(case_when(str_detect(MediaName, "Training") ~ "pre-switch", #get trial type
+                                 str_detect(MediaName, "Test") ~ "post-switch"), levels = c("pre-switch", "post-switch"))) %>% #get trial type
+  mutate(trial_name = factor(str_c(trial_type, trial_num, sep = "_"), levels = trial_name_levels)) %>% #combine trial number and trial type into a trial name (for example, "post-switch_3"")
   mutate(trial_unique = as.factor(str_c(RecordingName, trial_name, sep = "_"))) %>% #get a trial identifier that is unique to each participant, trial number, and trial type
   filter(RecordingName != "test") %>% #gets rid of a "test" recording that somehow got exported
   mutate(MediaName = as.factor(MediaName)) %>%
@@ -146,19 +155,20 @@ data_tobii_cleaned <- tobii_full_export %>%
 #save(data_tobii_cleaned, file = here("data", "data_tobii_cleaned.Rda"))
 
 ```
+##Merge Data
 
 ```{r merge_Data, include = FALSE}
 
-###----------------------------------------------------------------------CREATE MERGED FULL DATA---------------------------------------------------------  
+###----------------------------------------------------------------------CREATE MERGED FULL DATA----------------------------------
 
 data_merged <- inner_join(data_tobii_cleaned, ms_list, by = "recording_name") %>%
   mutate(recording_name = as.factor(recording_name))
 
 
-###----------------------------------------------------------------------GET ANTICIPATION PERIOD KEEPERS-------------------------------------------------
+###--------------------------------------------------------------------GET ANTICIPATION PERIOD KEEPERS---------------------------
 
 data_anticipation <- data_merged %>%
-  filter(trial_from_zero >= 2150 & trial_from_zero <= 3150) %>% #filter to just the aniticpatory period, which is 150 ms after the offset of the 1000 ms cue, and lasts for 1000 ms
+  filter(trial_from_zero >= 2150 & trial_from_zero <= 3150) %>% #filter to just the aniticpatory period, which is 150 ms after the offset of the 2000 ms cue, and lasts for 1000 ms
   group_by(trial_unique) %>%
   mutate(prop_fixations = mean(look_any)) %>%
   filter(prop_fixations >= MIN_LOOK_PROPORTION) %>% #removes trials where the child did not fixate on anything for at least 50% of the anticipation period
@@ -182,12 +192,14 @@ data_full_trials <- data_merged %>%
                               "Low", 
                               "High")) %>%
   ungroup() %>%
-  mutate(vocab_group = as.factor(vocab_group))# this is the full time series data, but only for infants that made it through to the final anticipation-period sample. Will be used for ploting time series data of whole trial
+  mutate(vocab_group = factor(vocab_group, levels = c("Low", "High")))# this is the full time series data, but only for infants that made it through to the final anticipation-period sample. Will be used for ploting time series data of whole trial
+
 ```
 
+##Descriptives
 
 ```{r descriptives, echo = FALSE}
-###----------------------------------------------------------------------FINAL SAMPLE COUNTS PER GROUP---------------------------------------------------------  
+###----------------------------------------------------------FINAL SAMPLE COUNTS PER GROUP--------------------------------------
 
 data_full_trials %>%
   group_by(language, age_group) %>%
@@ -201,18 +213,31 @@ data_full_trials %>%
 ## WHEN BASED OFF MSL PRE-MERGE, ML MEDIAN WAS 66 AND BL MEDIAN WAS 78.5. AFTER MERGE, ML MEDIAN IS 74 (72??) AND BL MEDIAN IS 79 (ML HAVE HIGHER MEAN THOUGH)
 final_sample_ids %>%
   inner_join(ms_list, by = "recording_name") %>%
-  #filter(age_group == "20 months") %>%
   group_by(language, age_group) %>%
   summarize(vocab_median = median(total_vocab_prod, na.rm = TRUE),
             vocab_mean = mean(total_vocab_prod, na.rm = TRUE),
             avg_age_days = mean(total_age_days_excel, na.rm = TRUE),
             prop_female = mean(gender == 1, na.rm = TRUE))
 
+
+###----------------------------------------------------------FINAL SAMPLE COUNTS PER VOCAB GROUP------------------------------
+
+data_full_trials %>%
+  filter(age_group == "20 months") %>%
+  group_by(language, vocab_group) %>%
+  summarize(count = length(unique(recording_name)),
+            vocab_median = median(total_vocab_prod, na.rm = TRUE), 
+            vocab_mean = mean(total_vocab_prod, na.rm = TRUE),
+            avg_age_days = mean(total_age_days_excel, na.rm = TRUE),
+            prop_female = mean(gender == 1, na.rm = TRUE))
+
 ```
 
-```{r eyetrackingR_plots, echo = FALSE}
+##EyetrackingR Data
 
-###----------------------------------------------------------------------CREATE EYETRACKINGR DATA FOR FULL TRIAL PLOTS------------------------------------------
+```{r eyetrackingR_data, echo = FALSE}
+
+###--------------------------------------------------CREATE EYETRACKINGR DATA FOR FULL TRIAL PLOTS--------------------------------
 
 data_eyetracking_full_trials <- make_eyetrackingr_data(data_full_trials, 
                                 participant_column = "recording_name",
@@ -222,31 +247,32 @@ data_eyetracking_full_trials <- make_eyetrackingr_data(data_full_trials,
                                 aoi_columns = c('target', 'circle', 'distractor'), # this will calculate prop looking in relation to all AOIs, not just target vs distractor. When I remove circle from here, the plot gets very wonky (I guess because of dividing by 0 in some cases?)
                                 treat_non_aoi_looks_as_missing = TRUE)
 
-full_trial <- subset_by_window(data_eyetracking_full_trials,
+full_trial_window <- subset_by_window(data_eyetracking_full_trials,
                                      window_start_time = 0,
                                      window_end_time = 5000, rezero = TRUE, remove = TRUE)
 
-data_time_series_full <- make_time_sequence_data(data_eyetracking_full_trials,
-                                         time_bin_size = 100,
+data_time_series_full <- make_time_sequence_data(full_trial_window,
+                                         time_bin_size = 150,
                                          predictor_columns = c("language", "age_group", "total_vocab_prod", "vocab_group", "trial_type", "trial_num"),
-                                         aois = c("target", "distractor"))
+                                         aois = c("circle", "target", "distractor"))
 
-###----------------------------------------------------------------------CREATE EYETRACKINGR DATA FOR ANTICIPATION PERIOD PLOTS--------------------------------
+###---------------------------------------------------CREATE EYETRACKINGR DATA FOR ANTICIPATION PERIOD PLOTS--------------------
 
-data_eyetracking_antic <- subset_by_window(data_eyetracking_full_trials,
+data_eyetracking_antic_window <- subset_by_window(data_eyetracking_full_trials,
                                      window_start_time = 2150,
                                      window_end_time = 3150, rezero = TRUE, remove = TRUE)
 
-trackloss <- trackloss_analysis(data = data_eyetracking_antic)
+trackloss <- trackloss_analysis(data = data_eyetracking_antic_window)
 
-data_eyetracking_clean <- clean_by_trackloss(data = data_eyetracking_antic, trial_prop_thresh = .5) #this eliminates all data from trials with 50% or more trackloss (different from above, where we elimintated babies who did not have at least 50% of looking in at least 5/9 trials in both conditions)
+data_eyetracking_clean <- clean_by_trackloss(data = data_eyetracking_antic_window, trial_prop_thresh = .5) #this eliminates all data from trials with 50% or more trackloss (we merged the baby IDs back with the full data, so makes sense we will re-exclude some trials here)
 
 data_time_series_antic <- make_time_sequence_data(data_eyetracking_clean,
-                                         time_bin_size = 100,
+                                         time_bin_size = 150,
                                          predictor_columns = c("language", "age_group", "total_vocab_prod", "vocab_group", "trial_type", "trial_num"),
-                                         aois = c("target", "distractor"))
+                                         aois = c("circle", "target", "distractor"))
 
 ```
+##Time Series Plots
 
 ``` {r time_series_plots, echo = FALSE}
 
@@ -263,22 +289,24 @@ data_time_series_antic <- make_time_sequence_data(data_eyetracking_clean,
 # 
 # plot20_full_trial
 
-###----------------------------------------------------------------------PLOT FULL TRIALS-------------------------------------------------------------  
+###----------------------------------------------------------------------PLOT FULL TRIALS-----------------------------------------
+line_colors <- c("#D7D7D7", "#FF3366", "#04BDD8")
 
 time_series_full_trial <- data_time_series_full %>%
   pivot_wider(names_from = AOI, values_from = Prop) %>%
-  mutate(trial_type = fct_rev(trial_type)) %>%
   group_by(trial_type, language, age_group, Time, trial_num) %>%
   summarise(target = mean(target, na.rm=TRUE), 
-            distractor = mean(distractor, na.rm=TRUE))  %>%
-  pivot_longer(cols = c(target, distractor), names_to = "aoi", values_to = "prop_looking") %>%
-  mutate(aoi = factor(aoi, levels = c("target", "distractor")))  %>%
+            distractor = mean(distractor, na.rm=TRUE),
+            circle = mean(circle, na.rm = TRUE))  %>%
+  pivot_longer(cols = c(circle, target, distractor), names_to = "aoi", values_to = "prop_looking") %>%
+  mutate(aoi = factor(aoi, levels = c("circle", "target", "distractor")))  %>%
   mutate(trial_labels = paste0("Trial ", trial_num)) %>%
   group_by(age_group) %>%
   nest() %>%
   #create nested data for easily plotting more than one of the same plot by a group
   mutate(plot = map2(data, age_group, ~ ggplot(data = .x, aes(x = Time, y = prop_looking, color = aoi, linetype = language)) + 
   geom_line() +
+  scale_color_manual(values = line_colors) +
   facet_grid(trial_labels ~ trial_type) +
   annotate("rect", xmin = 2150, xmax = 3150, ymin = -Inf, ymax = Inf, fill = "red", alpha = 0.07) +
   annotate("text", x = 2650, y = 0.9, label = "Anticipation \n Period", size = 2.5, color = "#927774") +
@@ -287,29 +315,31 @@ time_series_full_trial <- data_time_series_full %>%
   xlab("Time from trial start (ms)")  +
   ylab("Proportion looking")))
   
-(time_series_full_trial$plot[[1]] / time_series_full_trial$plot[[2]])
+plot_full_trial_7 <- time_series_full_trial$plot[[1]] 
+plot_full_trial_20 <- time_series_full_trial$plot[[2]]
 
-# ggsave("full_trials_7_200.png", path = here("figures"), plot = time_series_summary$plot[[1]], device = "png", width = 15, height = 10, units = "in",
+# ggsave("plot_full_trial_7.png", path = here("figures"), plot = time_series_full_trial$plot[[1]], device = "png", width = 15, height = 10, units = "in",
 #   dpi = 300)
-# 
-# ggsave("full_trials_20_200.png", path = here("figures"), plot = time_series_summary$plot[[2]], device = "png", width = 15, height = 10, units = "in",
+ 
+# ggsave("plot_full_trial_20.png", path = here("figures"), plot = time_series_full_trial$plot[[2]], device = "png", width = 15, height = 10, units = "in",
 #   dpi = 300)
 
 
-###----------------------------------------------------------------------PLOT ANTICIPATION PERIOD-------------------------------------------------------------  
+###-------------------------------------------------------PLOT ANTICIPATION PERIOD------------------------------------------
+
+## This plot loses some specificity to the time binning, compare to next section's plots which aren't based on time binned data. Should probably go with those other ones? 
 
 time_series_antic <- data_time_series_antic %>%
   pivot_wider(names_from = AOI, values_from = Prop) %>%
-  mutate(trial_type = fct_rev(trial_type)) %>%
   group_by(trial_type, language, age_group, trial_num) %>%
   summarise(target = mean(target, na.rm=TRUE),
-            distractor = mean(distractor, na.rm=TRUE))  %>%
+            distractor = mean(distractor, na.rm=TRUE)) %>%
   pivot_longer(cols = c(target, distractor), names_to = "aoi", values_to = "prop_looking") %>%
-  mutate(aoi = factor(aoi, levels = c("target", "distractor")))  %>%
+  mutate(aoi = factor(aoi, levels = c("target", "distractor"))) %>%
   mutate(trial_labels = paste0("Trial ", trial_num)) %>%
   group_by(age_group) %>%
   nest() %>%
-  mutate(plot_all = map2(data, age_group, ~ ggplot(data = .x, aes(x = (trial_num), y = prop_looking, color = aoi, linetype = language)) + 
+  mutate(plot_all = map2(data, age_group, ~ ggplot(data = .x, aes(x = trial_num, y = prop_looking, color = aoi, linetype = language)) + 
   geom_smooth(se = FALSE) +
   facet_grid( ~ trial_type) +
   ggtitle(age_group) +
@@ -318,18 +348,18 @@ time_series_antic <- data_time_series_antic %>%
   xlab("Trial Number")  +
   ylab("Proportion looking")))
   
-(time_series_antic$plot_all[[1]] / time_series_antic$plot_all[[2]])
+plot_anticipation_7 <- time_series_antic$plot_all[[1]]
+plot_anticipation_20 <- time_series_antic$plot_all[[2]]
 
 #ggsave("antic_7_plot.png", plot = antic_7_plot, width = 15, height = 7, path = here("figures"))
 #ggsave("antic_20_plot.png", plot = antic_20_plot, width = 15, height = 7, path = here("figures"))
 
 
-###----------------------------------------------------------------------PLOT ANTICIPATION PERIOD BY VOCAB GROUP------------------------------------------------  
+###----------------------------------------------PLOT ANTICIPATION PERIOD BY VOCAB GROUP--------------------------------
 
 time_series_vocab <- data_time_series_antic %>%
   filter(age_group == "20 months") %>%
   pivot_wider(names_from = AOI, values_from = Prop) %>%
-  mutate(trial_type = fct_rev(trial_type)) %>%
   group_by(trial_type, language, vocab_group, trial_num) %>%
   summarise(target = mean(target, na.rm=TRUE),
             distractor = mean(distractor, na.rm=TRUE))  %>%
@@ -345,44 +375,56 @@ time_series_vocab <- data_time_series_antic %>%
   xlab("Trial Number") +
   ylab("Proportion looking")
 
+plot_full_trial_7
+plot_full_trial_20
+plot_anticipation_7
+plot_anticipation_20
 time_series_vocab
 
 ```
-
+##Model Data/Alternate Plots
 
 ```{r eyetrackingR_models, echo = FALSE}
 
 
-###----------------------------------------------------------------------CREATE EYETRACKINGR DATA FOR MODELS--------------------------------------
+###----------------------------------------------------CREATE EYETRACKINGR DATA FOR MODELS--------------------------------------
 
 
 ##---------------------------------------------This gives us one data point per participant per trial - collapsing whole anticipation period
 data_for_models <- data_eyetracking_clean %>%
   make_time_window_data(aois = "target",
-                        predictor_columns = c("age_group", "language", "total_vocab_prod", "vocab_group", "trial_type", "trial_num"))
+                        predictor_columns = c("age_group", "language", "total_vocab_prod", "vocab_group", "trial_type", "trial_num")) %>%
+  mutate(looking_ms = Prop * (SamplesTotal * (1000/60))) #adds number of milliseconds spent looking at target for the trial
   
 ##---------------------------------------------Plot vocab differences
   
 vocab_plot <- data_for_models %>%
   filter(age_group == "20 months") %>%
-  ggplot(aes(x = trial_num, y = Prop, color = AOI, linetype = vocab_group)) + 
-  geom_smooth(se = FALSE) +
-  facet_grid(language ~ fct_rev(trial_type)) +
+  ggplot(aes(x = trial_num, y = Prop)) + 
+  geom_smooth(aes(color = vocab_group), se = FALSE) +
+  geom_point(position = "jitter", alpha = 0.2, aes(color = vocab_group)) +
+  facet_grid(language ~ (trial_type)) +
   ggtitle("20 month-olds, Prop Looking by Vocab Group (H/L) & Language") +
   theme(plot.title = element_text(hjust = 0.5)) +
   scale_x_continuous(breaks = c(1,2,3,4,5,6,7,8,9)) +  
+  geom_rect(data = data_for_models[1,], aes(fill = language),xmin = -Inf,xmax = Inf,
+            ymin = -Inf,ymax = Inf,alpha = 0.05) +
+  geom_rect(data = data_for_models[9,], aes(fill = language),xmin = -Inf,xmax = Inf,
+            ymin = -Inf,ymax = Inf,alpha = 0.05) +
+  geom_rect(data = data_for_models[15,], aes(fill = language),xmin = -Inf,xmax = Inf,
+            ymin = -Inf,ymax = Inf,alpha = 0.05) +
+  geom_rect(data = data_for_models[23,], aes(fill = language),xmin = -Inf,xmax = Inf,
+            ymin = -Inf,ymax = Inf,alpha = 0.05) +
   xlab("Trial Number")  +
   ylab("Proportion looking")
 
-(vocab_plot | time_series_vocab) # pretty close to each other 
 
 check <- data_for_models %>%
-  mutate(age_group = fct_rev(age_group)) %>%
-  mutate(trial_type = fct_rev(trial_type)) %>%
   group_by(age_group) %>%
   nest() %>%
-  mutate(plot_check = map2(data, age_group, ~ ggplot(data = .x, aes(x = trial_num, y = Prop, color = AOI, linetype = language)) + 
-  geom_smooth(se = FALSE) +
+  mutate(plot_check = map2(data, age_group, ~ ggplot(data = .x, aes(x = trial_num, y = Prop)) + 
+  geom_smooth(aes(color = language), se = FALSE) +
+  geom_point(position = "jitter", alpha = 0.2, aes(color = language)) +
   facet_grid( ~ (trial_type)) +
   ggtitle(age_group) +
   theme(plot.title = element_text(hjust = 0.5)) +
@@ -390,55 +432,161 @@ check <- data_for_models %>%
   xlab("Trial Number")  +
   ylab("Proportion looking")))
   
-(check$plot_check[[2]] / check$plot_check[[1]] | time_series_antic$plot_all[[1]] / time_series_antic$plot_all[[2]]) ## why are these slightly different?
+#(check$plot_check[[2]] / check$plot_check[[1]] | time_series_antic$plot_all[[1]] / time_series_antic$plot_all[[2]]) ## why are these slightly different? It's because of the time binning, I believe.
 
-  
-## homeless code - need to put somewhere after anticipation period = filtered out to get milliseconds looking to target/distractor  
-  
-  # mutate(target_ms = target * (1000/60)) %>% #converts looks to milliseconds based on sampling rate of eyetracker
-  # mutate(distractor_ms = distractor * (1000/60)) %>%  
-  # mutate(circle_ms = circle * (1000/60)) %>%
-  # group_by(trial_unique) %>%
-  # mutate(target_ms_per_trial = sum(target_ms)) %>%
-  # mutate(distractor_ms_per_trial = sum(distractor_ms)) %>%
-  # mutate(circle_ms_per_trial = sum(circle_ms)) %>%
-  # ungroup()
+vocab_plot
+(check$plot_check[[2]]/check$plot_check[[1]])
 
+#ggsave("with_circle_20.png", plot = check$plot_check[[1]], width = 15, height = 7, path = here("figures"))
 
 ```
+##Models
 
-For models, we want one data point per baby per trial to use
+For models, we want one data point per baby per trial to use (use made_time_window_data function)
 
-each row from raw data is 1/60th of a second (60 Hz), approx.
+each row from raw data is 1/60th of a second (60 Hz), approx. (added this to data but not sure what to do with it)
 
-Play around and plot vocab score as well - get rid of distractor, and have mono-high, mono-low (median split for visualization) * check that medians are similar amongst groups
+Play around and plot vocab score as well - get rid of distractor, and have mono-high, mono-low (median split for visualization) * check that medians are similar amongst groups (made these plots, can't run model on continuous vocab score without rescaling)
 
 ```{r models, echo = FALSE}
 
+###------------------------------------------------MODELS BY AGE, LANG, TRIAL TYPE---------------------------------------------  
 
-model_data_3 <- make_time_window_data(data_eyetracking_clean,
-                                      aois = "target",
-                                      predictor_columns = c("trial_num", "language", "age_group", "total_vocab_prod", "trial_type")) 
+models_by_language_trial_type <- data_for_models %>%
+  group_by(age_group, trial_type) %>%
+  nest() %>%
+  mutate(model1 = map(data, ~ glmer(cbind(SamplesInAOI, SamplesTotal - SamplesInAOI) ~ language * trial_num + (1 | recording_name), data = ., family = "binomial", control = glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000))))) %>%
+  mutate(model1_summary = map(model1, summary))
 
-model_pre_7_data_3 <- model_data_3 %>%
+model1_7_pre <- models_by_language_trial_type$model1[[3]]
+summary(model1_7_pre)
+model1_7_post <- models_by_language_trial_type$model1[[4]]
+summary(model1_7_post)
+model1_20_pre <- models_by_language_trial_type$model1[[1]]
+summary(model1_20_pre)
+model1_20_post <- models_by_language_trial_type$model1[[2]]
+summary(model1_20_post)
+
+models_by_language <- data_for_models %>% # trying with trial_type added as a random slope but fit is singular
+  group_by(age_group) %>%
+  nest() %>%
+  mutate(model = map(data, ~ glmer(cbind(SamplesInAOI, SamplesTotal - SamplesInAOI) ~ language * trial_num + (trial_type | recording_name) + (language | trial_type), data = ., family = "binomial", control = glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000))))) %>%
+  mutate(model_summary = map(model, summary))
+model2_7_pre <- models_by_language$model_summary[[2]]
+
+## Same model as above but using Elog and lmer (shouldn't really use Prop for this data)
+
+models_by_language_trial_type <- models_by_language_trial_type %>%
+  mutate(model2 = map(data, ~ lmer(Elog ~ language * trial_num + (1 | recording_name), data = ., weights = Weights, control = lmerControl(optimizer="bobyqa")))) %>%
+  mutate(model2_summary = map(model2, summary))
+
+model2_7_pre <- models_by_language_trial_type$model2[[3]]
+summary(model2_7_pre)
+model2_7_post <- models_by_language_trial_type$model2[[4]]
+summary(model2_7_post)
+model2_20_pre <- models_by_language_trial_type$model2[[1]]
+summary(model2_20_pre)
+model2_20_post <- models_by_language_trial_type$model2[[2]]
+summary(model2_20_post)
+
+###-------------------------------------------------MODELS BY AGE, LANG-------------------------------------------------------  
+##this one makes no sense... obviously something is wrong. Can't add random slope per lang group by trial_type, though, b/c singular fit. Guess we'll have to keep models for pre and post switch separate??
+
+models_by_language <- data_for_models %>%
+  group_by(age_group) %>%
+  nest() %>%
+  mutate(model1 = map(data, ~ glmer(Prop ~ language * trial_num * trial_type + (1 | recording_name), data = ., family = "binomial", weights = Weights, control = glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000))))) %>%
+  mutate(model1_summary = map(model1,  summary))
+
+model1_7 <- models_by_language$model1[[2]]
+summary(model1_7)
+model1_20 <- models_by_language$model1[[1]]
+summary(model1_20)
+
+
+###-----------------------------------------------MODELS BY LANG, TRIAL TYPE, VOCAB GROUP------------------------------------ 
+
+models_by_language_trial_type_vocab <- data_for_models %>%
+  filter(age_group == "20 months") %>%
+  group_by(trial_type) %>%
+  nest() %>%
+  mutate(model1 = map(data, ~ glmer(Prop ~ language * trial_num * vocab_group + (1 | recording_name), data = ., family = "binomial", weights = Weights, control = glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000))))) %>%
+  mutate(model1_summary = map(model1,  summary))
+
+models_by_language_trial_type_vocab$model1_summary
+
+```
+
+##Growth Curve Analysis
+
+```{r growth_curve, echo = FALSE}
+
+###--------------------------------------------------------------GROWTH CURVE ANALYSIS------------------------------------ 
+
+data_gc <- data_time_series_antic %>%
+  filter(AOI == "target")
+
+growth_curve1 <- data_gc %>%
+  group_by(age_group, trial_type) %>%
+  nest() %>%
+  mutate(gc1 = map(data, ~ lmer(Elog ~ (ot1 + ot2 + ot3) * language * trial_num + (1 | recording_name), data = ., weights = Weights, control = lmerControl(optimizer="bobyqa"), REML = FALSE)))
+
+gc1_7_pre <- growth_curve1$gc1[[3]]
+gc1_7_post <- growth_curve1$gc1[[4]]
+gc1_20_pre <- growth_curve1$gc1[[1]]
+gc1_20_post <- growth_curve1$gc1[[2]]
+
+summary(gc1_7_pre)
+summary(gc1_7_post)
+summary(gc1_20_pre)
+summary(gc1_20_post)
+
+data_for_gc_plot <- data_time_series_antic %>%
+  filter(age_group == "7 months") %>%
   filter(trial_type == "pre-switch") %>%
-  filter(age_group == "7 months") %>%
   filter(AOI == "target")
 
+##Plot below doesn't work because there are fewer fitted values than actual data points--why??
 
-model_pre_7_3 <- glmer(Prop ~ language * trial_num + (1 | recording_name), data = model_pre_7_data_3, family = "binomial") #failed to converge when random slope by time_scaled added
+ggplot(data_for_gc_plot, aes(x = trial_num, y = Elog, color = language)) +
+  stat_summary(fun.data = mean_se, geom = "pointrange") +
+  stat_summary(aes(y = fitted(gc1_7_pre)), fun.y = mean, geom = "line")
 
-summary(model_pre_7_3)
 
-model_post_7_data_3 <- model_data_3 %>%
-  filter(trial_type == "post-switch") %>%
+length(fitted(gc1_7_pre))
+length(data_for_gc_plot)
+
+data_time_series_antic %>%
   filter(age_group == "7 months") %>%
-  filter(AOI == "target")
+  filter(trial_type == "pre-switch") %>%
+  filter(AOI == "target") %>%
+  View()
+
+```
+
+##Messy homeless code
+
+```{r old_messy_code, include = FALSE}
 
 
-model_post_7_3 <- glmer(Prop ~ language * trial_num + (1 | recording_name), data = model_post_7_data_3, family = "binomial") #failed to converge when random slope by time_scaled added
-
-summary(model_post_7_3)
+# model_pre_7_data <- data_for_models %>%
+#   filter(trial_type == "pre-switch") %>%
+#   filter(age_group == "7 months") %>%
+#   filter(AOI == "target")
+# 
+# model_pre_7_3 <- glmer(Prop ~ language * trial_num + (1 | recording_name), data = model_pre_7_data_3, family = "binomial") #failed to converge when random slope by time_scaled added
+# 
+# summary(model_pre_7_3)
+# 
+# model_post_7_data_3 <- model_data_3 %>%
+#   filter(trial_type == "post-switch") %>%
+#   filter(age_group == "7 months") %>%
+#   filter(AOI == "target")
+# 
+# 
+# model_post_7_3 <- glmer(Prop ~ language * trial_num + (1 | recording_name), data = model_post_7_data_3, family = "binomial") #failed to converge when random slope by time_scaled added
+# 
+# summary(model_post_7_3)
 
 model_data_3 %>% 
   group_by(trial_num, trial_type, language, age_group) %>%
@@ -539,6 +687,7 @@ summary(model_post_20)
 
 ```
 
+##Anovas
 
 ```{r anovas, echo = FALSE}
 
