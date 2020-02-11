@@ -64,14 +64,7 @@ ms_list <- ms_list %>%
   mutate(total_vocab_prod = as.numeric(total_vocab_prod)) %>%
   mutate(total_concept_prod = as.numeric(total_concept_prod)) %>%
   mutate(recording_name = as_factor(recording_name)) %>%
-  mutate(gender = as.factor(gender)) %>%
-  group_by(language) %>%
-  mutate(median_by_group = median(total_vocab_prod,na.rm = T)) %>% ### this is calculating medians for all keepers, but not final sample we analyze due to inattentiveness / trackloss
-  mutate(vocab_group = ifelse(median_by_group > total_vocab_prod,
-                              "Low", 
-                              "High")) %>%
-  mutate(vocab_group = factor(vocab_group, levels = c("Low", "High"))) %>%
-  ungroup()
+  mutate(gender = as.factor(gender))
 
 
 ###-----------------------------------------------------------------PREP TOBII DATA----------------------------------------------
@@ -159,15 +152,10 @@ data_tobii_cleaned <- tobii_full_export %>%
 
 ```{r merge_Data, include = FALSE}
 
-###----------------------------------------------------------------------CREATE MERGED FULL DATA----------------------------------
-
-data_merged <- inner_join(data_tobii_cleaned, ms_list, by = "recording_name") %>%
-  mutate(recording_name = as.factor(recording_name))
-
 
 ###--------------------------------------------------------------------GET ANTICIPATION PERIOD KEEPERS---------------------------
 
-data_anticipation <- data_merged %>%
+data_anticipation <- data_tobii_cleaned %>%
   filter(trial_from_zero >= 2150 & trial_from_zero <= 3150) %>% #filter to just the aniticpatory period, which is 150 ms after the offset of the 2000 ms cue, and lasts for 1000 ms
   group_by(trial_unique) %>%
   mutate(prop_fixations = mean(look_any)) %>%
@@ -184,15 +172,22 @@ final_sample_ids <- data_anticipation %>% #used for creating data_full_trials ob
   select(recording_name) %>%
   unique()
 
-data_full_trials <- data_merged %>%
+final_sample_mslist <- ms_list %>%
   inner_join(final_sample_ids, by = "recording_name") %>%
-  group_by(language, age_group) %>%
-  mutate(median_by_group = median(total_vocab_prod, na.rm = TRUE)) %>%
-  mutate(vocab_group = ifelse(median_by_group > total_vocab_prod,
+  group_by(age_group) %>%
+  mutate(median_vocab = median(total_vocab_prod, na.rm = TRUE)) %>%
+  mutate(vocab_group = ifelse(median_vocab > total_vocab_prod,
                               "Low", 
                               "High")) %>%
   ungroup() %>%
   mutate(vocab_group = factor(vocab_group, levels = c("Low", "High")))# this is the full time series data, but only for infants that made it through to the final anticipation-period sample. Will be used for ploting time series data of whole trial
+  
+
+###----------------------------------------------------------------------CREATE MERGED FULL DATA----------------------------------
+
+data_full_trials <- inner_join(data_tobii_cleaned, final_sample_mslist, by = "recording_name") %>%
+  mutate(recording_name = as.factor(recording_name))
+
 
 ```
 
@@ -274,7 +269,7 @@ data_time_series_antic <- make_time_sequence_data(data_eyetracking_clean,
 ```
 ##Time Series Plots
 
-``` {r time_series_plots, echo = FALSE}
+```{r time_series_plots, echo = FALSE}
 
 #-----------------------------------------------------------EyetrackingR Plots - not as flexible as ggplot so will try below with ggplot
 # plot7_full_trial <- data_time_series %>%
@@ -419,10 +414,10 @@ vocab_plot <- data_for_models %>%
   ylab("Proportion looking")
 
 
-check <- data_for_models %>%
+anticipation_plots <- data_for_models %>%
   group_by(age_group) %>%
   nest() %>%
-  mutate(plot_check = map2(data, age_group, ~ ggplot(data = .x, aes(x = trial_num, y = Prop)) + 
+  mutate(plot = map2(data, age_group, ~ ggplot(data = .x, aes(x = trial_num, y = Prop)) + 
   geom_smooth(aes(color = language), se = FALSE) +
   geom_point(position = "jitter", alpha = 0.2, aes(color = language)) +
   facet_grid( ~ (trial_type)) +
@@ -430,12 +425,16 @@ check <- data_for_models %>%
   theme(plot.title = element_text(hjust = 0.5)) +
   scale_x_continuous(breaks = c(1,2,3,4,5,6,7,8,9)) +  
   xlab("Trial Number")  +
-  ylab("Proportion looking")))
+  ylab("Proportion looking"))) 
   
 #(check$plot_check[[2]] / check$plot_check[[1]] | time_series_antic$plot_all[[1]] / time_series_antic$plot_all[[2]]) ## why are these slightly different? It's because of the time binning, I believe.
 
 vocab_plot
-(check$plot_check[[2]]/check$plot_check[[1]])
+(anticipation_plots$plot[[2]]/anticipation_plots$plot[[1]])
+
+what <- ggplot(data_for_models, aes(x = trial_num, y = Prop, color = trial_type)) +
+  geom_smooth(se = FALSE) +
+  facet_wrap(age_group ~ recording_name)
 
 #ggsave("with_circle_20.png", plot = check$plot_check[[1]], width = 15, height = 7, path = here("figures"))
 
@@ -447,16 +446,22 @@ For models, we want one data point per baby per trial to use (use made_time_wind
 each row from raw data is 1/60th of a second (60 Hz), approx. (added this to data but not sure what to do with it)
 
 Play around and plot vocab score as well - get rid of distractor, and have mono-high, mono-low (median split for visualization) * check that medians are similar amongst groups (made these plots, can't run model on continuous vocab score without rescaling)
-
+ 
+???? should there be a random slope for each participant by trial number?
+ 
 ```{r models, echo = FALSE}
 
 ###------------------------------------------------MODELS BY AGE, LANG, TRIAL TYPE---------------------------------------------  
 
 models_by_language_trial_type <- data_for_models %>%
+  mutate(trial_num_start_0 = trial_num - 1) %>%
+  mutate(trial_num_5_centre = trial_num - 5) %>%
+  mutate(trial_num_factor = factor(trial_num)) %>%
+  mutate(trial_num_decimal_centre = scale(trial_num, center = TRUE, scale = FALSE)) %>%
   group_by(age_group, trial_type) %>%
   nest() %>%
-  mutate(model1 = map(data, ~ glmer(cbind(SamplesInAOI, SamplesTotal - SamplesInAOI) ~ language * trial_num + (1 | recording_name), data = ., family = "binomial", control = glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000))))) %>%
-  mutate(model1_summary = map(model1, summary))
+  mutate(model1 = map(data, ~ glmer(cbind(SamplesInAOI, SamplesTotal-SamplesInAOI) ~ language * trial_num_start_0 + (1 | recording_name), data = ., family = "binomial" , control = glmerControl(optimizer="bobyqa")))) 
+  
 
 model1_7_pre <- models_by_language_trial_type$model1[[3]]
 summary(model1_7_pre)
@@ -467,27 +472,59 @@ summary(model1_20_pre)
 model1_20_post <- models_by_language_trial_type$model1[[2]]
 summary(model1_20_post)
 
-models_by_language <- data_for_models %>% # trying with trial_type added as a random slope but fit is singular
-  group_by(age_group) %>%
-  nest() %>%
-  mutate(model = map(data, ~ glmer(cbind(SamplesInAOI, SamplesTotal - SamplesInAOI) ~ language * trial_num + (trial_type | recording_name) + (language | trial_type), data = ., family = "binomial", control = glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000))))) %>%
-  mutate(model_summary = map(model, summary))
-model2_7_pre <- models_by_language$model_summary[[2]]
+
+emmeans(model1_20_pre, ~ trial_num * language)
+
+library(sjPlot)
+library(jtools)
+library(effects)
+library(interactions)
+
+data_20_pre <- data_for_models %>%
+  filter(age_group == "20 months") %>%
+  filter(trial_type == "pre-switch")
+
+interactions::interact_plot(model1_7_pre, pred = trial_num, modx = language)
+interactions::interact_plot(model1_7_post, pred = trial_num, modx = language)
+interactions::interact_plot(model1_20_pre, pred = trial_num, modx = language)
+interactions::interact_plot(model1_20_post, pred = trial_num, modx = language)
+
+
+check_model1_7_pre <- data_for_models %>%
+  mutate(trial_num = trial_num - 1) %>%
+  filter(age_group == "7 months") %>%
+  filter(trial_type == "pre-switch") %>%
+  glmer(cbind(SamplesInAOI, SamplesTotal-SamplesInAOI) ~ language * trial_num + (1 | recording_name), data = ., family = "binomial", control = glmerControl(optimizer="bobyqa"))
+
+
+ggplot(data_for_models, aes(x=trial_num, y=Prop, color = language)) +
+  geom_point() +
+  geom_smooth(method = "glm", 
+    method.args = list(family = "binomial"), 
+    se = FALSE)
+
+
+# models_by_language <- data_for_models %>% # trying with trial_type added as a random slope but fit is singular
+#   group_by(age_group) %>%
+#   nest() %>%
+#   mutate(model = map(data, ~ glmer(cbind(SamplesInAOI, SamplesTotal - SamplesInAOI) ~ language * trial_num + (trial_type | recording_name) + (language | trial_type), data = ., family = "binomial", control = glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000))))) %>%
+#   mutate(model_summary = map(model, summary))
+# model2_7_pre <- models_by_language$model_summary[[2]]
 
 ## Same model as above but using Elog and lmer (shouldn't really use Prop for this data)
 
-models_by_language_trial_type <- models_by_language_trial_type %>%
-  mutate(model2 = map(data, ~ lmer(Elog ~ language * trial_num + (1 | recording_name), data = ., weights = Weights, control = lmerControl(optimizer="bobyqa")))) %>%
-  mutate(model2_summary = map(model2, summary))
-
-model2_7_pre <- models_by_language_trial_type$model2[[3]]
-summary(model2_7_pre)
-model2_7_post <- models_by_language_trial_type$model2[[4]]
-summary(model2_7_post)
-model2_20_pre <- models_by_language_trial_type$model2[[1]]
-summary(model2_20_pre)
-model2_20_post <- models_by_language_trial_type$model2[[2]]
-summary(model2_20_post)
+# models_by_language_trial_type <- models_by_language_trial_type %>%
+#   mutate(model2 = map(data, ~ lmer(Elog ~ language * trial_num + (1 | recording_name), data = ., weights = Weights, control = lmerControl(optimizer="bobyqa")))) %>%
+#   mutate(model2_summary = map(model2, summary))
+# 
+# model2_7_pre <- models_by_language_trial_type$model2[[3]]
+# summary(model2_7_pre)
+# model2_7_post <- models_by_language_trial_type$model2[[4]]
+# summary(model2_7_post)
+# model2_20_pre <- models_by_language_trial_type$model2[[1]]
+# summary(model2_20_pre)
+# model2_20_post <- models_by_language_trial_type$model2[[2]]
+# summary(model2_20_post)
 
 ###-------------------------------------------------MODELS BY AGE, LANG-------------------------------------------------------  
 ##this one makes no sense... obviously something is wrong. Can't add random slope per lang group by trial_type, though, b/c singular fit. Guess we'll have to keep models for pre and post switch separate??
