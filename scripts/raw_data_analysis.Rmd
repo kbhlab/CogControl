@@ -247,7 +247,7 @@ full_trial_window <- subset_by_window(data_eyetracking_full_trials,
                                      window_end_time = 5000, rezero = TRUE, remove = TRUE)
 
 data_time_series_full <- make_time_sequence_data(full_trial_window,
-                                         time_bin_size = 150,
+                                         time_bin_size = 200,
                                          predictor_columns = c("language", "age_group", "total_vocab_prod", "vocab_group", "trial_type", "trial_num"),
                                          aois = c("circle", "target", "distractor"))
 
@@ -262,7 +262,7 @@ trackloss <- trackloss_analysis(data = data_eyetracking_antic_window)
 data_eyetracking_clean <- clean_by_trackloss(data = data_eyetracking_antic_window, trial_prop_thresh = .5) #this eliminates all data from trials with 50% or more trackloss (we merged the baby IDs back with the full data, so makes sense we will re-exclude some trials here)
 
 data_time_series_antic <- make_time_sequence_data(data_eyetracking_clean,
-                                         time_bin_size = 150,
+                                         time_bin_size = 200,
                                          predictor_columns = c("language", "age_group", "total_vocab_prod", "vocab_group", "trial_type", "trial_num"),
                                          aois = c("circle", "target", "distractor"))
 
@@ -379,6 +379,84 @@ time_series_vocab
 ```
 ##Model Data/Alternate Plots
 
+
+```{r model_with_time_bins, echo = FALSE}
+library(RColorBrewer)
+
+
+tnum_7 <- data_time_series_antic %>%
+  filter(age_group == "7 months",
+         AOI == "target") %>%
+  mutate(trial_num = factor(trial_num)) %>%
+  group_by(TimeBin, trial_num, language, trial_type) %>%
+  summarize(prop_looking = mean(Prop, na.rm = TRUE)) %>%
+  ggplot(aes(x = TimeBin, y = prop_looking, color = trial_num)) +
+  scale_color_brewer(palette = "Blues") +
+  theme_dark() +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE) +
+  coord_cartesian(ylim = c(0,1)) +
+  facet_grid(language ~ trial_type) +
+  ggtitle("7 months")
+
+tnum_20 <- data_time_series_antic %>%
+  filter(age_group == "20 months",
+         AOI == "target") %>%
+  mutate(trial_num = factor(trial_num)) %>%
+  group_by(TimeBin, trial_num, language, trial_type) %>%
+  summarize(prop_looking = mean(Prop, na.rm = TRUE)) %>%
+  ggplot(aes(x = TimeBin, y = prop_looking, color = trial_num)) +
+  scale_color_brewer(palette = "Blues") +
+  theme_dark() +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE) +
+  coord_cartesian(ylim = c(0,1)) +
+  facet_grid(language ~ trial_type) +
+  ggtitle("20 months")
+  
+ggsave("trial_models_20.png", plot = tnum_20)
+
+d_7_pre <- data_time_series_antic %>%
+  filter(age_group == "7 months") %>%
+  filter(trial_type == "pre-switch") %>%
+  filter(AOI == "target") 
+
+d_7_post <-  data_time_series_antic %>%
+  filter(age_group == "7 months",
+         trial_type == "post-switch",
+         AOI == "target") 
+
+d_20_pre <- data_time_series_antic %>%
+  filter(age_group == "20 months",
+         trial_type == "pre-switch",
+         AOI == "target") 
+
+d_20_post <- data_time_series_antic %>%
+  filter(age_group == "20 months",
+         trial_type == "post-switch",
+         AOI == "target")
+
+newmodel_7pre <- glmer(cbind(SamplesInAOI, SamplesTotal-SamplesInAOI) ~ language * TimeBin * trial_num + (1 | recording_name), data = d_7_pre, family = "binomial", control = glmerControl(optimizer="bobyqa"))
+
+newmodel_7post <- glmer(cbind(SamplesInAOI, SamplesTotal-SamplesInAOI) ~ language * TimeBin * trial_num + (1 | recording_name), data = d_7_post, family = "binomial", control = glmerControl(optimizer="bobyqa"))
+
+newmodel_20pre <- glmer(cbind(SamplesInAOI, SamplesTotal-SamplesInAOI) ~ language * TimeBin + (1 | recording_name), data = d_20_pre, family = "binomial", control = glmerControl(optimizer="bobyqa"))
+
+lmermodel_7pre <- lmer(Prop ~ language * TimeBin * trial_num + (1 | recording_name), data = d_7_pre)
+
+lmermodel_7post <- lmer(Prop ~ language * TimeBin * trial_num + (1 | recording_name), data = d_7_post)
+
+lmermodel_20pre <- lmer(Prop ~ language * TimeBin * trial_num + (1 | recording_name), data = d_20_pre)
+
+lmermodel_20post <- lmer(Prop ~ language * TimeBin * trial_num + (1 | recording_name), data = d_20_post)
+
+newmodel_20post <- glmer(cbind(SamplesInAOI, SamplesTotal-SamplesInAOI) ~ language * TimeBin * trial_num + (1 | recording_name), data = d_20_post, family = "binomial", control = glmerControl(optimizer="bobyqa"))
+
+
+
+```
+
+
 ```{r eyetrackingR_models, echo = FALSE}
 
 
@@ -425,7 +503,7 @@ anticipation_plots <- data_for_models %>%
   theme(plot.title = element_text(hjust = 0.5)) +
   scale_x_continuous(breaks = c(1,2,3,4,5,6,7,8,9)) +  
   xlab("Trial Number")  +
-  ylab("Proportion looking"))) 
+  ylab("Logit looking"))) 
   
 #(check$plot_check[[2]] / check$plot_check[[1]] | time_series_antic$plot_all[[1]] / time_series_antic$plot_all[[2]]) ## why are these slightly different? It's because of the time binning, I believe.
 
@@ -458,9 +536,10 @@ models_by_language_trial_type <- data_for_models %>%
   mutate(trial_num_5_centre = trial_num - 5) %>%
   mutate(trial_num_factor = factor(trial_num)) %>%
   mutate(trial_num_decimal_centre = scale(trial_num, center = TRUE, scale = FALSE)) %>%
+  filter(trial_num > 1) %>%
   group_by(age_group, trial_type) %>%
   nest() %>%
-  mutate(model1 = map(data, ~ glmer(cbind(SamplesInAOI, SamplesTotal-SamplesInAOI) ~ language * trial_num_start_0 + (1 | recording_name), data = ., family = "binomial" , control = glmerControl(optimizer="bobyqa")))) 
+  mutate(model1 = map(data, ~ glmer(cbind(SamplesInAOI, SamplesTotal-SamplesInAOI) ~ language * trial_num_start_0 + (1 | recording_name), data = ., family = "binomial", control = glmerControl(optimizer="bobyqa")))) 
   
 
 model1_7_pre <- models_by_language_trial_type$model1[[3]]
@@ -475,14 +554,15 @@ summary(model1_20_post)
 
 emmeans(model1_20_pre, ~ trial_num * language)
 
-library(sjPlot)
-library(jtools)
 library(effects)
+library(ggeffects)
 library(interactions)
 
-data_20_pre <- data_for_models %>%
-  filter(age_group == "20 months") %>%
-  filter(trial_type == "pre-switch")
+
+ggpredict(model1_7_pre, c("trial_num_start_0", "language")) %>% plot()
+ggpredict(model1_7_post, c("trial_num_start_0", "language")) %>% plot()
+ggpredict(model1_20_pre, c("trial_num_start_0", "language")) %>% plot()
+ggpredict(model1_20_post, c("trial_num_start_0", "language")) %>% plot()
 
 interactions::interact_plot(model1_7_pre, pred = trial_num, modx = language)
 interactions::interact_plot(model1_7_post, pred = trial_num, modx = language)
@@ -490,65 +570,83 @@ interactions::interact_plot(model1_20_pre, pred = trial_num, modx = language)
 interactions::interact_plot(model1_20_post, pred = trial_num, modx = language)
 
 
-check_model1_7_pre <- data_for_models %>%
-  mutate(trial_num = trial_num - 1) %>%
-  filter(age_group == "7 months") %>%
-  filter(trial_type == "pre-switch") %>%
-  glmer(cbind(SamplesInAOI, SamplesTotal-SamplesInAOI) ~ language * trial_num + (1 | recording_name), data = ., family = "binomial", control = glmerControl(optimizer="bobyqa"))
+##Quick GLM plots
 
-
-ggplot(data_for_models, aes(x=trial_num, y=Prop, color = language)) +
-  geom_point() +
+p7pr <- data_for_models %>%
+  filter(trial_type == "pre-switch",
+         age_group == "7 months") %>%
+ggplot(aes(x=trial_num, y=Prop, color = language)) +
+  geom_point(aes(alpha = 0.1)) +
   geom_smooth(method = "glm", 
     method.args = list(family = "binomial"), 
     se = FALSE)
 
+p7po <- data_for_models %>%
+  filter(trial_type == "post-switch",
+         age_group == "7 months") %>%
+ggplot(aes(x=trial_num, y=Prop, color = language)) +
+  geom_point(aes(alpha = 0.1)) +
+  geom_smooth(method = "glm", 
+    method.args = list(family = "binomial"), 
+    se = FALSE)
 
-# models_by_language <- data_for_models %>% # trying with trial_type added as a random slope but fit is singular
-#   group_by(age_group) %>%
-#   nest() %>%
-#   mutate(model = map(data, ~ glmer(cbind(SamplesInAOI, SamplesTotal - SamplesInAOI) ~ language * trial_num + (trial_type | recording_name) + (language | trial_type), data = ., family = "binomial", control = glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000))))) %>%
-#   mutate(model_summary = map(model, summary))
-# model2_7_pre <- models_by_language$model_summary[[2]]
+p20pr <- data_for_models %>%
+  filter(trial_type == "pre-switch",
+         age_group == "20 months") %>%
+ggplot(aes(x=trial_num, y=Prop, color = language)) +
+  geom_point(aes(alpha = 0.1)) +
+  geom_smooth(method = "glm", 
+    method.args = list(family = "binomial"), 
+    se = FALSE)
 
-## Same model as above but using Elog and lmer (shouldn't really use Prop for this data)
+p20po <- data_for_models %>%
+  filter(trial_type == "post-switch",
+         age_group == "20 months") %>%
+ggplot(aes(x=trial_num, y=Prop, color = language)) +
+  geom_point(aes(alpha = 0.1)) +
+  geom_smooth(method = "glm", 
+    method.args = list(family = "binomial"), 
+    se = FALSE)
+(p7pr + p7po)/(p20pr + p20po)
+```
 
-# models_by_language_trial_type <- models_by_language_trial_type %>%
-#   mutate(model2 = map(data, ~ lmer(Elog ~ language * trial_num + (1 | recording_name), data = ., weights = Weights, control = lmerControl(optimizer="bobyqa")))) %>%
-#   mutate(model2_summary = map(model2, summary))
-# 
-# model2_7_pre <- models_by_language_trial_type$model2[[3]]
-# summary(model2_7_pre)
-# model2_7_post <- models_by_language_trial_type$model2[[4]]
-# summary(model2_7_post)
-# model2_20_pre <- models_by_language_trial_type$model2[[1]]
-# summary(model2_20_pre)
-# model2_20_post <- models_by_language_trial_type$model2[[2]]
-# summary(model2_20_post)
 
-###-------------------------------------------------MODELS BY AGE, LANG-------------------------------------------------------  
-##this one makes no sense... obviously something is wrong. Can't add random slope per lang group by trial_type, though, b/c singular fit. Guess we'll have to keep models for pre and post switch separate??
+```{r models_vocab}
 
-models_by_language <- data_for_models %>%
-  group_by(age_group) %>%
-  nest() %>%
-  mutate(model1 = map(data, ~ glmer(Prop ~ language * trial_num * trial_type + (1 | recording_name), data = ., family = "binomial", weights = Weights, control = glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000))))) %>%
-  mutate(model1_summary = map(model1,  summary))
+data_20_pre <- data_for_models %>%
+  filter(age_group == "20 months") %>%
+  filter(trial_type == "pre-switch")
 
-model1_7 <- models_by_language$model1[[2]]
-summary(model1_7)
-model1_20 <- models_by_language$model1[[1]]
-summary(model1_20)
+data_20_post <- data_for_models %>%
+  filter(age_group == "20 months") %>%
+  filter(trial_type == "post-switch")
+
+data_for_models %>%
+  filter(age_group == "20 months") %>%
+  filter(trial_type == "pre-switch") %>%
+  group_by(language, trial_num) %>%
+  summarize(mean_prop = mean(Prop, na.rm = TRUE)) %>%
+  ggplot(aes(x = trial_num, y = mean_prop)) + 
+  geom_line(aes(color = language)) +
+  geom_point(alpha = 0.2, aes(color = language)) +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  scale_x_continuous(breaks = c(1,2,3,4,5,6,7,8,9)) +  
+  xlab("Trial Number")  +
+  ylab("Prop looking")
+
+
+
 
 
 ###-----------------------------------------------MODELS BY LANG, TRIAL TYPE, VOCAB GROUP------------------------------------ 
+############ fails to converge!!!
 
 models_by_language_trial_type_vocab <- data_for_models %>%
   filter(age_group == "20 months") %>%
   group_by(trial_type) %>%
   nest() %>%
-  mutate(model1 = map(data, ~ glmer(Prop ~ language * trial_num * vocab_group + (1 | recording_name), data = ., family = "binomial", weights = Weights, control = glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000))))) %>%
-  mutate(model1_summary = map(model1,  summary))
+  mutate(model1 = map(data, ~ glmer(cbind(SamplesInAOI, SamplesTotal-SamplesInAOI) ~ language * trial_num * vocab_group + (1 | recording_name), data = ., family = "binomial", control = glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000))))) %>%
+  mutate(model1_summary = map(model1, summary))
 
 models_by_language_trial_type_vocab$model1_summary
 
@@ -604,6 +702,52 @@ data_time_series_antic %>%
 ##Messy homeless code
 
 ```{r old_messy_code, include = FALSE}
+
+
+###-------------------------------------------------MODELS BY AGE, LANG-------------------------------------------------------  
+##this one makes no sense... obviously something is wrong. Can't add random slope per lang group by trial_type, though, b/c singular fit. Guess we'll have to keep models for pre and post switch separate??
+
+models_by_language <- data_for_models %>%
+  group_by(age_group) %>%
+  nest() %>%
+  mutate(model1 = map(data, ~ glmer(Prop ~ language * trial_num * trial_type + (1 | recording_name), data = ., family = "binomial", weights = Weights, control = glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000))))) %>%
+  mutate(model1_summary = map(model1,  summary))
+
+model1_7 <- models_by_language$model1[[2]]
+summary(model1_7)
+model1_20 <- models_by_language$model1[[1]]
+summary(model1_20)
+
+
+# models_by_language <- data_for_models %>% # trying with trial_type added as a random slope but fit is singular
+#   group_by(age_group) %>%
+#   nest() %>%
+#   mutate(model = map(data, ~ glmer(cbind(SamplesInAOI, SamplesTotal - SamplesInAOI) ~ language * trial_num + (trial_type | recording_name) + (language | trial_type), data = ., family = "binomial", control = glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000))))) %>%
+#   mutate(model_summary = map(model, summary))
+# model2_7_pre <- models_by_language$model_summary[[2]]
+
+## Same model as above but using Elog and lmer (shouldn't really use Prop for this data)
+
+# models_by_language_trial_type <- models_by_language_trial_type %>%
+#   mutate(model2 = map(data, ~ lmer(Elog ~ language * trial_num + (1 | recording_name), data = ., weights = Weights, control = lmerControl(optimizer="bobyqa")))) %>%
+#   mutate(model2_summary = map(model2, summary))
+# 
+# model2_7_pre <- models_by_language_trial_type$model2[[3]]
+# summary(model2_7_pre)
+# model2_7_post <- models_by_language_trial_type$model2[[4]]
+# summary(model2_7_post)
+# model2_20_pre <- models_by_language_trial_type$model2[[1]]
+# summary(model2_20_pre)
+# model2_20_post <- models_by_language_trial_type$model2[[2]]
+# summary(model2_20_post)
+
+
+check_model1_7_pre <- data_for_models %>%
+  mutate(trial_num = trial_num - 1) %>%
+  filter(age_group == "7 months") %>%
+  filter(trial_type == "pre-switch") %>%
+  glmer(cbind(SamplesInAOI, SamplesTotal-SamplesInAOI) ~ language * trial_num + (1 | recording_name), data = ., family = "binomial", control = glmerControl(optimizer="bobyqa"))
+
 
 
 # model_pre_7_data <- data_for_models %>%
