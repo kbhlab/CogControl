@@ -26,6 +26,10 @@ library(apaTables)
 library(here)
 library(eyetrackingR)
 library(patchwork)
+library(effects)
+library(ggeffects)
+library(interactions)
+library(ggiraphExtra)
 options(scipen = 999)
 
 kovacs09 <- "Kovács & Mehler 2009"
@@ -288,7 +292,7 @@ data_time_series_antic <- make_time_sequence_data(data_eyetracking_clean,
 line_colors <- c("#D7D7D7", "#FF3366", "#04BDD8")
 
 time_series_full_trial <- data_time_series_full %>%
-  filter(Time >= 150 & Time <= 5000) %>%
+  filter(Time >= 1500 & Time <= 3800) %>%
   mutate(trial_type_labs = case_when(trial_type == "pre-switch" ~ "Training",
                                      trial_type == "post-switch" ~ "Test")) %>%
   mutate(trial_type_labs = factor(trial_type_labs, levels = c("Training", "Test"))) %>%
@@ -313,15 +317,44 @@ time_series_full_trial <- data_time_series_full %>%
   theme(plot.title = element_text(hjust = 0.5)) +
   xlab("Time from trial start (ms)")  +
   ylab("Proportion looking")))
+
+
+plot_ab <- data_time_series_full %>%
+  filter(Time >= 1500 & Time <= 3800) %>%
+  mutate(trial_type_labs = case_when(trial_type == "pre-switch" ~ "Training",
+                                     trial_type == "post-switch" ~ "Test")) %>%
+  mutate(trial_type_labs = factor(trial_type_labs, levels = c("Training", "Test"))) %>%
+  pivot_wider(names_from = AOI, values_from = Prop) %>%
+  group_by(trial_type_labs, language, age_group, Time, trial_num) %>%
+  summarise(target = mean(target, na.rm=TRUE), 
+            distractor = mean(distractor, na.rm=TRUE),
+            circle = mean(circle, na.rm = TRUE))  %>%
+  pivot_longer(cols = c(circle, target, distractor), names_to = "aoi", values_to = "prop_looking") %>%
+  mutate(aoi = factor(aoi, levels = c("circle", "target", "distractor")))  %>%
+  mutate(trial_labels = paste0("Trial ", trial_num)) %>%
+  group_by(age_group) %>%
+  nest() %>%
+  #create nested data for easily plotting more than one of the same plot by a group
+  mutate(plot = map2(data, age_group, ~ ggplot(data = .x, aes(x = Time, y = prop_looking, color = aoi, linetype = language)) + 
+  geom_line(show.legend = FALSE) +
+  scale_color_manual(values = line_colors) +
+  facet_grid(trial_labels ~ trial_type_labs) +
+  annotate("rect", xmin = 2150, xmax = 3150, ymin = -Inf, ymax = Inf, fill = "red", alpha = 0.07) +
+  annotate("text", x = 2650, y = 0.9, label = "Anticipation \n Period", size = 2.5, color = "#927774") +
+  ggtitle(age_group) +
+  theme(plot.title = element_text(hjust = 0.5), legend.title = element_blank(), axis.text.x = element_text(angle = 25, size = 8)) +
+  xlab("Time from trial start (ms)")  +
+  ylab("Proportion looking")))
   
-plot_full_trial_7 <- time_series_full_trial$plot[[1]] 
-plot_full_trial_20 <- time_series_full_trial$plot[[2]]
+plot_ab_7 <- plot_ab$plot[[1]] 
+plot_ab_20 <- plot_ab$plot[[2]] +
+  geom_line(show.legend = TRUE)
 
- ggsave("plot_full_trial_7.png", path = here("figures"), plot = time_series_full_trial$plot[[1]], device = "png", width = 15, height = 10, units = "in",
-   dpi = 300)
+# ggsave("plot_full_trial_7.png", path = here("figures"), plot = time_series_full_trial$plot[[1]], device = "png", width = 15, height = 10, units = "in",
+#   dpi = 300)
 
- ggsave("plot_full_trial_20.png", path = here("figures"), plot = time_series_full_trial$plot[[2]], device = "png", width = 15, height = 10, units = "in",
-   dpi = 300)
+# ggsave("plot_full_trial_20.png", path = here("figures"), plot = time_series_full_trial$plot[[2]], device = "png", width = 15, height = 10, units = "in",
+#   dpi = 300)
 
 
 ###-------------------------------------------------------PLOT ANTICIPATION PERIOD------------------------------------------
@@ -529,14 +562,14 @@ each row from raw data is 1/60th of a second (60 Hz), approx. (added this to dat
 Play around and plot vocab score as well - get rid of distractor, and have mono-high, mono-low (median split for visualization) * check that medians are similar amongst groups (made these plots, can't run model on continuous vocab score without rescaling)
  
 ???? should there be a random slope for each participant by trial number?
- 
+##glmer model
 ```{r across_trial_models, echo = FALSE}
 
 ###------------------------------------------------MODELS BY AGE, LANG, TRIAL TYPE---------------------------------------------  
 
 models_by_language_trial_type <- data_for_models %>%
-  filter(trial_num > 1) %>% # get rid of trial one, where slopes are wildly different because infants have no data to make a prediction
-  mutate(trial_num_start_0 = trial_num - 2) %>%
+  #filter(trial_num > 1) %>% # get rid of trial one, where slopes are wildly different because infants have no data to make a prediction
+  mutate(trial_num_start_0 = trial_num - 1) %>%
   mutate(trial_num_5_centre = trial_num - 5) %>%
   mutate(trial_num_factor = factor(trial_num)) %>%
   mutate(trial_num_decimal_centre = scale(trial_num, center = TRUE, scale = FALSE)) %>%
@@ -556,10 +589,6 @@ summary(model1_20_post)
 
 
 emmeans(model1_20_pre, ~ trial_num * language)
-
-library(effects)
-library(ggeffects)
-library(interactions)
 
 
 ggpredict(model1_7_pre, c("trial_num_start_0", "language")) %>% plot() 
@@ -613,7 +642,7 @@ ggplot(aes(x=trial_num, y=Prop, color = language)) +
 (p7pr + p7po)/(p20pr + p20po)
 ```
 
-
+##Vocab Models - need work
 ```{r models_vocab}
 
 data_20_pre <- data_for_models %>%
@@ -655,45 +684,25 @@ models_by_language_trial_type_vocab$model1_summary
 
 ```
 
-##Growth Curve Analysis
+##Time Bin Models
 
 ```{r across_time_models, echo = FALSE}
 
-###--------------------------------------------------------------GROWTH CURVE ANALYSIS------------------------------------ 
+###--------------------------------------------------------------TIME BIN MODELS------------------------------------ 
 
-data_gc <- data_time_series_antic %>%
+data_tb <- data_time_series_antic %>%
+  mutate(trial_num_start_0 = trial_num - 1) %>%
   filter(AOI == "target")
 
-model_timebin <- data_gc %>%
+model_timebin <- data_tb %>%
   mutate(trial_num_start_0 = trial_num - 1) %>%
   mutate(trial_num_5_centre = trial_num - 5) %>%
   mutate(trial_num_factor = factor(trial_num)) %>%
   mutate(trial_num_decimal_centre = scale(trial_num, center = TRUE, scale = FALSE)) %>%
-  filter(trial_num > 1) %>%
+  #filter(trial_num > 1) %>%
   group_by(age_group, trial_type) %>%
   nest() %>%
-  mutate(model1 = map(data, ~ lmer(Prop ~ language * TimeBin * trial_num_start_0 + (1 | recording_name) + (1 | trial_num), data = .))) 
-
-
-data_gc_7pre <- data_gc %>%
-  filter(age_group == "7 months",
-         trial_type == "pre-switch")
-lmer(Prop ~ language * TimeBin * trial_num + (1 | recording_name) + (1 | trial_num), data = data_gc_7pre) %>% summary()
-
-data_gc_7post <- data_gc %>%
-  filter(age_group == "7 months",
-         trial_type == "post-switch")
-lmer(Prop ~ language * TimeBin * trial_num + (1 | recording_name) + (1 | trial_num), data = data_gc_7post) %>% summary()
-
-data_gc_20pre <- data_gc %>%
-  filter(age_group == "20 months",
-         trial_type == "pre-switch")
-lmer(Prop ~ language * TimeBin * trial_num + (1 | recording_name) + (1 | trial_num), data = data_gc_20pre) %>% summary()
-
-data_gc_20post <- data_gc %>%
-  filter(age_group == "20 months",
-         trial_type == "post-switch")
-lmer(Prop ~ language * TimeBin * trial_num + (1 | recording_name) + (1 | trial_num), data = data_gc_20post) %>% summary()
+  mutate(model1 = map(data, ~ lmer(Prop ~ language * TimeBin * trial_num_start_0 + (1 | recording_name), data = .))) 
 
 
 tb_pre20<- model_timebin$model1[[1]] 
@@ -701,14 +710,106 @@ tb_post20<- model_timebin$model1[[2]]
 tb_pre7<- model_timebin$model1[[3]]
 tb_post7<- model_timebin$model1[[4]]
 
+summary(tb_pre7)
+summary(tb_post7)
+summary(tb_pre20)
+summary(tb_post20)
+
 ggpredict(tb_pre7, c("trial_num_start_0", "language")) %>% plot()
 ggpredict(tb_post7, c("trial_num_start_0", "language")) %>% plot()
 ggpredict(tb_pre20, c("trial_num_start_0", "language")) %>% plot()
 ggpredict(tb_post20, c("trial_num_start_0", "language")) %>% plot()
 
+```
+
+##Time Bin Models with Intercept for Trial Num - decent fit when plotted!
+
+```{r models_with_intercept_for_trial_num}
+
+data_tb_7pre <- data_tb %>%
+  filter(age_group == "7 months",
+         trial_type == "pre-switch")
+
+tb_pre7_1 <- lmer(Prop ~ language * TimeBin + (1 | recording_name), data = data_tb_7pre)
+tb_pre7_2 <- lmer(Prop ~ language * trial_num_start_0 + (1 | recording_name), data = data_tb_7pre)
+tb_pre7_3 <- lmer(Prop ~ language * TimeBin * trial_num_start_0 + (1 | recording_name), data = data_tb_7pre)
+tb_pre7_4 <- lmer(Prop ~ language * TimeBin * trial_num_start_0 + (1 | recording_name), data = data_tb_7pre, REML = TRUE)
+tb_pre7_5 <- lmer(Prop ~ language * TimeBin * trial_num_start_0 + (1 | recording_name) + (1 | trial_num_start_0), data = data_tb_7pre, REML = TRUE)
+
+data_tb_7post <- data_tb %>%
+  filter(age_group == "7 months",
+         trial_type == "post-switch")
+
+tb_post7_1 <- lmer(Prop ~ language * TimeBin + (1 | recording_name), data = data_tb_7post)
+tb_post7_2 <- lmer(Prop ~ language * trial_num_start_0 + (1 | recording_name), data = data_tb_7post)
+tb_post7_3 <- lmer(Prop ~ language * TimeBin * trial_num_start_0 + (1 | recording_name), data = data_tb_7post)
+tb_post7_4 <- lmer(Prop ~ language * TimeBin * trial_num_start_0 + (1 | recording_name), data = data_tb_7post, REML = TRUE)
+tb_post7_5 <- lmer(Prop ~ language * TimeBin * trial_num_start_0 + (1 | recording_name) + (1 | trial_num_start_0), data = data_tb_7post, REML = TRUE)
+
+data_tb_20pre <- data_tb %>%
+  filter(age_group == "20 months",
+         trial_type == "pre-switch")
+
+tb_pre20_1 <- lmer(Prop ~ language * TimeBin + (1 | recording_name), data = data_tb_20pre)
+tb_pre20_2 <- lmer(Prop ~ language * trial_num_start_0 + (1 | recording_name), data = data_tb_20pre)
+tb_pre20_3 <- lmer(Prop ~ language * TimeBin * trial_num_start_0 + (1 | recording_name), data = data_tb_20pre)
+tb_pre20_4 <- lmer(Prop ~ language * TimeBin * trial_num_start_0 + (1 | recording_name), data = data_tb_20pre, REML = TRUE)
+tb_pre20_5 <- lmer(Prop ~ language * TimeBin * trial_num_start_0 + (1 | recording_name) + (1 | trial_num_start_0), data = data_tb_20pre, REML = TRUE)
+
+data_tb_20post <- data_tb %>%
+  filter(age_group == "20 months",
+         trial_type == "post-switch")
+
+tb_post20_1 <- lmer(Prop ~ language * TimeBin + (1 | recording_name), data = data_tb_20post)
+tb_post20_2 <- lmer(Prop ~ language * trial_num_start_0 + (1 | recording_name), data = data_tb_20post)
+tb_post20_3 <- lmer(Prop ~ language * TimeBin * trial_num_start_0 + (1 | recording_name), data = data_tb_20post)
+tb_post20_4 <- lmer(Prop ~ language * TimeBin * trial_num_start_0 + (1 | recording_name), data = data_tb_20post, REML = TRUE)
+tb_post20_5 <- lmer(Prop ~ language * TimeBin * trial_num_start_0 + (1 | recording_name) + (1 | trial_num_start_0), data = data_tb_20post, REML = TRUE)
+
+summary(tb_pre7_int)
+summary(tb_post7_int)
+summary(tb_pre20_int)
+summary(tb_post20_int)
+
+ggpredict(tb_pre7_int, c("trial_num_start_0", "language")) %>% plot()
+ggpredict(tb_post7_int, c("trial_num_start_0", "language")) %>% plot()
+ggpredict(tb_pre20_int, c("trial_num_start_0", "language")) %>% plot()
+ggpredict(tb_post20_int, c("trial_num_start_0", "language")) %>% plot()
+
+ggpredict(tb_pre7_int, terms = c("TimeBin", "trial_num_start_0", "language"), type = "re") %>% plot()
+ggpredict(tb_post7_int, terms = c("TimeBin", "trial_num_start_0", "language"), type = "re") %>% plot()
+ggpredict(tb_pre20_int, terms = c("TimeBin", "trial_num_start_0", "language"), type = "re") %>% plot()
+ggpredict(tb_post20_int, terms = c("TimeBin", "trial_num_start_0", "language"), type = "re") %>% plot()
+
+```
+
+## likelihood comparisons
+
+```{r compare_models}
+
+anova(tb_pre7_1, tb_pre7_3) # looks like having trial number improves fit
+anova(tb_pre7_2, tb_pre7_3) # looks like having time bin really improves fit
+anova(tb_pre7_4, tb_pre7_5, refit = FALSE) # having a random intercept for trial number does NOT improve fit
+
+anova(tb_post7_1, tb_post7_3) # looks like having trial number improves fit
+anova(tb_post7_2, tb_post7_3) # looks like having time bin improves fit
+anova(tb_post7_4, tb_post7_5, refit = FALSE) # having a random intercept for trial number DOES improve fit
+
+anova(tb_pre20_1, tb_pre20_3) # looks like having trial number slightly improves fit
+anova(tb_pre20_2, tb_pre20_3) # looks like having time bin really improves fit
+anova(tb_pre20_4, tb_pre20_5, refit = FALSE) # having a random intercept for trial number DOES improve fit
+
+anova(tb_post20_1, tb_post20_3) # looks like having trial number improves fit
+anova(tb_post20_2, tb_post20_3) # looks like having time bin improves fit
+anova(tb_post20_4, tb_post20_5, refit = FALSE) # having a random intercept for trial number DOES improve fit
+
+```
 
 
-growth_curve1 <- data_gc %>%
+
+```{r growth_curve}
+
+growth_curve1 <- data_tb %>%
   group_by(age_group, trial_type) %>%
   nest() %>%
   mutate(gc1 = map(data, ~ lmer(Elog ~ (ot1 + ot2 + ot3) * language * trial_num + (1 | recording_name), data = ., weights = Weights, control = lmerControl(optimizer="bobyqa"), REML = FALSE)))
@@ -938,7 +1039,7 @@ Incorrect is when the child did not look at the TARGET, or for less long than no
 
 ```{r anovas, echo = FALSE}
 
-###----------------------------------------------------------------------BLOCK DATA-------------------------------------------------------------  
+###----------------------------------------------------------------BLOCK DATA-------------------------------------------------------------  
 
 block_data <- data_eyetracking_clean %>%
   make_time_window_data(aois = c("target", "distractor", "circle"),
@@ -1167,10 +1268,9 @@ blocks_figure_circle <- block_data %>%
   ggplot(aes(x = block_num, y = correct_anticipation, fill = language)) +
   stat_summary(fun.y = "mean", geom = "bar", position = "dodge") +
   facet_grid(age_group ~ trial_type_labs) +
-  scale_y_continuous(limits = c(0:1)) +
-  theme_bw(base_size=15) +
-  scale_fill_manual(values = c("#ff3300", # bilingual colour
-                               "#070707")) + # mono colour
+  #scale_y_continuous(limits = c(0:1)) +
+  scale_fill_manual(values = c("#AAAAAA", # bilingual colour
+                               "#565656")) + # mono colour
   xlab("Block number") +
   ylab("Proportion of infants with \ncorrect anticipation")
 
@@ -1181,7 +1281,7 @@ blocks_figure_nocircle <- block_data_nocircle %>%
   scale_y_continuous(limits = c(0:1)) +
   theme_bw(base_size=15) +
   scale_fill_manual(values = c("#ff3300", # bilingual colour
-                               "#070707")) + # mono colour
+                               "#565656")) + # mono colour
   xlab("Block number") +
   ylab("Proportion of infants with \ncorrect anticipation")
 
