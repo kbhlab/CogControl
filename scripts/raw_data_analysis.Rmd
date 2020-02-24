@@ -29,7 +29,6 @@ library(patchwork)
 library(effects)
 library(ggeffects)
 library(interactions)
-library(ggiraphExtra)
 options(scipen = 999)
 
 kovacs09 <- "Kovács & Mehler 2009"
@@ -588,18 +587,13 @@ model1_20_post <- models_by_language_trial_type$model1[[2]]
 summary(model1_20_post)
 
 
-emmeans(model1_20_pre, ~ trial_num * language)
+emmeans(model1_20_pre, ~ trial_num_start_0 * language)
 
 
 ggpredict(model1_7_pre, c("trial_num_start_0", "language")) %>% plot() 
 ggpredict(model1_7_post, c("trial_num_start_0", "language")) %>% plot()
 ggpredict(model1_20_pre, c("trial_num_start_0", "language")) %>% plot()
 ggpredict(model1_20_post, c("trial_num_start_0", "language")) %>% plot()
-
-interactions::interact_plot(model1_7_pre, pred = trial_num, modx = language)
-interactions::interact_plot(model1_7_post, pred = trial_num, modx = language)
-interactions::interact_plot(model1_20_pre, pred = trial_num, modx = language)
-interactions::interact_plot(model1_20_post, pred = trial_num, modx = language)
 
 
 ##Quick GLM plots
@@ -726,6 +720,9 @@ ggpredict(tb_post20, c("trial_num_start_0", "language")) %>% plot()
 
 ```{r models_with_intercept_for_trial_num}
 
+blues <- c("#AFEDFD", "#86CBFD", "#75B4E9", "#659ED6", "#5488C3", "#4472B0", "#23458A", "#122F77", "#021964")
+blues2 <- c("#79C9DC", "#6AB1C8", "#5B9AB4", "#4C83A0", "#3D6C8C", "#2E5478", "#1F3D64", "#102650", "#010F3C")
+
 data_tb_7pre <- data_tb %>%
   filter(age_group == "7 months",
          trial_type == "pre-switch")
@@ -766,20 +763,75 @@ tb_post20_3 <- lmer(Prop ~ language * TimeBin * trial_num_start_0 + (1 | recordi
 tb_post20_4 <- lmer(Prop ~ language * TimeBin * trial_num_start_0 + (1 | recording_name), data = data_tb_20post, REML = TRUE)
 tb_post20_5 <- lmer(Prop ~ language * TimeBin * trial_num_start_0 + (1 | recording_name) + (1 | trial_num_start_0), data = data_tb_20post, REML = TRUE)
 
-summary(tb_pre7_int)
-summary(tb_post7_int)
-summary(tb_pre20_int)
-summary(tb_post20_int)
+labs(title = "Predicted values of proportion looking to target (20 months, test)", x = "Time in milliseconds during anticipation period", y = "Proportion looking to target", color = "Trial number") +
+  scale_color_manual(values = blues, labels = c(1, 2, 3, 4, 5, 6, 7, 8, 9)) +
+  scale_x_continuous(breaks = c(0, 2, 4), labels = c("0", "500", "1000")) +
+  ylim(-.2, 1)
 
-ggpredict(tb_pre7_int, c("trial_num_start_0", "language")) %>% plot()
+
+ggpredict(tb_pre7_4, c("trial_num_start_0", "language")) %>% plot()
 ggpredict(tb_post7_int, c("trial_num_start_0", "language")) %>% plot()
 ggpredict(tb_pre20_int, c("trial_num_start_0", "language")) %>% plot()
 ggpredict(tb_post20_int, c("trial_num_start_0", "language")) %>% plot()
 
-ggpredict(tb_pre7_int, terms = c("TimeBin", "trial_num_start_0", "language"), type = "re") %>% plot()
-ggpredict(tb_post7_int, terms = c("TimeBin", "trial_num_start_0", "language"), type = "re") %>% plot()
-ggpredict(tb_pre20_int, terms = c("TimeBin", "trial_num_start_0", "language"), type = "re") %>% plot()
-ggpredict(tb_post20_int, terms = c("TimeBin", "trial_num_start_0", "language"), type = "re") %>% plot()
+fanpre7 <- ggpredict(tb_pre7_4, terms = c("TimeBin", "trial_num_start_0", "language"), type = "re", ci.lvl = FALSE) %>% plot(colors = "trial_num_start_0", line.size = 1) +
+  labs(title = "Predicted values of proportion looking to target (7 months, training)", x = "Time in milliseconds during anticipation period", y = "Proportion looking to target", color = "Trial number") +
+  scale_color_manual(values = blues, labels = c(1, 2, 3, 4, 5, 6, 7, 8, 9)) +
+  scale_x_continuous(breaks = c(0, 2, 4), labels = c("0", "500", "1000")) +
+  ylim(-0.1, 1) +
+  theme(legend.position = "none")
+
+fanpost7 <- ggpredict(tb_post7_4, terms = c("TimeBin", "trial_num_start_0", "language"), type = "re", ci.lvl = FALSE) %>% plot(colors = "trial_num_start_0", line.size = 1) +
+  labs(title = "Predicted values of proportion looking to target (7 months, test)", x = "Time in milliseconds during anticipation period", y = "Proportion looking to target", color = "Trial number") +
+  scale_color_manual(values = blues, labels = c(1, 2, 3, 4, 5, 6, 7, 8, 9)) +
+  scale_x_continuous(breaks = c(0, 2, 4), labels = c("0", "500", "1000")) +
+  ylim(-0.1, 1)
+
+fanpre20 <- ggpredict(tb_pre20_4, terms = c("TimeBin", "trial_num_start_0", "language"), type = "re", ci.lvl = FALSE) %>% plot(colors = "trial_num_start_0", line.size = 1) +
+  labs(title = "Predicted values of proportion looking to target (20 months, training)", x = "Time in milliseconds during anticipation period", y = "Proportion looking to target", color = "Trial number") +
+  scale_color_manual(values = blues, labels = c(1, 2, 3, 4, 5, 6, 7, 8, 9)) +
+  scale_x_continuous(breaks = c(0, 2, 4), labels = c("0", "500", "1000")) +
+  ylim(-0.1, 1) +
+  theme(legend.position = "none")
+
+fanpost20 <- ggpredict(tb_post20_4, terms = c("TimeBin", "trial_num_start_0", "language"), type = "re", ci.lvl = FALSE) %>% plot(colors = "trial_num_start_0", line.size = 1) +
+  labs(title = "Predicted values of proportion looking to target (20 months, test)", x = "Time in milliseconds during anticipation period", y = "Proportion looking to target", color = "Trial number") +
+  scale_color_manual(values = blues, labels = c(1, 2, 3, 4, 5, 6, 7, 8, 9)) +
+  scale_x_continuous(breaks = c(0, 2, 4), labels = c("0", "500", "1000")) +
+  ylim(-0.1, 1)
+
+
+spreadpre7 <- ggpredict(tb_pre7_5, terms = c("TimeBin", "trial_num_start_0", "language"), type = "re", ci.lvl = FALSE) %>% plot(colors = "trial_num_start_0", line.size = 1) +
+  labs(title = "Predicted values of proportion looking to target (7 months, training)", x = "Time in milliseconds during anticipation period", y = "Proportion looking to target", color = "Trial number") +
+  scale_color_manual(values = blues, labels = c(1, 2, 3, 4, 5, 6, 7, 8, 9)) +
+  scale_x_continuous(breaks = c(0, 2, 4), labels = c("0", "500", "1000")) +
+  ylim(-.18, 1) +
+  theme(legend.position = "none")
+
+spreadpost7 <- ggpredict(tb_post7_5, terms = c("TimeBin", "trial_num_start_0", "language"), type = "re", ci.lvl = FALSE) %>% plot(colors = "trial_num_start_0", line.size = 1) +
+  labs(title = "Predicted values of proportion looking to target (7 months, test)", x = "Time in milliseconds during anticipation period", y = "Proportion looking to target", color = "Trial number") +
+  scale_color_manual(values = blues, labels = c(1, 2, 3, 4, 5, 6, 7, 8, 9)) +
+  scale_x_continuous(breaks = c(0, 2, 4), labels = c("0", "500", "1000")) +
+  ylim(-.18, 1)
+
+spreadpre20 <- ggpredict(tb_pre20_5, terms = c("TimeBin", "trial_num_start_0", "language"), type = "re", ci.lvl = FALSE) %>% plot(colors = "trial_num_start_0", line.size = 1) +
+  labs(title = "Predicted values of proportion looking to target (20 months, training)", x = "Time in milliseconds during anticipation period", y = "Proportion looking to target", color = "Trial number") +
+  scale_color_manual(values = blues, labels = c(1, 2, 3, 4, 5, 6, 7, 8, 9)) +
+  scale_x_continuous(breaks = c(0, 2, 4), labels = c("0", "500", "1000")) +
+  ylim(-.18, 1) +
+  theme(legend.position = "none")
+
+spreadpost20 <- ggpredict(tb_post20_5, terms = c("TimeBin", "trial_num_start_0", "language"), type = "re", ci.lvl = FALSE) %>% plot(colors = "trial_num_start_0", line.size = 1) +
+  labs(title = "Predicted values of proportion looking to target (20 months, test)", x = "Time in milliseconds during anticipation period", y = "Proportion looking to target", color = "Trial number") +
+  scale_color_manual(values = blues, labels = c(1, 2, 3, 4, 5, 6, 7, 8, 9)) +
+  scale_x_continuous(breaks = c(0, 2, 4), labels = c("0", "500", "1000")) +
+  ylim(-.18, 1)
+
+fan7 <- fanpre7 + plot_spacer() + fanpost7 + plot_layout(widths = c(5, .25, 5))
+spread7 <- spreadpre7 + plot_spacer() + spreadpost7 + plot_layout(widths = c(5, .25, 5))
+fan20 <- fanpre20 + plot_spacer() + fanpost20 + plot_layout(widths = c(5, .25, 5))
+spread20 <- spreadpre20 + plot_spacer() + spreadpost20 + plot_layout(widths = c(5, .25, 5))
+
 
 ```
 
@@ -1075,7 +1127,7 @@ block_data_means <- block_data %>%
 pre_7 <- block_data %>%
   filter(age_group == "7 months") %>%
   filter(trial_type == "pre-switch") %>%
-  filter(n_blocks == 3) %>% View()
+  filter(n_blocks == 3) %>%
   ezANOVA(data = ., 
           dv = correct_anticipation,
           wid = recording_name,
@@ -1268,9 +1320,11 @@ blocks_figure_circle <- block_data %>%
   ggplot(aes(x = block_num, y = correct_anticipation, fill = language)) +
   stat_summary(fun.y = "mean", geom = "bar", position = "dodge") +
   facet_grid(age_group ~ trial_type_labs) +
-  #scale_y_continuous(limits = c(0:1)) +
-  scale_fill_manual(values = c("#AAAAAA", # bilingual colour
-                               "#565656")) + # mono colour
+  scale_y_continuous(limits = c(0:1)) +
+  theme_ggeffects() +
+  theme(panel.border = element_rect(color = "lightgrey", fill = NA)) +
+  scale_fill_manual(values = c("#23458A", # bilingual colour
+                               "#75B4E9")) + # mono colour
   xlab("Block number") +
   ylab("Proportion of infants with \ncorrect anticipation")
 
