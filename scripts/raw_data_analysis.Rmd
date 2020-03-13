@@ -26,7 +26,6 @@ library(apaTables)
 library(here)
 library(eyetrackingR)
 library(patchwork)
-library(effects)
 library(ggeffects)
 library(interactions)
 options(scipen = 999)
@@ -1120,6 +1119,42 @@ block_data <- data_eyetracking_clean %>%
 block_data_means <- block_data %>%
   group_by(language, age_group, trial_type, block_num) %>%
   summarise(correct_anticipation = mean(correct_anticipation), num_trials_contributed = mean(num_trials_contributed))
+
+
+replication_data <- data_eyetracking_clean %>%
+  make_time_window_data(aois = c("target", "distractor", "circle"),
+                        predictor_columns = c("age_group", "language", "total_vocab_prod", "vocab_group", "trial_type", "trial_num")) %>%
+  select(-Elog, -Weights, -LogitAdjusted, -ArcSin) %>%
+  mutate(looking_ms = Prop * (SamplesTotal * (1000/60))) %>% #adds number of milliseconds spent looking at target for the trial
+  pivot_wider(names_from = AOI, values_from = c(SamplesInAOI, Prop, looking_ms)) %>%
+  mutate(total_looking_time_wcircle = looking_ms_target + looking_ms_distractor + looking_ms_circle) %>%
+  mutate(correct_wcircle = case_when(looking_ms_target > (looking_ms_distractor + looking_ms_circle) ~ 1, 
+                                   TRUE ~ 0),
+         incorrect_wcircle = case_when(looking_ms_target < (looking_ms_distractor + looking_ms_circle) ~ 1, 
+                                     TRUE ~ 0),
+         no_anticipation = case_when(looking_ms_target + looking_ms_distractor == 0 ~ 1, 
+                              TRUE ~ 0),
+         total_anticipation_wcircle = 1 - no_anticipation) %>%
+  mutate(total_looking_time_nocircle = looking_ms_target + looking_ms_distractor,
+         correct_nocircle = case_when(looking_ms_target > looking_ms_distractor ~ 1,
+                                      TRUE ~ 0),
+         incorrect_nocircle = case_when(looking_ms_target < looking_ms_distractor ~ 1,
+                                        TRUE ~ 0)) %>%
+  filter(no_anticipation == 0)
+
+replication_data_plot_circle <- replication_data %>%
+  ggplot(aes(x = trial_num, y = correct_wcircle, color = language)) +
+  geom_jitter(alpha = 0.2, width = 0.1, height = 0.05) +
+  geom_smooth(se = FALSE) +
+  facet_grid(age_group ~ trial_type) +
+  scale_x_continuous(breaks = c(1, 2, 3, 4, 5, 6, 7, 8, 9))
+
+replication_data_plot_nocircle <- replication_data %>%
+  ggplot(aes(x = trial_num, y = correct_nocircle, color = language)) +
+  geom_jitter(alpha = 0.2, width = 0.1, height = 0.05) +
+  geom_smooth(se = FALSE) +
+  facet_grid(age_group ~ trial_type) +
+  scale_x_continuous(breaks = c(1, 2, 3, 4, 5, 6, 7, 8, 9))
 
 
 ## ANOVA by block: 7m pre-switch
