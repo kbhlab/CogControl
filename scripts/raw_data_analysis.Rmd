@@ -234,12 +234,12 @@ final_sample_mslist %>%
 ##---------------------------------------------------------------------7 month old Table 1
 final_sample_mslist %>%
   filter(age_group == "7 months" & language == "Bilinguals") %>%
-  select(recording_name, dom_lang, per_eng, per_fr, other_lang_1, per_other_1) %>%
-  pivot_longer(cols = c(per_eng, per_fr, per_other_1), names_to = "lang", values_to = "lang_percent") %>%
+  select(recording_name, dom_lang, per_eng, per_fr, other_lang1, per_other1) %>%
+  pivot_longer(cols = c(per_eng, per_fr, per_other1), names_to = "lang", values_to = "lang_percent") %>%
   mutate(lang = str_remove(lang, "per_"),
          lang = case_when(lang == "eng" ~ "English",
                           lang == "fr" ~ "French",
-                          lang == "other_1" ~ other_lang_1,
+                          lang == "other_1" ~ other_lang1,
                           TRUE ~ "oops"),
          lang = str_to_title(lang)) %>%
   group_by(recording_name) %>%
@@ -285,12 +285,12 @@ final_sample_mslist %>%
 
 final_sample_mslist %>%
   filter(age_group == "20 months" & language == "Bilinguals") %>%
-  select(recording_name, dom_lang, per_eng, per_fr, other_lang_1, per_other_1) %>%
-  pivot_longer(cols = c(per_eng, per_fr, per_other_1), names_to = "lang", values_to = "lang_percent") %>%
+  select(recording_name, dom_lang, per_eng, per_fr, other_lang1, per_other1) %>%
+  pivot_longer(cols = c(per_eng, per_fr, per_other1), names_to = "lang", values_to = "lang_percent") %>%
   mutate(lang = str_remove(lang, "per_"),
          lang = case_when(lang == "eng" ~ "English",
                           lang == "fr" ~ "French",
-                          lang == "other_1" ~ other_lang_1,
+                          lang == "other_1" ~ other_lang1,
                           TRUE ~ "oops"),
          lang = str_to_title(lang)) %>%
   group_by(recording_name) %>%
@@ -335,8 +335,8 @@ final_sample_mslist %>%
 #----------------------------------------------------Noticed in tables, some pcts don't add to 100
 
 final_sample_mslist %>%
-  mutate(total_lang_pct = per_eng + per_fr + per_other_1 + per_other_2) %>%
-  select(recording_name, per_eng, per_fr, per_other_1, per_other_2, total_lang_pct) %>%
+  mutate(total_lang_pct = per_eng + per_fr + per_other1 + per_other2) %>%
+  select(recording_name, per_eng, per_fr, per_other1, per_other2, total_lang_pct) %>%
   filter(total_lang_pct != 100)
 
 ```
