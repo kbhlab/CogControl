@@ -1,0 +1,101 @@
+{\rtf1\ansi\deff0 {\fonttbl {\f0 Times New Roman;}}
+\paperw15840 \paperh12240 \margl1440 \margr1440 \margt1440 \margb1440 \landscape 
+{\pard Table 4 \par}
+{\pard  \par}
+{\pard\i Means and standard deviations for correct_anticipation as a function of a 3(block_num) X 2(language) design\par}
+{\pard  \par}
+{
+\trowd \trgaph100
+\clbrdrt\brdrw15\brdrs
+\clvertalc\cellx1835 
+\clbrdrt\brdrw15\brdrs
+\clvertalc\cellx6732 
+\pard\sa100\sb100\intbl\qr{ }\cell
+\pard\sa100\sb100\intbl\qc{language}\cell
+\row
+}
+{
+\trowd \trgaph100
+\clvertalc\cellx1835 
+\clbrdrt\brdrw15\brdrs
+\clvertalc\cellx4284 
+\clbrdrt\brdrw15\brdrs
+\clvertalc\cellx6732 
+\pard\sa100\sb100\intbl\qr{ }\cell
+\pard\sa100\sb100\intbl\qc{Bilinguals}\cell
+\pard\sa100\sb100\intbl\qc{Monolinguals}\cell
+\row
+}
+{
+\trowd \trgaph100
+\clbrdrt\brdrw15\brdrs
+\clvertalc\cellx1835 
+\clbrdrt\brdrw15\brdrs
+\clvertalc\cellx3060 
+\clbrdrt\brdrw15\brdrs
+\clvertalc\cellx4284 
+\clbrdrt\brdrw15\brdrs
+\clvertalc\cellx5508 
+\clbrdrt\brdrw15\brdrs
+\clvertalc\cellx6732 
+\pard\sa100\sb100\intbl\qr{block_num}\cell
+\pard\sa100\sb100\intbl\qc{{\i M}}\cell
+\pard\sa100\sb100\intbl\qc{{\i SD}}\cell
+\pard\sa100\sb100\intbl\qc{{\i M}}\cell
+\pard\sa100\sb100\intbl\qc{{\i SD}}\cell
+\row
+}
+{
+\trowd \trgaph100
+\clbrdrt\brdrw15\brdrs
+\clvertalc\cellx1835 
+\clbrdrt\brdrw15\brdrs
+\clvertalc\cellx3060 
+\clbrdrt\brdrw15\brdrs
+\clvertalc\cellx4284 
+\clbrdrt\brdrw15\brdrs
+\clvertalc\cellx5508 
+\clbrdrt\brdrw15\brdrs
+\clvertalc\cellx6732 
+\pard\sa100\sb100\intbl\qr{1}\cell
+\pard\sa100\sb100\intbl\tqdec\tldot\tx428{0.18}\cell
+\pard\sa100\sb100\intbl\tqdec\tldot\tx428{0.35}\cell
+\pard\sa100\sb100\intbl\tqdec\tldot\tx428{0.28}\cell
+\pard\sa100\sb100\intbl\tqdec\tldot\tx428{0.35}\cell
+\row
+}
+{
+\trowd \trgaph100
+\clvertalc\cellx1835 
+\clvertalc\cellx3060 
+\clvertalc\cellx4284 
+\clvertalc\cellx5508 
+\clvertalc\cellx6732 
+\pard\sa100\sb100\intbl\qr{2}\cell
+\pard\sa100\sb100\intbl\tqdec\tldot\tx428{0.39}\cell
+\pard\sa100\sb100\intbl\tqdec\tldot\tx428{0.41}\cell
+\pard\sa100\sb100\intbl\tqdec\tldot\tx428{0.17}\cell
+\pard\sa100\sb100\intbl\tqdec\tldot\tx428{0.29}\cell
+\row
+}
+{
+\trowd \trgaph100
+\clbrdrb\brdrw15\brdrs
+\clvertalc\cellx1835 
+\clbrdrb\brdrw15\brdrs
+\clvertalc\cellx3060 
+\clbrdrb\brdrw15\brdrs
+\clvertalc\cellx4284 
+\clbrdrb\brdrw15\brdrs
+\clvertalc\cellx5508 
+\clbrdrb\brdrw15\brdrs
+\clvertalc\cellx6732 
+\pard\sa100\sb100\intbl\qr{3}\cell
+\pard\sa100\sb100\intbl\tqdec\tldot\tx428{0.49}\cell
+\pard\sa100\sb100\intbl\tqdec\tldot\tx428{0.39}\cell
+\pard\sa100\sb100\intbl\tqdec\tldot\tx428{0.29}\cell
+\pard\sa100\sb100\intbl\tqdec\tldot\tx428{0.38}\cell
+\row
+}
+{\pard \par}{\pard{\i Note.} {\i M} and {\i SD} represent mean and standard deviation, respectively.\par}
+}
