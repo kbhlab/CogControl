@@ -99,6 +99,15 @@ ggplot(age_summary, aes(age_in_days)) +
 
 t.test(age_in_days ~ language, data = age_summary) # no age diff between mono and bi
 
+# gender
+gender_summary <- 
+  dataset_exp1_v3 %>%
+  distinct(id, gender, language) %>% 
+  group_by(language) %>% 
+  count(gender)
+
+t.test(n ~ language, data = gender_summary) # no gender diff between mono and bi
+
 ###----------------------------------------------------------COMPARE MATERNAL EDUCATION------------------------------
 # obs. using ses_score (Social Economic Status)
 ses_summary <- 
