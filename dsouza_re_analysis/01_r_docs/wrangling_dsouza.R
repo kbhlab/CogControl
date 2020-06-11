@@ -394,7 +394,13 @@ dataset_exp1_v3 <-
     time = round(time/1000), # get the rounded ms
     trial_from_zero = time - min(time) # make time stamps start from 0 for each trial
     ) %>% 
-  ungroup()
+  ungroup() %>% 
+  mutate(
+    language = factor(language, levels = c("Monolinguals", "Bilinguals")),
+    trial_type = factor(trial_type, levels = c("pre-switch", "post-switch")),
+    gender = factor(gender, levels = c(0, 1)),
+    id = as.factor(id)
+    )
 
 save(dataset_exp1_v3, file = here("/03_output/01_wrangling/dataset_exp1_v3.rda")) # backup
 write_csv(dataset_exp1_v3, here("03_output/01_wrangling/dataset_exp1_v3.csv"))

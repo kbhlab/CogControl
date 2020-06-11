@@ -100,6 +100,7 @@ ggplot(age_summary, aes(age_in_days)) +
 t.test(age_in_days ~ language, data = age_summary) # no age diff between mono and bi
 
 ###----------------------------------------------------------COMPARE MATERNAL EDUCATION------------------------------
+# obs. using ses_score (Social Economic Status)
 ses_summary <- 
   dataset_exp1_v3 %>%
   distinct(id, age_in_days, language, ses_score)
@@ -305,7 +306,6 @@ tnum <-
   theme(panel.grid.minor = element_blank())
 
 tnum
-
 ```
 
 
@@ -360,7 +360,6 @@ model_data_post %>%
 
 #ggsave("plot_model_data_7post.png", path = here("figures"), device = "png", width = 7, height = 4,
 #       units = "in", dpi = 300)
-
 ```
 
 
@@ -768,9 +767,27 @@ pre_t_3 <-
   filter(trial_type == "pre-switch", block_num == 3) %>%
   t.test(correct_anticipation ~ language, data = .)
 
+t_table_pre <- 
+  broom::tidy(pre_t_1) %>%
+  bind_rows(broom::tidy(pre_t_2),
+            broom::tidy(pre_t_3)) %>%
+  rename(M_mono = estimate1,
+         M_bi = estimate2,
+         t = statistic,
+         df = parameter) %>%
+  select(-estimate, -method, -alternative)
+
+block_data %>%
+  filter(trial_type == "pre-switch" & n_blocks == 3) %>% #age_group == "7 months" & 
+  apa.2way.table(iv1 = block_num, 
+                 iv2 = language,
+                 dv = correct_anticipation, 
+                 data = ., 
+                 show.marginal.means = FALSE,
+                 filename = here("03_output/02_re_analysis/means_table_pre.doc"), 
+                 table.number = 4)
 
 #--------------------------------------------------------------------ANOVA by block: post-switch
-
 post <- block_data %>%
   #filter(age_group == "7 months") %>%
   filter(trial_type == "post-switch",
@@ -786,7 +803,7 @@ post <- block_data %>%
 apa.ezANOVA.table(post,
                   table.number = 3,
                   correction = "none",
-                  table.title = "Mixed ANOVA results for the test phase in Experiment 1 (7-month-olds)",
+                  table.title = "Mixed ANOVA results for the test phase in D'Souza et al. (2020)",
                   filename = here("03_output/02_re_analysis/anova_table_post.doc"))
 
 #-------------------------------------------------------------------- Monolinguals post switch
@@ -907,7 +924,7 @@ post_t_3 <-
          block_num == 3) %>%
   t.test(correct_anticipation ~ language, data = .)
 
-t_table <- 
+t_table_post <- 
   broom::tidy(post_t_1) %>%
   bind_rows(broom::tidy(post_t_2),
             broom::tidy(post_t_3)) %>%
