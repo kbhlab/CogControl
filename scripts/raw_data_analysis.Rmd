@@ -832,7 +832,7 @@ anova(lmermodel_7pre, lmermodel_7pre2) # the full model is the best
 
 ###------------------------------------------------------------GLMER - MORE APPROPRIATE-----
 
-glmermodel_7pre <- glmer(SamplesInAOI / SamplesTotal ~ language * TimeBin * trial_num_scaled + (trial_num_scaled | recording_name), data = model_data_7_pre, family = binomial, weights = SamplesTotal, control=glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000))) # nearly everything is significant in the glmer model
+glmermodel_7pre <- glmer(SamplesInAOI / SamplesTotal ~ language * TimeBin * trial_num_scaled + (1 | recording_name), data = model_data_7_pre, family = binomial, weights = SamplesTotal, control=glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000))) # nearly everything is significant in the glmer model
 
 final_model_pre_7 <-  glmermodel_7pre
   
@@ -862,7 +862,7 @@ anova(lmermodel_7post, lmermodel_7post2) # the full model is slightly significan
 ###-------------------------------------------------------------GLMER model--------------------
 
 #glmer attempt
-glmermodel_7post <- glmer(SamplesInAOI / SamplesTotal ~ language * TimeBin * trial_num_scaled + (trial_num_scaled | recording_name), data = model_data_7_post, family = binomial, weights = SamplesTotal, control=glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000))) # nearly everything is significant in the glmer model
+glmermodel_7post <- glmer(SamplesInAOI / SamplesTotal ~ language * TimeBin * trial_num_scaled + (1 | recording_name), data = model_data_7_post, family = binomial, weights = SamplesTotal, control=glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000))) # nearly everything is significant in the glmer model
 
 final_model_post_7 <- glmermodel_7post
 
