@@ -419,7 +419,7 @@ anova(lmermodel_pre, lmermodel_pre2) # the full model is the best
 
 glmermodel_pre <- 
   model_data_pre %>% 
-  glmer(SamplesInAOI / SamplesTotal ~ language * TimeBin * trial_num_scaled + (trial_num_scaled | id), #(1 | id), Keep only the intercept?
+  glmer(SamplesInAOI / SamplesTotal ~ language * TimeBin * trial_num_scaled + (1 | id) #(trial_num_scaled | id), #(1 | id), Keep only the intercept?
         data = ., 
         family = binomial, 
         weights = SamplesTotal, 
