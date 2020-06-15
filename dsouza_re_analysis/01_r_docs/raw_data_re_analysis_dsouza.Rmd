@@ -419,7 +419,7 @@ anova(lmermodel_pre, lmermodel_pre2) # the full model is the best
 
 glmermodel_pre <- 
   model_data_pre %>% 
-  glmer(SamplesInAOI / SamplesTotal ~ language * TimeBin * trial_num_scaled + (1 | id) #(trial_num_scaled | id), #(1 | id), Keep only the intercept?
+  glmer(SamplesInAOI / SamplesTotal ~ language * TimeBin * trial_num_scaled + (1 | id), #(trial_num_scaled | id), #(1 | id), Keep only the intercept?
         data = ., 
         family = binomial, 
         weights = SamplesTotal, 
@@ -472,7 +472,7 @@ anova(lmermodel_post, lmermodel_post2) # the full model is slightly significantl
 #glmer attempt
 glmermodel_post <- 
   model_data_post %>% 
-  glmer(SamplesInAOI / SamplesTotal ~ language * TimeBin * trial_num_scaled + (trial_num_scaled | id), #(1 | id), Keep only the intercept?
+  glmer(SamplesInAOI / SamplesTotal ~ language * TimeBin * trial_num_scaled + (1|id), #(trial_num_scaled | id), #(1 | id), Keep only the intercept?
         data = ., 
         family = binomial, 
         weights = SamplesTotal, 
@@ -497,8 +497,8 @@ qqline(residuals(final_model_post))
 
 ###----------------------------------------------------TABLE OF MODEL RESULTS-----------------
 
-tab_model(final_model_pre, show.re.var = FALSE, show.icc = FALSE, file = here("03_Output/02_re_analysis/glermodel_pre_dsouza.doc"))
-tab_model(final_model_post, show.re.var = FALSE, show.icc = FALSE, file = here("03_Output/02_re_analysis/glermodel_pos_dsouza.doc"))
+tab_model(final_model_pre, show.re.var = FALSE, show.icc = FALSE, file = here("03_Output/02_re_analysis/glermodel_pre_dsouza_pruned.doc"))
+tab_model(final_model_post, show.re.var = FALSE, show.icc = FALSE, file = here("03_Output/02_re_analysis/glermodel_pos_dsouza_pruned.doc"))
 
 ###----------------------------------------------------PLOT OF MODEL RESULTS-----------------
 
