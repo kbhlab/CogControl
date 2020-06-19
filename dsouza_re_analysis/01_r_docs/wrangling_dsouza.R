@@ -22,6 +22,7 @@
 # add participant log to dataset - 95 ids match; we miss 7 participants
 # SES = Social Economic Status
 # Exposure = anything below 90 is coded as Bilingual
+# 18/06/2020: e-mail by D'Souza with updated participant info.
 
 
 # load library
@@ -214,14 +215,8 @@ data_exp1 <-
 
 write_csv(data_exp1, here("03_output/01_wrangling/dataset_exp1.csv"))
 
-
-#############
-
-# ???? open issue! come back here!
-
 ### temporary load of data
 data_exp1 <- read.csv(here("03_output/01_wrangling/dataset_exp1.csv"))
-
 
 # add participant information
 p_info <- read.csv(here("02_input_csv/p_info.csv"))
@@ -269,6 +264,179 @@ excl_osf <- c("m0403170", "A100", "A162", "A167", "A170")
 to_exclude <- intersect(excl_osf, id_exp1) # to exclude latter
 sum(excl_osf %in% not_in_code1_2) # 0 none match the missing ones
 
+## from article: "We collected data from 102 infants (seven to nine months of age), of whom 51 were raised in ‘bilingual’ homes and 51 in ‘monolingual’ homes." (p. 4)
+## Is this the final count? After excluding infants for lack o attention? 
+## "Participants were recruited and tested until, for each task, we had useable data from 51 bilingual and 51 monolingual infants. 
+## We defined useable data as eye-tracking data (gaze patterns) from at least 75% of the trials in the task."
+
+## It seems that we are in the right track with 143 infants. Let's check again after attention exclusions.
+
+## 18/06/2020 - Update information by D'Souza e-mail:
+## A02 = m1102170
+## A08 = m2602170
+## A135b = A135
+## a167b = A167 (but too old by the time the infant came to the lab - they were supposed to come earlier!)
+## a70 = A70
+## b149180 OR b1409170 = A52 (this is recorded as b1409170 elsewhere. Looks like my RA made a typo. This is why I have gone back to using a simpler coding system!)
+## b2908170 = A51
+## b300917 = A50
+## m1608170 = A53
+
+## I will upd p_info and gender to have the codes from the experimental data (not touching the experimental data)
+
+# check if upd labels are in p_info and p_gender lists
+upd_id <- c("m1102170", "m2602170", "A135", "A167", 
+            "A70", "A52", "A51", "A50", "A53")
+
+upd_id %in% p_info_exp1$Code1 # True, except A167, too old
+upd_id %in% p_gender$id # True, except A02 and A08 
+
+# merge data
+## load & upd/clean gender 
+p_gender <- read.csv("02_input_csv/participants_gender_from_word.csv")
+
+p_gender_clean <- 
+  p_gender %>% 
+  mutate(
+    id = case_when(
+      id == "A135" ~ "A135b",
+      id == "A167" ~ "a167b",
+      id == "A70" ~ "a70",
+      id == "A52" ~ "b149180",
+      id == "A51" ~ "b2908170",
+      id == "A50" ~ "b300917",
+      id == "A53" ~ "m1608170",
+      TRUE ~ as.character(id)
+      ),
+    id = as.factor(id)
+    )
+
+p_gender_clean$id %in% data_exp1$id
+
+## clean participant log
+p_info_exp1_clean <- 
+  p_info_exp1 %>% 
+  mutate(
+    id = case_when(
+      Code1 == "m1102170" ~ "A02",
+      Code1 == "m2602170" ~ "A08",
+      Code1 == "A135" ~ "A135b",
+      #Code1 == "A167" ~ "a167b", # not in p_info (too old)
+      Code1 == "A70" ~ "a70",
+      Code1 == "A52" ~ "b149180",
+      Code1 == "A51" ~ "b2908170",
+      Code1 == "A50" ~ "b300917",
+      Code1 == "A53" ~ "m1608170",
+      TRUE ~ as.character(Code1)
+    ),
+    id = as.factor(id)
+  ) %>% 
+  clean_names(case = "snake") %>% 
+  select(id, group, exposure, age_in_days, exclude, ses_score) 
+
+p_info_exp1_clean$id %in% data_exp1$id
+
+# merge gender & p_info
+p_info_exp1_v2 <- dplyr::left_join(p_info_exp1_clean, p_gender_clean, by = "id")
+
+## 1 row more: confirm duplicate
+p_info_exp1_v2 %>% janitor::get_dupes(id) 
+
+## clean duplicate
+p_info_exp1_v3 <- p_info_exp1_v2 %>% distinct()
+
+## keep only data that have participant info
+data_exp1_clean2 <- 
+  data_exp1 %>% 
+  filter(id %in% p_info_exp1_v3$id)
+
+length(unique(data_exp1_clean2$id)) # experimental after exclusions = 101
+
+setdiff(p_info_exp1_v3$id, data_exp1$id) # A90 is missing
+
+## in search of "A90"
+x = read.csv(here("03_output/01_wrangling/dataset.csv")) # full dataset
+"A90" %in% x$id # true
+y = x %>% filter(id == "A90") 
+"Experiment1" %in% y$experiment # False! A90 is NOT a participant of Exp1
+
+## backup data
+save(data_exp1_clean2, file = here("03_output/01_wrangling/data_exp1_clean.rda"))
+save(p_info_exp1_v3, file = here("03_output/01_wrangling/participant_info_exp1_v3.rda"))
+write_csv(data_exp1_clean2, here("03_output/01_wrangling/dataset_exp1_clean.csv"))
+write_csv(p_info_exp1_v3, here("03_output/01_wrangling/participant_info_exp1_v3.csv"))    
+
+load("03_output/01_wrangling/data_exp1_clean.rda")
+load("03_output/01_wrangling/participant_info_exp1_v3.rda")
+
+## merge
+dataset_exp1 <- dplyr::left_join(data_exp1_clean2, p_info_exp1_v3, by = "id") # 95 participants
+
+length(unique(dataset_exp1$id)) # 101
+
+# descriptive statistics + data formatting
+## format variables to match our analysis script
+dataset_exp1_v2 <- 
+  dataset_exp1 %>% 
+  mutate(
+    language = if_else(group == "M", "Monolinguals", "Bilinguals"),
+    gender = if_else(gender == "F", 1, 0),
+    trial_type = case_when(
+      block == 1 ~ "pre-switch", 
+      block == 2 ~ "post-switch",
+      TRUE ~ as.character(block)
+      )
+  ) %>% 
+  select(-group, -block) # get rid of transformed variables
+
+length(unique(dataset_exp1_v2$id)) # 101
+
+save(dataset_exp1_v2, file = here("/03_output/01_wrangling/dataset_exp1_v2.rda")) # backup
+
+## additional variables from CogControl analysis script
+trial_name_levels <- c("pre-switch_1", "pre-switch_2", "pre-switch_3", 
+                       "pre-switch_4", "pre-switch_5", "pre-switch_6", 
+                       "pre-switch_7", "pre-switch_8", "pre-switch_9", 
+                       "post-switch_1", "post-switch_2", "post-switch_3", 
+                       "post-switch_4", "post-switch_5", "post-switch_6", 
+                       "post-switch_7", "post-switch_8", "post-switch_9")
+
+dataset_exp1_v3 <- 
+  dataset_exp1_v2 %>% 
+  rename(trial_num = trial) %>% 
+  mutate(
+    circle = case_when(as.character(look_direction) == "center" ~ 1,  TRUE ~ 0),
+    target = case_when(as.character(look_direction) == as.character(reward_side) ~ 1, TRUE ~ 0),
+    distractor = case_when(as.character(look_direction) != as.character(reward_side) & as.character(look_direction) != "center" ~ 1, 
+                           TRUE ~ 0)
+    ) %>% 
+  filter(!event %in% c("Start", "End")) %>% # get rid of NA in the beginning and end
+  mutate(trial_name = factor(str_c(trial_type, trial_num, sep = "_"), levels = trial_name_levels)) %>% 
+  group_by(id, trial_name) %>%
+  mutate(
+    time = round(time/1000), # get the rounded ms
+    trial_from_zero = time - min(time) # make time stamps start from 0 for each trial
+    ) %>% 
+  ungroup() %>% 
+  mutate(
+    language = factor(language, levels = c("Monolinguals", "Bilinguals")),
+    trial_type = factor(trial_type, levels = c("pre-switch", "post-switch")),
+    gender = factor(gender, levels = c(0, 1)),
+    id = as.factor(id)
+  )
+
+length(unique(dataset_exp1_v3$id)) # 101
+
+save(dataset_exp1_v3, file = here("/03_output/01_wrangling/dataset_exp1_v3.rda")) # backup
+write_csv(dataset_exp1_v3, here("03_output/01_wrangling/dataset_exp1_v3.csv"))
+
+# for future wranglings
+load(file = here("/03_output/01_wrangling/dataset_exp1_v2.rda"))
+
+
+
+######################### OLD CODE #########################
+
 ## "Main data errouneously coded as A78"
 "A79" %in% id_exp1 # False
 
@@ -301,108 +469,4 @@ length(unique(data_exp1_clean$id)) # experimental after exclusions = 143
 ## compare to 102 from participants log
 length(p_info_exp1$Code1)  
 
-## from article: "We collected data from 102 infants (seven to nine months of age), of whom 51 were raised in ‘bilingual’ homes and 51 in ‘monolingual’ homes." (p. 4)
-## Is this the final count? After excluding infants for lack o attention? 
-## "Participants were recruited and tested until, for each task, we had useable data from 51 bilingual and 51 monolingual infants. 
-## We defined useable data as eye-tracking data (gaze patterns) from at least 75% of the trials in the task."
 
-## It seems that we are in the right track with 143 infants. Let's check again after attention exclusions.
-
-# merge data
-
-## keep only data that have participant info
-data_exp1_clean2 <- 
-  data_exp1_clean %>% 
-  filter(id %in% p_info_exp1$Code1 |
-         id == "A02" | # code 2
-         id == "A08") # code 2
-
-length(unique(data_exp1_clean2$id)) # experimental after exclusions = 95
-
-## clean participant log
-p_info_exp1_clean <- 
-  p_info_exp1 %>% 
-  mutate(
-   id = case_when(
-     Code2 %in% c("A02", "A08") ~ as.character(Code2), 
-     TRUE ~ as.character(Code1)) 
-  ) %>% 
-  clean_names(case = "snake") %>% 
-  select(id, group, exposure, age_in_days, exclude, ses_score) 
-
-length(unique(p_info_exp1_clean$id)) # experimental after exclusions = 102
-
-## backup data
-save(data_exp1_clean2, file = here("03_output/01_wrangling/data_exp1_clean.rda"))
-save(p_info_exp1_clean, file = here("03_output/01_wrangling/participant_info_clean.rda"))
-write_csv(data_exp1_clean2, here("03_output/01_wrangling/dataset_exp1_clean.csv"))
-write_csv(p_info_exp1_clean, here("03_output/01_wrangling/participant_info_clean.csv"))    
-
-load("03_output/01_wrangling/data_exp1_clean.rda")
-load("03_output/01_wrangling/participant_info_clean.rda")
-
-## add gender
-p_gender <- read.csv("02_input_csv/participants_gender_from_word.csv")
-p_info_exp1_v2 <- dplyr::left_join(p_info_exp1_clean, p_gender, by = "id")
-
-## 1 row more: confirm duplicate
-p_info_exp1_v2 %>% janitor::get_dupes(id) 
-
-## clean duplicate
-p_info_exp1_v3 <- p_info_exp1_v2 %>% distinct()
-
-## merge
-dataset_exp1 <- dplyr::left_join(data_exp1_clean2, p_info_exp1_v3, by = "id") # 95 participants
-
-# descriptive statistics + data formatting
-## format variables to match our analysis script
-dataset_exp1_v2 <- 
-  dataset_exp1 %>% 
-  mutate(
-    language = if_else(group == "M", "Monolinguals", "Bilinguals"),
-    gender = if_else(gender == "F", 1, 0),
-    trial_type = case_when(
-      block == 1 ~ "pre-switch", 
-      block == 2 ~ "post-switch",
-      TRUE ~ as.character(block)
-      )
-  ) %>% 
-  select(-group, -block) # get rid of transformed variables
-
-
-## additional variables from CogControl analysis script
-trial_name_levels <- c("pre-switch_1", "pre-switch_2", "pre-switch_3", 
-                       "pre-switch_4", "pre-switch_5", "pre-switch_6", 
-                       "pre-switch_7", "pre-switch_8", "pre-switch_9", 
-                       "post-switch_1", "post-switch_2", "post-switch_3", 
-                       "post-switch_4", "post-switch_5", "post-switch_6", 
-                       "post-switch_7", "post-switch_8", "post-switch_9")
-
-dataset_exp1_v3 <- 
-  dataset_exp1_v2 %>% 
-  rename(trial_num = trial) %>% 
-  mutate(
-    circle = case_when(as.character(look_direction) == "center" ~ 1,  TRUE ~ 0),
-    target = case_when(as.character(look_direction) == as.character(reward_side) ~ 1, TRUE ~ 0),
-    distractor = case_when(as.character(look_direction) != as.character(reward_side) & as.character(look_direction) != "center" ~ 1, 
-                           TRUE ~ 0)
-    ) %>% 
-  filter(!event %in% c("Start", "End")) %>% # get rid of NA in the beginning and end
-  mutate(trial_name = factor(str_c(trial_type, trial_num, sep = "_"), levels = trial_name_levels)) %>% 
-  group_by(id, trial_name) %>%
-  mutate(
-    time = round(time/1000), # get the rounded ms
-    trial_from_zero = time - min(time) # make time stamps start from 0 for each trial
-    ) %>% 
-  ungroup() %>% 
-  mutate(
-    language = factor(language, levels = c("Monolinguals", "Bilinguals")),
-    trial_type = factor(trial_type, levels = c("pre-switch", "post-switch")),
-    gender = factor(gender, levels = c(0, 1)),
-    id = as.factor(id)
-    )
-
-save(dataset_exp1_v3, file = here("/03_output/01_wrangling/dataset_exp1_v3.rda")) # backup
-write_csv(dataset_exp1_v3, here("03_output/01_wrangling/dataset_exp1_v3.csv"))
-
-load(file = here("/03_output/01_wrangling/dataset_exp1_v2.rda"))
