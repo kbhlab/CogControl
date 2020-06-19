@@ -23,6 +23,10 @@
 # SES = Social Economic Status
 # Exposure = anything below 90 is coded as Bilingual
 # 18/06/2020: e-mail by D'Souza with updated participant info.
+# 19/06/2020: update participant info, A90 is missing; 
+# A90 retrieved from MATLAB (1 file for exp1 and another for exp2 and 3; they were being overwritten)
+# added A90, now we have the full 102-infants sample
+# moved all the "old/exploratory" code to the end of the script
 
 
 # load library
@@ -33,7 +37,7 @@ library(janitor)
 
 # list all .csv from folder and merge them
 ## list all .csv files
-setwd(here("/02_input_csv"))
+setwd(here("/02_input_csv")) 
 
 list_events <- list.files(pattern = "*events.csv")
 list_samples <- list.files(pattern = "*data.csv")
@@ -108,31 +112,6 @@ samples_clean <-
 write_csv(samples_clean, path = here("03_output/01_wrangling/samples.csv"))
 
 # merge datasets
-## this should be easy, but "time" does not match between datasets!
-dataset <- dplyr::left_join(samples_clean, events_clean, by = c("id", "time"))
-
-## further checking
-### Is samples total time greater than events total time?
-### We just need 1 participant
-samples_A02 <- 
-  samples_clean %>% 
-  dplyr::filter(id == "A02")
-
-events_A02 <- 
-  events_clean %>% 
-  dplyr::filter(id == "A02")
-
-## samples timeline vs event timeline
-tail(samples_A02$time, 1) > tail(events_A02$time, 1) # False
-head(samples_A02$time, 1) - head(events_A02$time, 1) # samples starts 65.287.108 (65sec & 287ms)  before samples = calibration? 
-tail(samples_A02$time, 1) - tail(events_A02$time, 1) # events is 11.201 (11ms) longer at the end = pratically together.
-
-## the "unkonown" maybe an adjustment between timelines?
-## try differences between time and "unknown" variable in events - IGNORE Unknown
-tail(events_A02$unknown, 1) # 23559839187 ms 
-sprintf("%.1f", tail(events_A02$time, 1) - tail(events_A02$unknown, 1)) # events time - events unknown = 1509424791634423 ms
-tail(samples_A02$time, 1) - (tail(events_A02$time, 1) - tail(events_A02$unknown, 1)) # unknown has nothing to do with anything
-
 # join without exact match.
 ## add "end_time"  (onset time of the next event -1)
 events_join <- 
@@ -150,22 +129,16 @@ events_join <-
 events_join$start_time[2] - events_join$end_time[1] # 1
 tail(samples_clean$time, 1) - tail(events_join$end_time, 1) # events is 11ms longer (11201)
 
-## this works beautifully on smaller subsets;
+## fuzzyjoin::fuzzy_left_join works beautifully on smaller subsets;
 ## but exceeds the 12.3 Gb available memory in my notebook;
-dataset_raw <- 
-  fuzzyjoin::fuzzy_left_join(samples_clean, events_join, 
-                             by=c("id"="id", "time"="start_time", "time"="end_time"),
-                             match_fun=list(`==`, `>=`, `<=`)
-                             ) %>% 
-  dplyr::rename(id = id.x) %>% 
-  dplyr::select(-id.y, -end_time, -start_time)
-  
+
 ## slice events and samples into lists 
 events_list <- split(events_join, events_join$id)
 samples_list <- split(samples_clean, samples_clean$id)
 
 ## join each dataframe with purrr::map2
 ### I am also assuming that samples before the "Start" event are due to calibration procedures
+### takes ~14h to run on 20Gb ram
 dataset <- 
   purrr::map2_df(samples_list, events_list, 
                  fuzzyjoin::fuzzy_left_join, by = c("time"="start_time", "time"="end_time"),
@@ -178,7 +151,6 @@ dataset <-
   )
 
 write_csv(dataset, path = here("03_output/01_wrangling/dataset.csv"))
-
 
 # define target/reward side
 ## from article:
@@ -225,51 +197,12 @@ p_info_exp1 <-
   p_info %>% 
   dplyr::filter(Exp.1.1 == 1)
 
-## ids are consistent between data and log?
-id_exp1 <- levels(data_exp1$id)
-id_log_code1 <- levels(p_info_exp1$Code1) 
-id_log_code2 <- levels(p_info_exp1$Code2)
-
-## Participants in exp data but NOT in log
-## Use Code 1 or Code 2?
-## code 1
-sum(!id_exp1 %in% id_log_code1) # 10 entries do not match
-not_in_code1 <- setdiff(id_exp1, id_log_code1) 
-
-## code 2
-sum(!id_exp1 %in% id_log_code2) # 46 entries do not match
-not_in_code2 <- setdiff(id_exp1, id_log_code2) 
-
-## stick with code 1
-## can we find missing Code 1 in Code 2?
-miss_log <- 
-  p_info_exp1 %>% 
-  filter(Code2 %in% not_in_code1) # A02, A08 are not missing anymore
-
-not_in_code1_2 <- not_in_code1[3:10] # still missing
-
-## Participants in log but NOT in exp data
-setdiff(id_log_code1, id_exp1) # 26
-setdiff(id_log_code2, id_exp1) # 62
-
-## check exclusions 
-## each entry from the "Laboratory log v2" (from OSF):
-# "28 Nov 2017: Two infants we recruited have erroneously been given the same code: b1504170. 
-# Data from these two infants will be stored in separate places, to avoid confusion.
-# "12 Dec 2018: Data from Participant A79 collected using the “main” script was erroneously 
-# coded as A78 and overwrote the previous data. They have been recoded. 
-# The Gap data were coded correctly from the start and unaffected by this error."
-
-excl_osf <- c("m0403170", "A100", "A162", "A167", "A170")
-to_exclude <- intersect(excl_osf, id_exp1) # to exclude latter
-sum(excl_osf %in% not_in_code1_2) # 0 none match the missing ones
+## several checks on participant consistency information were ran (check "old code" section)
 
 ## from article: "We collected data from 102 infants (seven to nine months of age), of whom 51 were raised in ‘bilingual’ homes and 51 in ‘monolingual’ homes." (p. 4)
 ## Is this the final count? After excluding infants for lack o attention? 
 ## "Participants were recruited and tested until, for each task, we had useable data from 51 bilingual and 51 monolingual infants. 
 ## We defined useable data as eye-tracking data (gaze patterns) from at least 75% of the trials in the task."
-
-## It seems that we are in the right track with 143 infants. Let's check again after attention exclusions.
 
 ## 18/06/2020 - Update information by D'Souza e-mail:
 ## A02 = m1102170
@@ -350,15 +283,9 @@ data_exp1_clean2 <-
   data_exp1 %>% 
   filter(id %in% p_info_exp1_v3$id)
 
-length(unique(data_exp1_clean2$id)) # experimental after exclusions = 101
+length(unique(data_exp1_clean2$id)) # experimental after exclusions = 102
 
-setdiff(p_info_exp1_v3$id, data_exp1$id) # A90 is missing
-
-## in search of "A90"
-x = read.csv(here("03_output/01_wrangling/dataset.csv")) # full dataset
-"A90" %in% x$id # true
-y = x %>% filter(id == "A90") 
-"Experiment1" %in% y$experiment # False! A90 is NOT a participant of Exp1
+## A90 was missing, but I found it (see old code section)
 
 ## backup data
 save(data_exp1_clean2, file = here("03_output/01_wrangling/data_exp1_clean.rda"))
@@ -372,7 +299,7 @@ load("03_output/01_wrangling/participant_info_exp1_v3.rda")
 ## merge
 dataset_exp1 <- dplyr::left_join(data_exp1_clean2, p_info_exp1_v3, by = "id") # 95 participants
 
-length(unique(dataset_exp1$id)) # 101
+length(unique(dataset_exp1$id)) # 102
 
 # descriptive statistics + data formatting
 ## format variables to match our analysis script
@@ -389,7 +316,7 @@ dataset_exp1_v2 <-
   ) %>% 
   select(-group, -block) # get rid of transformed variables
 
-length(unique(dataset_exp1_v2$id)) # 101
+length(unique(dataset_exp1_v2$id)) # 102
 
 save(dataset_exp1_v2, file = here("/03_output/01_wrangling/dataset_exp1_v2.rda")) # backup
 
@@ -425,7 +352,7 @@ dataset_exp1_v3 <-
     id = as.factor(id)
   )
 
-length(unique(dataset_exp1_v3$id)) # 101
+length(unique(dataset_exp1_v3$id)) # 102
 
 save(dataset_exp1_v3, file = here("/03_output/01_wrangling/dataset_exp1_v3.rda")) # backup
 write_csv(dataset_exp1_v3, here("03_output/01_wrangling/dataset_exp1_v3.csv"))
@@ -435,7 +362,81 @@ load(file = here("/03_output/01_wrangling/dataset_exp1_v2.rda"))
 
 
 
-######################### OLD CODE #########################
+########################################################################### OLD CODE ###########################################################################
+
+## this should be easy, but "time" does not match between datasets!
+dataset <- dplyr::left_join(samples_clean, events_clean, by = c("id", "time"))
+
+## further checking
+### Is samples total time greater than events total time?
+### We just need 1 participant
+samples_A02 <- 
+  samples_clean %>% 
+  dplyr::filter(id == "A02")
+
+events_A02 <- 
+  events_clean %>% 
+  dplyr::filter(id == "A02")
+
+## samples timeline vs event timeline
+tail(samples_A02$time, 1) > tail(events_A02$time, 1) # False
+head(samples_A02$time, 1) - head(events_A02$time, 1) # samples starts 65.287.108 (65sec & 287ms)  before samples = calibration? 
+tail(samples_A02$time, 1) - tail(events_A02$time, 1) # events is 11.201 (11ms) longer at the end = pratically together.
+
+## the "unkonown" maybe an adjustment between timelines?
+## try differences between time and "unknown" variable in events - IGNORE Unknown
+tail(events_A02$unknown, 1) # 23559839187 ms 
+sprintf("%.1f", tail(events_A02$time, 1) - tail(events_A02$unknown, 1)) # events time - events unknown = 1509424791634423 ms
+tail(samples_A02$time, 1) - (tail(events_A02$time, 1) - tail(events_A02$unknown, 1)) # unknown has nothing to do with anything
+
+# fuzzy left join
+dataset_raw <- 
+  fuzzyjoin::fuzzy_left_join(samples_clean, events_join, 
+                             by=c("id"="id", "time"="start_time", "time"="end_time"),
+                             match_fun=list(`==`, `>=`, `<=`)
+  ) %>% 
+  dplyr::rename(id = id.x) %>% 
+  dplyr::select(-id.y, -end_time, -start_time)
+
+
+## ids are consistent between data and log?
+id_exp1 <- levels(data_exp1$id)
+id_log_code1 <- levels(p_info_exp1$Code1) 
+id_log_code2 <- levels(p_info_exp1$Code2)
+
+## Participants in exp data but NOT in log
+## Use Code 1 or Code 2?
+## code 1
+sum(!id_exp1 %in% id_log_code1) # 10 entries do not match
+not_in_code1 <- setdiff(id_exp1, id_log_code1) 
+
+## code 2
+sum(!id_exp1 %in% id_log_code2) # 46 entries do not match
+not_in_code2 <- setdiff(id_exp1, id_log_code2) 
+
+## stick with code 1
+## can we find missing Code 1 in Code 2?
+miss_log <- 
+  p_info_exp1 %>% 
+  filter(Code2 %in% not_in_code1) # A02, A08 are not missing anymore
+
+not_in_code1_2 <- not_in_code1[3:10] # still missing
+
+## Participants in log but NOT in exp data
+setdiff(id_log_code1, id_exp1) # 26
+setdiff(id_log_code2, id_exp1) # 62
+
+## check exclusions 
+## each entry from the "Laboratory log v2" (from OSF):
+# "28 Nov 2017: Two infants we recruited have erroneously been given the same code: b1504170. 
+# Data from these two infants will be stored in separate places, to avoid confusion.
+# "12 Dec 2018: Data from Participant A79 collected using the “main” script was erroneously 
+# coded as A78 and overwrote the previous data. They have been recoded. 
+# The Gap data were coded correctly from the start and unaffected by this error."
+
+excl_osf <- c("m0403170", "A100", "A162", "A167", "A170")
+to_exclude <- intersect(excl_osf, id_exp1) # to exclude latter
+sum(excl_osf %in% not_in_code1_2) # 0 none match the missing ones
 
 ## "Main data errouneously coded as A78"
 "A79" %in% id_exp1 # False
@@ -469,4 +470,11 @@ length(unique(data_exp1_clean$id)) # experimental after exclusions = 143
 ## compare to 102 from participants log
 length(p_info_exp1$Code1)  
 
+# In search of A90
+setdiff(p_info_exp1_v3$id, data_exp1$id) # A90 is missing
 
+## in search of "A90"
+x = read.csv(here("03_output/01_wrangling/dataset.csv")) # full dataset
+"A90" %in% x$id # true
+y = x %>% filter(id == "A90") 
+"Experiment1" %in% y$experiment # False! A90 is NOT a participant of Exp1
