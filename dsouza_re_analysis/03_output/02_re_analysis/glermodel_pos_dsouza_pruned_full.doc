@@ -9,31 +9,31 @@ xmlns="http://www.w3.org/TR/REC-html40">
 <meta name=ProgId content=Word.Document>
 <meta name=Generator content="Microsoft Word 15">
 <meta name=Originator content="Microsoft Word 15">
-<link rel=File-List href="glermodel_pre_dsouza_pruned_arquivos/filelist.xml">
+<link rel=File-List href="glermodel_pos_dsouza_pruned_arquivos/filelist.xml">
 <!--[if gte mso 9]><xml>
  <o:DocumentProperties>
   <o:Author>Rodrigo Dal Ben</o:Author>
   <o:Template>Normal</o:Template>
   <o:LastAuthor>Rodrigo Dal Ben</o:LastAuthor>
-  <o:Revision>5</o:Revision>
+  <o:Revision>7</o:Revision>
   <o:TotalTime>7</o:TotalTime>
-  <o:Created>2020-06-15T14:41:00Z</o:Created>
-  <o:LastSaved>2020-06-15T14:51:00Z</o:LastSaved>
-  <o:Pages>1</o:Pages>
-  <o:Words>283</o:Words>
-  <o:Characters>1534</o:Characters>
-  <o:Lines>12</o:Lines>
-  <o:Paragraphs>3</o:Paragraphs>
-  <o:CharactersWithSpaces>1814</o:CharactersWithSpaces>
+  <o:Created>2020-06-15T14:40:00Z</o:Created>
+  <o:LastSaved>2020-06-19T17:29:00Z</o:LastSaved>
+  <o:Pages>2</o:Pages>
+  <o:Words>317</o:Words>
+  <o:Characters>1715</o:Characters>
+  <o:Lines>14</o:Lines>
+  <o:Paragraphs>4</o:Paragraphs>
+  <o:CharactersWithSpaces>2028</o:CharactersWithSpaces>
   <o:Version>16.00</o:Version>
  </o:DocumentProperties>
  <o:OfficeDocumentSettings>
   <o:AllowPNG/>
  </o:OfficeDocumentSettings>
 </xml><![endif]-->
-<link rel=themeData href="glermodel_pre_dsouza_pruned_arquivos/themedata.thmx">
+<link rel=themeData href="glermodel_pos_dsouza_pruned_arquivos/themedata.thmx">
 <link rel=colorSchemeMapping
-href="glermodel_pre_dsouza_pruned_arquivos/colorschememapping.xml">
+href="glermodel_pos_dsouza_pruned_arquivos/colorschememapping.xml">
 <!--[if gte mso 9]><xml>
  <w:WordDocument>
   <w:View>Print</w:View>
@@ -54,6 +54,7 @@ href="glermodel_pre_dsouza_pruned_arquivos/colorschememapping.xml">
    <w:BreakWrappedTables/>
    <w:SplitPgBreakAndParaMark/>
   </w:Compatibility>
+  <w:BrowserLevel>MicrosoftInternetExplorer4</w:BrowserLevel>
   <m:mathPr>
    <m:mathFont m:val="Cambria Math"/>
    <m:brkBin m:val="before"/>
@@ -646,7 +647,7 @@ href="glermodel_pre_dsouza_pruned_arquivos/colorschememapping.xml">
 	mso-font-charset:1;
 	mso-generic-font-family:roman;
 	mso-font-pitch:variable;
-	mso-font-signature:-536869121 1107305727 33554432 0 415 0;}
+	mso-font-signature:0 0 0 0 0 0;}
  /* Style Definitions */
  p.MsoNormal, li.MsoNormal, div.MsoNormal
 	{mso-style-unhide:no;
@@ -660,7 +661,8 @@ href="glermodel_pre_dsouza_pruned_arquivos/colorschememapping.xml">
 	mso-fareast-font-family:"Times New Roman";
 	mso-fareast-theme-font:minor-fareast;}
 p
-	{mso-style-priority:99;
+	{mso-style-noshow:yes;
+	mso-style-priority:99;
 	mso-margin-top-alt:auto;
 	margin-right:0cm;
 	mso-margin-bottom-alt:auto;
@@ -671,6 +673,8 @@ p
 	mso-fareast-font-family:"Times New Roman";}
 p.msonormal0, li.msonormal0, div.msonormal0
 	{mso-style-name:msonormal;
+	mso-style-noshow:yes;
+	mso-style-priority:99;
 	mso-style-unhide:no;
 	mso-margin-top-alt:auto;
 	margin-right:0cm;
@@ -750,96 +754,94 @@ lang=EN-US style='font-size:10.0pt;mso-ansi-language:EN-US'><o:p></o:p></span></
 <p style='margin-top:0cm;margin-right:0cm;margin-bottom:8.0pt;margin-left:0cm'><span
 style='white-space:pre-wrap'><i><span lang=EN-US style='font-size:10.0pt;
 color:black;mso-ansi-language:EN-US'>Fixed effects from the final model for the
-Training phase of D&#8217;Souza et al. (2020), with interpretation for
-significant effects</span></span></i><span lang=EN-US style='font-size:10.0pt;
-mso-ansi-language:EN-US'><o:p></o:p></span></p>
+Test phase of D&#8217;Souza et al. (2020), with interpretation for significant
+effects</span></span></i><span style='font-size:10.0pt'><o:p></o:p></span></p>
 
 <table class=MsoNormalTable border=0 cellspacing=0 cellpadding=0 width=0
- style='border-collapse:collapse;mso-table-layout-alt:fixed;mso-yfti-tbllook:
- 1184'>
+ style='width:16.0cm;border-collapse:collapse;mso-yfti-tbllook:1184;mso-padding-alt:
+ 0cm 5.4pt 0cm 5.4pt'>
  <tr style='mso-yfti-irow:0;mso-yfti-firstrow:yes'>
-  <td width=202 style='width:151.3pt;border:none;border-top:double windowtext 2.25pt;
-  padding:5.65pt 5.65pt 5.65pt 5.65pt'>
-  <p class=MsoNormal><b><span lang=EN-US style='font-size:10.0pt;mso-fareast-font-family:
-  "Times New Roman";mso-ansi-language:EN-US'>&nbsp;<o:p></o:p></span></b></p>
+  <td style='border:none;border-top:double windowtext 2.25pt;padding:5.65pt 5.65pt 5.65pt 5.65pt'>
+  <p class=MsoNormal><b><span style='font-size:10.0pt;mso-fareast-font-family:
+  "Times New Roman"'>&nbsp;<o:p></o:p></span></b></p>
   </td>
-  <td width=228 colspan=3 style='width:171.0pt;border:none;border-top:double windowtext 2.25pt;
+  <td colspan=3 style='border:none;border-top:double windowtext 2.25pt;
   padding:5.65pt 5.65pt 5.65pt 5.65pt'>
   <p class=MsoNormal align=center style='text-align:center'><span class=SpellE><b><span
   style='font-size:10.0pt;mso-fareast-font-family:"Times New Roman"'>Proportion</span></b></span><b><span
   style='font-size:10.0pt;mso-fareast-font-family:"Times New Roman"'> <span
   class=SpellE>Looking</span> <span class=SpellE>to</span> Target<o:p></o:p></span></b></p>
   </td>
-  <td width=3 valign=top style='width:2.5pt;border:none;border-top:double windowtext 2.25pt;
-  padding:.75pt .75pt .75pt .75pt'>
+  <td valign=top style='border:none;border-top:double windowtext 2.25pt;
+  padding:0cm 5.4pt 0cm 5.4pt'>
   <p class=MsoNormal align=center style='text-align:center'><b><span
   style='font-size:10.0pt;mso-fareast-font-family:"Times New Roman"'><o:p>&nbsp;</o:p></span></b></p>
   </td>
-  <td width=191 valign=top style='width:143.0pt;border:none;border-top:double windowtext 2.25pt;
-  padding:.75pt .75pt .75pt .75pt'>
+  <td width=160 valign=top style='width:120.2pt;border:none;border-top:double windowtext 2.25pt;
+  padding:0cm 5.4pt 0cm 5.4pt'>
   <p class=MsoNormal align=center style='text-align:center'><b><span
   style='font-size:10.0pt;mso-fareast-font-family:"Times New Roman"'><o:p>&nbsp;</o:p></span></b></p>
   </td>
  </tr>
  <tr style='mso-yfti-irow:1'>
-  <td width=202 style='width:151.3pt;border:none;border-bottom:solid windowtext 1.0pt;
-  mso-border-bottom-alt:solid windowtext .75pt;padding:.75pt .75pt .75pt .75pt'>
+  <td style='border:none;border-bottom:solid windowtext 1.0pt;mso-border-bottom-alt:
+  solid windowtext .75pt;padding:.75pt .75pt .75pt .75pt'>
   <p class=MsoNormal><span class=SpellE><i><span style='font-size:10.0pt;
   mso-fareast-font-family:"Times New Roman"'>Predictors</span></i></span><i><span
   style='font-size:10.0pt;mso-fareast-font-family:"Times New Roman"'><o:p></o:p></span></i></p>
   </td>
-  <td width=81 style='width:60.55pt;border:none;border-bottom:solid windowtext 1.0pt;
-  mso-border-bottom-alt:solid windowtext .75pt;padding:.75pt .75pt .75pt .75pt'>
+  <td style='border:none;border-bottom:solid windowtext 1.0pt;mso-border-bottom-alt:
+  solid windowtext .75pt;padding:.75pt .75pt .75pt .75pt'>
   <p class=MsoNormal align=center style='text-align:center'><span class=SpellE><i><span
   style='font-size:10.0pt;mso-fareast-font-family:"Times New Roman"'>Odds</span></i></span><i><span
   style='font-size:10.0pt;mso-fareast-font-family:"Times New Roman"'> <span
   class=SpellE>Ratios</span><o:p></o:p></span></i></p>
   </td>
-  <td width=87 style='width:65.3pt;border:none;border-bottom:solid windowtext 1.0pt;
-  mso-border-bottom-alt:solid windowtext .75pt;padding:.75pt .75pt .75pt .75pt'>
+  <td style='border:none;border-bottom:solid windowtext 1.0pt;mso-border-bottom-alt:
+  solid windowtext .75pt;padding:.75pt .75pt .75pt .75pt'>
   <p class=MsoNormal align=center style='text-align:center'><i><span
   style='font-size:10.0pt;mso-fareast-font-family:"Times New Roman"'>CI<o:p></o:p></span></i></p>
   </td>
-  <td width=60 style='width:45.15pt;border:none;border-bottom:solid windowtext 1.0pt;
-  mso-border-bottom-alt:solid windowtext .75pt;padding:.75pt .75pt .75pt .75pt'>
+  <td style='border:none;border-bottom:solid windowtext 1.0pt;mso-border-bottom-alt:
+  solid windowtext .75pt;padding:.75pt .75pt .75pt .75pt'>
   <p class=MsoNormal align=center style='text-align:center'><i><span
   style='font-size:10.0pt;mso-fareast-font-family:"Times New Roman"'>p<o:p></o:p></span></i></p>
   </td>
-  <td width=3 valign=top style='width:2.5pt;border:none;border-bottom:solid windowtext 1.0pt;
-  mso-border-bottom-alt:solid windowtext .75pt;padding:.75pt .75pt .75pt .75pt'>
+  <td valign=top style='border:none;border-bottom:solid windowtext 1.0pt;
+  mso-border-bottom-alt:solid windowtext .75pt;padding:0cm 5.4pt 0cm 5.4pt'>
   <p class=MsoNormal align=center style='text-align:center'><i><span
   style='font-size:10.0pt;mso-fareast-font-family:"Times New Roman"'><o:p>&nbsp;</o:p></span></i></p>
   </td>
-  <td width=191 valign=top style='width:143.0pt;border:none;border-bottom:solid windowtext 1.0pt;
-  mso-border-bottom-alt:solid windowtext .75pt;padding:.75pt .75pt .75pt .75pt'>
+  <td width=160 valign=top style='width:120.2pt;border:none;border-bottom:solid windowtext 1.0pt;
+  mso-border-bottom-alt:solid windowtext .75pt;padding:0cm 5.4pt 0cm 5.4pt'>
   <p class=MsoNormal align=center style='text-align:center'><span class=SpellE><i><span
   style='font-size:10.0pt;mso-fareast-font-family:"Times New Roman"'>Interpretation</span></i></span><i><span
   style='font-size:10.0pt;mso-fareast-font-family:"Times New Roman"'><o:p></o:p></span></i></p>
   </td>
  </tr>
  <tr style='mso-yfti-irow:2'>
-  <td width=202 valign=top style='width:151.3pt;padding:5.65pt 5.65pt 5.65pt 5.65pt'>
+  <td valign=top style='padding:5.65pt 5.65pt 5.65pt 5.65pt'>
   <p class=MsoNormal><span style='font-size:10.0pt;mso-fareast-font-family:
   "Times New Roman"'>(<span class=SpellE>Intercept</span>)<o:p></o:p></span></p>
   </td>
-  <td width=81 valign=top style='width:60.55pt;padding:5.65pt 5.65pt 5.65pt 5.65pt'>
+  <td valign=top style='padding:5.65pt 5.65pt 5.65pt 5.65pt'>
   <p class=MsoNormal align=center style='text-align:center'><span
-  style='font-size:10.0pt;mso-fareast-font-family:"Times New Roman"'>0.02<o:p></o:p></span></p>
+  style='font-size:10.0pt;mso-fareast-font-family:"Times New Roman"'>0.07<o:p></o:p></span></p>
   </td>
-  <td width=87 valign=top style='width:65.3pt;padding:5.65pt 5.65pt 5.65pt 5.65pt'>
+  <td valign=top style='padding:5.65pt 5.65pt 5.65pt 5.65pt'>
   <p class=MsoNormal align=center style='text-align:center'><span
-  style='font-size:10.0pt;mso-fareast-font-family:"Times New Roman"'>0.01&nbsp;&#8211;&nbsp;0.04<o:p></o:p></span></p>
+  style='font-size:10.0pt;mso-fareast-font-family:"Times New Roman"'>0.03&nbsp;&#8211;&nbsp;0.17<o:p></o:p></span></p>
   </td>
-  <td width=60 valign=top style='width:45.15pt;padding:5.65pt 5.65pt 5.65pt 5.65pt'>
+  <td valign=top style='padding:5.65pt 5.65pt 5.65pt 5.65pt'>
   <p class=MsoNormal align=center style='text-align:center'><strong><span
   style='font-size:10.0pt;mso-fareast-font-family:"Times New Roman"'>&lt;0.001</span></strong><span
   style='font-size:10.0pt;mso-fareast-font-family:"Times New Roman"'><o:p></o:p></span></p>
   </td>
-  <td width=3 valign=top style='width:2.5pt;padding:.75pt .75pt .75pt .75pt'>
+  <td valign=top style='padding:0cm 5.4pt 0cm 5.4pt'>
   <p class=MsoNormal align=center style='text-align:center'><strong><span
-  style='font-size:10.0pt;mso-fareast-font-family:"Times New Roman"'><o:p>&nbsp;</o:p></span></strong></p>
+  style='font-size:10.0pt'><o:p>&nbsp;</o:p></span></strong></p>
   </td>
-  <td width=191 valign=top style='width:143.0pt;padding:.75pt .75pt .75pt .75pt'>
+  <td width=160 valign=top style='width:120.2pt;padding:0cm 5.4pt 0cm 5.4pt'>
   <p class=MsoNormal align=center style='text-align:center'><span lang=EN-US
   style='font-size:10.0pt;color:black;mso-ansi-language:EN-US'>The odds of </span><i><span
   style='white-space:pre-wrap'><span lang=EN-US style='font-size:10.0pt;
@@ -855,57 +857,58 @@ mso-ansi-language:EN-US'><o:p></o:p></span></p>
   </td>
  </tr>
  <tr style='mso-yfti-irow:3'>
-  <td width=202 valign=top style='width:151.3pt;padding:5.65pt 5.65pt 5.65pt 5.65pt'>
+  <td valign=top style='padding:5.65pt 5.65pt 5.65pt 5.65pt'>
   <p class=MsoNormal><span class=SpellE><span style='font-size:10.0pt;
   mso-fareast-font-family:"Times New Roman"'>language</span></span><span
   style='font-size:10.0pt;mso-fareast-font-family:"Times New Roman"'> [<span
-  class=SpellE>Bilinguals</span>]<o:p></o:p></span></p>
+  class=SpellE>Bilinguals</span>]</span><span style='font-size:10.0pt'><o:p></o:p></span></p>
   </td>
-  <td width=81 valign=top style='width:60.55pt;padding:5.65pt 5.65pt 5.65pt 5.65pt'>
+  <td valign=top style='padding:5.65pt 5.65pt 5.65pt 5.65pt'>
   <p class=MsoNormal align=center style='text-align:center'><span
-  style='font-size:10.0pt;mso-fareast-font-family:"Times New Roman"'>0.98<o:p></o:p></span></p>
+  style='font-size:10.0pt;mso-fareast-font-family:"Times New Roman"'>0.27<o:p></o:p></span></p>
   </td>
-  <td width=87 valign=top style='width:65.3pt;padding:5.65pt 5.65pt 5.65pt 5.65pt'>
+  <td valign=top style='padding:5.65pt 5.65pt 5.65pt 5.65pt'>
   <p class=MsoNormal align=center style='text-align:center'><span
-  style='font-size:10.0pt;mso-fareast-font-family:"Times New Roman"'>0.39&nbsp;&#8211;&nbsp;2.49<o:p></o:p></span></p>
+  style='font-size:10.0pt;mso-fareast-font-family:"Times New Roman"'>0.08&nbsp;&#8211;&nbsp;0.96<o:p></o:p></span></p>
   </td>
-  <td width=60 valign=top style='width:45.15pt;padding:5.65pt 5.65pt 5.65pt 5.65pt'>
-  <p class=MsoNormal align=center style='text-align:center'><span
-  style='font-size:10.0pt;mso-fareast-font-family:"Times New Roman"'>0.970<o:p></o:p></span></p>
+  <td valign=top style='padding:5.65pt 5.65pt 5.65pt 5.65pt'>
+  <p class=MsoNormal align=center style='text-align:center'><strong><span
+  style='font-size:10.0pt;mso-fareast-font-family:"Times New Roman"'>0.043</span></strong><span
+  style='font-size:10.0pt;mso-fareast-font-family:"Times New Roman"'><o:p></o:p></span></p>
   </td>
-  <td width=3 valign=top style='width:2.5pt;padding:.75pt .75pt .75pt .75pt'>
+  <td valign=top style='padding:0cm 5.4pt 0cm 5.4pt'>
   <p class=MsoNormal align=center style='text-align:center'><span
   style='font-size:10.0pt;mso-fareast-font-family:"Times New Roman"'><o:p>&nbsp;</o:p></span></p>
   </td>
-  <td width=191 valign=top style='width:143.0pt;padding:.75pt .75pt .75pt .75pt'>
+  <td width=160 valign=top style='width:120.2pt;padding:0cm 5.4pt 0cm 5.4pt'>
   <p class=MsoNormal align=center style='text-align:center'><span
   style='font-size:10.0pt;mso-fareast-font-family:"Times New Roman"'><o:p>&nbsp;</o:p></span></p>
   </td>
  </tr>
  <tr style='mso-yfti-irow:4'>
-  <td width=202 valign=top style='width:151.3pt;padding:5.65pt 5.65pt 5.65pt 5.65pt'>
+  <td valign=top style='padding:5.65pt 5.65pt 5.65pt 5.65pt'>
   <p class=MsoNormal><span class=SpellE><span style='font-size:10.0pt;
   mso-fareast-font-family:"Times New Roman"'>TimeBin</span></span><span
   style='font-size:10.0pt;mso-fareast-font-family:"Times New Roman"'><o:p></o:p></span></p>
   </td>
-  <td width=81 valign=top style='width:60.55pt;padding:5.65pt 5.65pt 5.65pt 5.65pt'>
+  <td valign=top style='padding:5.65pt 5.65pt 5.65pt 5.65pt'>
   <p class=MsoNormal align=center style='text-align:center'><span
-  style='font-size:10.0pt;mso-fareast-font-family:"Times New Roman"'>2.18<o:p></o:p></span></p>
+  style='font-size:10.0pt;mso-fareast-font-family:"Times New Roman"'>0.84<o:p></o:p></span></p>
   </td>
-  <td width=87 valign=top style='width:65.3pt;padding:5.65pt 5.65pt 5.65pt 5.65pt'>
+  <td valign=top style='padding:5.65pt 5.65pt 5.65pt 5.65pt'>
   <p class=MsoNormal align=center style='text-align:center'><span
-  style='font-size:10.0pt;mso-fareast-font-family:"Times New Roman"'>2.06&nbsp;&#8211;&nbsp;2.30<o:p></o:p></span></p>
+  style='font-size:10.0pt;mso-fareast-font-family:"Times New Roman"'>0.80&nbsp;&#8211;&nbsp;0.88<o:p></o:p></span></p>
   </td>
-  <td width=60 valign=top style='width:45.15pt;padding:5.65pt 5.65pt 5.65pt 5.65pt'>
+  <td valign=top style='padding:5.65pt 5.65pt 5.65pt 5.65pt'>
   <p class=MsoNormal align=center style='text-align:center'><strong><span
   style='font-size:10.0pt;mso-fareast-font-family:"Times New Roman"'>&lt;0.001</span></strong><span
   style='font-size:10.0pt;mso-fareast-font-family:"Times New Roman"'><o:p></o:p></span></p>
   </td>
-  <td width=3 valign=top style='width:2.5pt;padding:.75pt .75pt .75pt .75pt'>
+  <td valign=top style='padding:0cm 5.4pt 0cm 5.4pt'>
   <p class=MsoNormal align=center style='text-align:center'><strong><span
-  style='font-size:10.0pt;mso-fareast-font-family:"Times New Roman"'><o:p>&nbsp;</o:p></span></strong></p>
+  style='font-size:10.0pt'><o:p>&nbsp;</o:p></span></strong></p>
   </td>
-  <td width=191 valign=top style='width:143.0pt;padding:.75pt .75pt .75pt .75pt'>
+  <td width=160 valign=top style='width:120.2pt;padding:0cm 5.4pt 0cm 5.4pt'>
   <p class=MsoNormal align=center style='text-align:center'><span lang=EN-US
   style='font-size:10.0pt;color:black;mso-ansi-language:EN-US'>The odds of
   monolinguals correctly anticipating</span><i><span style='white-space:pre-wrap'><span
@@ -913,245 +916,258 @@ mso-ansi-language:EN-US'><o:p></o:p></span></p>
   baseline trial</span></span></i><span style='white-space:pre-wrap'><span
   lang=EN-US style='font-size:10.0pt;mso-ansi-language:EN-US'> <u><span
   style='-webkit-text-decoration-skip:none;text-decoration-skip-ink:none;
-  white-space:pre-wrap'>increase</span> </u>with each successive time bin</span><strong><span
+  white-space:pre-wrap'>decrease</span> </u>with each successive time bin</span><strong><span
   lang=EN-US style='font-size:10.0pt;mso-fareast-font-family:"Times New Roman";
   mso-ansi-language:EN-US'><o:p></o:p></span></strong></p>
   </td>
  </tr>
  <tr style='mso-yfti-irow:5'>
-  <td width=202 valign=top style='width:151.3pt;padding:5.65pt 5.65pt 5.65pt 5.65pt'>
+  <td valign=top style='padding:5.65pt 5.65pt 5.65pt 5.65pt'>
   <p class=MsoNormal><span class=SpellE><span style='font-size:10.0pt;
   mso-fareast-font-family:"Times New Roman"'>trial_num_scaled</span></span><span
-  style='font-size:10.0pt;mso-fareast-font-family:"Times New Roman"'><o:p></o:p></span></p>
+  style='font-size:10.0pt'><o:p></o:p></span></p>
   </td>
-  <td width=81 valign=top style='width:60.55pt;padding:5.65pt 5.65pt 5.65pt 5.65pt'>
+  <td valign=top style='padding:5.65pt 5.65pt 5.65pt 5.65pt'>
   <p class=MsoNormal align=center style='text-align:center'><span
-  style='font-size:10.0pt;mso-fareast-font-family:"Times New Roman"'>1.25<o:p></o:p></span></p>
+  style='font-size:10.0pt;mso-fareast-font-family:"Times New Roman"'>0.76<o:p></o:p></span></p>
   </td>
-  <td width=87 valign=top style='width:65.3pt;padding:5.65pt 5.65pt 5.65pt 5.65pt'>
+  <td valign=top style='padding:5.65pt 5.65pt 5.65pt 5.65pt'>
   <p class=MsoNormal align=center style='text-align:center'><span
-  style='font-size:10.0pt;mso-fareast-font-family:"Times New Roman"'>1.21&nbsp;&#8211;&nbsp;1.29<o:p></o:p></span></p>
+  style='font-size:10.0pt;mso-fareast-font-family:"Times New Roman"'>0.74&nbsp;&#8211;&nbsp;0.79<o:p></o:p></span></p>
   </td>
-  <td width=60 valign=top style='width:45.15pt;padding:5.65pt 5.65pt 5.65pt 5.65pt'>
+  <td valign=top style='padding:5.65pt 5.65pt 5.65pt 5.65pt'>
   <p class=MsoNormal align=center style='text-align:center'><strong><span
   style='font-size:10.0pt;mso-fareast-font-family:"Times New Roman"'>&lt;0.001</span></strong><span
   style='font-size:10.0pt;mso-fareast-font-family:"Times New Roman"'><o:p></o:p></span></p>
   </td>
-  <td width=3 valign=top style='width:2.5pt;padding:.75pt .75pt .75pt .75pt'>
+  <td valign=top style='padding:0cm 5.4pt 0cm 5.4pt'>
   <p class=MsoNormal align=center style='text-align:center'><strong><span
-  style='font-size:10.0pt;mso-fareast-font-family:"Times New Roman"'><o:p>&nbsp;</o:p></span></strong></p>
+  style='font-size:10.0pt'><o:p>&nbsp;</o:p></span></strong></p>
   </td>
-  <td width=191 valign=top style='width:143.0pt;padding:.75pt .75pt .75pt .75pt'>
+  <td width=160 valign=top style='width:120.2pt;padding:0cm 5.4pt 0cm 5.4pt'>
   <p class=MsoNormal align=center style='text-align:center'><span lang=EN-US
-  style='font-size:10.0pt;color:black;mso-ansi-language:EN-US'>The odds of
-  monolinguals correctly anticipating</span><i><span style='white-space:pre-wrap'><span
+  style='font-size:10.0pt;color:black;mso-ansi-language:EN-US'>The odds of monolinguals
+  correctly anticipating</span><i><span style='white-space:pre-wrap'><span
   lang=EN-US style='font-size:10.0pt;mso-ansi-language:EN-US'> during the
   baseline trial</span></span></i><span style='white-space:pre-wrap'><span
   lang=EN-US style='font-size:10.0pt;mso-ansi-language:EN-US'> <u><span
   style='-webkit-text-decoration-skip:none;text-decoration-skip-ink:none;
-  white-space:pre-wrap'>increase</span> </u>with each successive trial</span><strong><span
+  white-space:pre-wrap'>decrease</span> </u>with each successive trial</span><strong><span
   lang=EN-US style='font-size:10.0pt;mso-fareast-font-family:"Times New Roman";
   mso-ansi-language:EN-US'><o:p></o:p></span></strong></p>
   </td>
  </tr>
  <tr style='mso-yfti-irow:6'>
-  <td width=202 valign=top style='width:151.3pt;padding:5.65pt 5.65pt 5.65pt 5.65pt'>
+  <td valign=top style='padding:5.65pt 5.65pt 5.65pt 5.65pt'>
   <p class=MsoNormal><span class=SpellE><span style='font-size:10.0pt;
   mso-fareast-font-family:"Times New Roman"'>language</span></span><span
   style='font-size:10.0pt;mso-fareast-font-family:"Times New Roman"'> [<span
   class=SpellE>Bilinguals</span>] *<br>
-  <span class=SpellE>TimeBin</span><o:p></o:p></span></p>
+  <span class=SpellE>TimeBin</span></span><span style='font-size:10.0pt'><o:p></o:p></span></p>
   </td>
-  <td width=81 valign=top style='width:60.55pt;padding:5.65pt 5.65pt 5.65pt 5.65pt'>
+  <td valign=top style='padding:5.65pt 5.65pt 5.65pt 5.65pt'>
   <p class=MsoNormal align=center style='text-align:center'><span
-  style='font-size:10.0pt;mso-fareast-font-family:"Times New Roman"'>0.72<o:p></o:p></span></p>
+  style='font-size:10.0pt;mso-fareast-font-family:"Times New Roman"'>1.97<o:p></o:p></span></p>
   </td>
-  <td width=87 valign=top style='width:65.3pt;padding:5.65pt 5.65pt 5.65pt 5.65pt'>
+  <td valign=top style='padding:5.65pt 5.65pt 5.65pt 5.65pt'>
   <p class=MsoNormal align=center style='text-align:center'><span
-  style='font-size:10.0pt;mso-fareast-font-family:"Times New Roman"'>0.67&nbsp;&#8211;&nbsp;0.78<o:p></o:p></span></p>
+  style='font-size:10.0pt;mso-fareast-font-family:"Times New Roman"'>1.83&nbsp;&#8211;&nbsp;2.11<o:p></o:p></span></p>
   </td>
-  <td width=60 valign=top style='width:45.15pt;padding:5.65pt 5.65pt 5.65pt 5.65pt'>
+  <td valign=top style='padding:5.65pt 5.65pt 5.65pt 5.65pt'>
   <p class=MsoNormal align=center style='text-align:center'><strong><span
   style='font-size:10.0pt;mso-fareast-font-family:"Times New Roman"'>&lt;0.001</span></strong><span
   style='font-size:10.0pt;mso-fareast-font-family:"Times New Roman"'><o:p></o:p></span></p>
   </td>
-  <td width=3 valign=top style='width:2.5pt;padding:.75pt .75pt .75pt .75pt'>
+  <td valign=top style='padding:0cm 5.4pt 0cm 5.4pt'>
   <p class=MsoNormal align=center style='text-align:center'><strong><span
-  style='font-size:10.0pt;mso-fareast-font-family:"Times New Roman"'><o:p>&nbsp;</o:p></span></strong></p>
+  style='font-size:10.0pt'><o:p>&nbsp;</o:p></span></strong></p>
   </td>
-  <td width=191 valign=top style='width:143.0pt;padding:.75pt .75pt .75pt .75pt'>
+  <td width=160 valign=top style='width:120.2pt;padding:0cm 5.4pt 0cm 5.4pt'>
   <p class=MsoNormal align=center style='text-align:center'><span lang=EN-US
   style='font-size:10.0pt;color:black;mso-ansi-language:EN-US'>The odds of
   bilinguals correctly anticipating </span><i><span style='white-space:pre-wrap'><span
   lang=EN-US style='font-size:10.0pt;mso-ansi-language:EN-US'>during the
   baseline trial</span></span></i><span style='white-space:pre-wrap'><span
-  lang=EN-US style='font-size:10.0pt;mso-ansi-language:EN-US'> <u>decrease,
-  compared to monolinguals</u>, with each successive time bin
-  (bilinguals&#8217; odds don&#8217;t increase as much as monolinguals&#8217;)</span><strong><span
+  lang=EN-US style='font-size:10.0pt;mso-ansi-language:EN-US'> <u>increase even
+  more than monolinguals</u><span style='white-space:pre-wrap'> with each
+  successive time bin (these odds are in addition to the odds for monolinguals)</span></span><strong><span
   lang=EN-US style='font-size:10.0pt;mso-fareast-font-family:"Times New Roman";
   mso-ansi-language:EN-US'><o:p></o:p></span></strong></p>
   </td>
  </tr>
  <tr style='mso-yfti-irow:7'>
-  <td width=202 valign=top style='width:151.3pt;padding:5.65pt 5.65pt 5.65pt 5.65pt'>
+  <td valign=top style='padding:5.65pt 5.65pt 5.65pt 5.65pt'>
   <p class=MsoNormal><span lang=EN-US style='font-size:10.0pt;mso-fareast-font-family:
   "Times New Roman";mso-ansi-language:EN-US'>language [Bilinguals] *<br>
-  <span class=SpellE>trial_num_scaled</span><o:p></o:p></span></p>
+  <span class=SpellE>trial_num_scaled</span></span><span lang=EN-US
+  style='font-size:10.0pt;mso-ansi-language:EN-US'><o:p></o:p></span></p>
   </td>
-  <td width=81 valign=top style='width:60.55pt;padding:5.65pt 5.65pt 5.65pt 5.65pt'>
+  <td valign=top style='padding:5.65pt 5.65pt 5.65pt 5.65pt'>
   <p class=MsoNormal align=center style='text-align:center'><span
-  style='font-size:10.0pt;mso-fareast-font-family:"Times New Roman"'>1.04<o:p></o:p></span></p>
+  style='font-size:10.0pt;mso-fareast-font-family:"Times New Roman"'>1.61<o:p></o:p></span></p>
   </td>
-  <td width=87 valign=top style='width:65.3pt;padding:5.65pt 5.65pt 5.65pt 5.65pt'>
+  <td valign=top style='padding:5.65pt 5.65pt 5.65pt 5.65pt'>
   <p class=MsoNormal align=center style='text-align:center'><span
-  style='font-size:10.0pt;mso-fareast-font-family:"Times New Roman"'>1.00&nbsp;&#8211;&nbsp;1.09<o:p></o:p></span></p>
+  style='font-size:10.0pt;mso-fareast-font-family:"Times New Roman"'>1.54&nbsp;&#8211;&nbsp;1.69<o:p></o:p></span></p>
   </td>
-  <td width=60 valign=top style='width:45.15pt;padding:5.65pt 5.65pt 5.65pt 5.65pt'>
-  <p class=MsoNormal align=center style='text-align:center'><span
-  style='font-size:10.0pt;mso-fareast-font-family:"Times New Roman"'>0.073<o:p></o:p></span></p>
-  </td>
-  <td width=3 valign=top style='width:2.5pt;padding:.75pt .75pt .75pt .75pt'>
-  <p class=MsoNormal align=center style='text-align:center'><span
-  style='font-size:10.0pt;mso-fareast-font-family:"Times New Roman"'><o:p>&nbsp;</o:p></span></p>
-  </td>
-  <td width=191 valign=top style='width:143.0pt;padding:.75pt .75pt .75pt .75pt'>
-  <p class=MsoNormal align=center style='text-align:center'><span
-  style='font-size:10.0pt;mso-fareast-font-family:"Times New Roman"'><o:p>&nbsp;</o:p></span></p>
-  </td>
- </tr>
- <tr style='mso-yfti-irow:8'>
-  <td width=202 valign=top style='width:151.3pt;padding:5.65pt 5.65pt 5.65pt 5.65pt'>
-  <p class=MsoNormal><span class=SpellE><span style='font-size:10.0pt;
-  mso-fareast-font-family:"Times New Roman"'>TimeBin</span></span><span
-  style='font-size:10.0pt;mso-fareast-font-family:"Times New Roman"'> *<br>
-  <span class=SpellE>trial_num_scaled</span><o:p></o:p></span></p>
-  </td>
-  <td width=81 valign=top style='width:60.55pt;padding:5.65pt 5.65pt 5.65pt 5.65pt'>
-  <p class=MsoNormal align=center style='text-align:center'><span
-  style='font-size:10.0pt;mso-fareast-font-family:"Times New Roman"'>0.95<o:p></o:p></span></p>
-  </td>
-  <td width=87 valign=top style='width:65.3pt;padding:5.65pt 5.65pt 5.65pt 5.65pt'>
-  <p class=MsoNormal align=center style='text-align:center'><span
-  style='font-size:10.0pt;mso-fareast-font-family:"Times New Roman"'>0.94&nbsp;&#8211;&nbsp;0.96<o:p></o:p></span></p>
-  </td>
-  <td width=60 valign=top style='width:45.15pt;padding:5.65pt 5.65pt 5.65pt 5.65pt'>
+  <td valign=top style='padding:5.65pt 5.65pt 5.65pt 5.65pt'>
   <p class=MsoNormal align=center style='text-align:center'><strong><span
   style='font-size:10.0pt;mso-fareast-font-family:"Times New Roman"'>&lt;0.001</span></strong><span
   style='font-size:10.0pt;mso-fareast-font-family:"Times New Roman"'><o:p></o:p></span></p>
   </td>
-  <td width=3 valign=top style='width:2.5pt;padding:.75pt .75pt .75pt .75pt'>
+  <td valign=top style='padding:0cm 5.4pt 0cm 5.4pt'>
   <p class=MsoNormal align=center style='text-align:center'><strong><span
-  style='font-size:10.0pt;mso-fareast-font-family:"Times New Roman"'><o:p>&nbsp;</o:p></span></strong></p>
+  style='font-size:10.0pt'><o:p>&nbsp;</o:p></span></strong></p>
   </td>
-  <td width=191 valign=top style='width:143.0pt;padding:.75pt .75pt .75pt .75pt'>
+  <td width=160 valign=top style='width:120.2pt;padding:0cm 5.4pt 0cm 5.4pt'>
+  <p class=MsoNormal align=center style='text-align:center'><span lang=EN-US
+  style='font-size:10.0pt;color:black;mso-ansi-language:EN-US'>The odds of
+  bilinguals correctly anticipating </span><i><span style='white-space:pre-wrap'><span
+  lang=EN-US style='font-size:10.0pt;mso-ansi-language:EN-US'>during the
+  baseline trial</span></span></i><span style='white-space:pre-wrap'><span
+  lang=EN-US style='font-size:10.0pt;mso-ansi-language:EN-US'> <u>increase even
+  more than monolinguals</u><span style='white-space:pre-wrap'> with each
+  successive trial (these odds are in addition to the odds for monolinguals)</span></span><strong><span
+  lang=EN-US style='font-size:10.0pt;mso-fareast-font-family:"Times New Roman";
+  mso-ansi-language:EN-US'><o:p></o:p></span></strong></p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:8'>
+  <td valign=top style='padding:5.65pt 5.65pt 5.65pt 5.65pt'>
+  <p class=MsoNormal><span class=SpellE><span style='font-size:10.0pt;
+  mso-fareast-font-family:"Times New Roman"'>TimeBin</span></span><span
+  style='font-size:10.0pt;mso-fareast-font-family:"Times New Roman"'> *<br>
+  <span class=SpellE>trial_num_scaled</span></span><span style='font-size:10.0pt'><o:p></o:p></span></p>
+  </td>
+  <td valign=top style='padding:5.65pt 5.65pt 5.65pt 5.65pt'>
+  <p class=MsoNormal align=center style='text-align:center'><span
+  style='font-size:10.0pt;mso-fareast-font-family:"Times New Roman"'>1.13<o:p></o:p></span></p>
+  </td>
+  <td valign=top style='padding:5.65pt 5.65pt 5.65pt 5.65pt'>
+  <p class=MsoNormal align=center style='text-align:center'><span
+  style='font-size:10.0pt;mso-fareast-font-family:"Times New Roman"'>1.11&nbsp;&#8211;&nbsp;1.14<o:p></o:p></span></p>
+  </td>
+  <td valign=top style='padding:5.65pt 5.65pt 5.65pt 5.65pt'>
+  <p class=MsoNormal align=center style='text-align:center'><strong><span
+  style='font-size:10.0pt;mso-fareast-font-family:"Times New Roman"'>&lt;0.001</span></strong><span
+  style='font-size:10.0pt;mso-fareast-font-family:"Times New Roman"'><o:p></o:p></span></p>
+  </td>
+  <td valign=top style='padding:0cm 5.4pt 0cm 5.4pt'>
+  <p class=MsoNormal align=center style='text-align:center'><strong><span
+  style='font-size:10.0pt'><o:p>&nbsp;</o:p></span></strong></p>
+  </td>
+  <td width=160 valign=top style='width:120.2pt;padding:0cm 5.4pt 0cm 5.4pt'>
   <p class=MsoNormal align=center style='text-align:center'><span lang=EN-US
   style='font-size:10.0pt;color:black;mso-ansi-language:EN-US'>The odds of
   monolinguals correctly anticipating </span><u><span style='-webkit-text-decoration-skip:none;
   text-decoration-skip-ink:none;white-space:pre-wrap'><span lang=EN-US
-  style='font-size:10.0pt;mso-ansi-language:EN-US'>decrease</span></span></u><span
+  style='font-size:10.0pt;mso-ansi-language:EN-US'>increase slightly</span></span></u><i><span
   style='white-space:pre-wrap'><span lang=EN-US style='font-size:10.0pt;
-  mso-ansi-language:EN-US'> with each increase in<i><span style='white-space:
-  pre-wrap'> both time bin and trial number together</span></i><span
-  style='white-space:pre-wrap'> (for later time bins in later trials, correct
-  anticipations are less likely)</span><strong><span lang=EN-US
-  style='font-size:10.0pt;mso-fareast-font-family:"Times New Roman";mso-ansi-language:
-  EN-US'><o:p></o:p></span></strong></p>
+  mso-ansi-language:EN-US'> </span></i><span lang=EN-US style='font-size:10.0pt;
+  mso-ansi-language:EN-US'><span style='white-space:pre-wrap'>with each
+  increase in </span><i><span style='white-space:pre-wrap'>both time bin and
+  trial number together</span></i><span style='white-space:pre-wrap'> (for
+  later time bins in later trials, correct anticipations are more likely)</span></span><strong><span
+  lang=EN-US style='font-size:10.0pt;mso-fareast-font-family:"Times New Roman";
+  mso-ansi-language:EN-US'><o:p></o:p></span></strong></p>
   </td>
  </tr>
  <tr style='mso-yfti-irow:9'>
-  <td width=202 valign=top style='width:151.3pt;padding:5.65pt 5.65pt 5.65pt 5.65pt'>
+  <td valign=top style='padding:5.65pt 5.65pt 5.65pt 5.65pt'>
   <p class=MsoNormal><span lang=EN-US style='font-size:10.0pt;mso-fareast-font-family:
   "Times New Roman";mso-ansi-language:EN-US'>(language [Bilinguals] *<br>
   <span class=SpellE>TimeBin</span>) *<br>
-  <span class=SpellE>trial_num_scaled</span><o:p></o:p></span></p>
+  <span class=SpellE>trial_num_scaled</span></span><span lang=EN-US
+  style='font-size:10.0pt;mso-ansi-language:EN-US'><o:p></o:p></span></p>
   </td>
-  <td width=81 valign=top style='width:60.55pt;padding:5.65pt 5.65pt 5.65pt 5.65pt'>
+  <td valign=top style='padding:5.65pt 5.65pt 5.65pt 5.65pt'>
   <p class=MsoNormal align=center style='text-align:center'><span
-  style='font-size:10.0pt;mso-fareast-font-family:"Times New Roman"'>1.07<o:p></o:p></span></p>
+  style='font-size:10.0pt;mso-fareast-font-family:"Times New Roman"'>0.89<o:p></o:p></span></p>
   </td>
-  <td width=87 valign=top style='width:65.3pt;padding:5.65pt 5.65pt 5.65pt 5.65pt'>
+  <td valign=top style='padding:5.65pt 5.65pt 5.65pt 5.65pt'>
   <p class=MsoNormal align=center style='text-align:center'><span
-  style='font-size:10.0pt;mso-fareast-font-family:"Times New Roman"'>1.05&nbsp;&#8211;&nbsp;1.09<o:p></o:p></span></p>
+  style='font-size:10.0pt;mso-fareast-font-family:"Times New Roman"'>0.88&nbsp;&#8211;&nbsp;0.91<o:p></o:p></span></p>
   </td>
-  <td width=60 valign=top style='width:45.15pt;padding:5.65pt 5.65pt 5.65pt 5.65pt'>
+  <td valign=top style='padding:5.65pt 5.65pt 5.65pt 5.65pt'>
   <p class=MsoNormal align=center style='text-align:center'><strong><span
   style='font-size:10.0pt;mso-fareast-font-family:"Times New Roman"'>&lt;0.001</span></strong><span
   style='font-size:10.0pt;mso-fareast-font-family:"Times New Roman"'><o:p></o:p></span></p>
   </td>
-  <td width=3 valign=top style='width:2.5pt;padding:.75pt .75pt .75pt .75pt'>
+  <td valign=top style='padding:0cm 5.4pt 0cm 5.4pt'>
   <p class=MsoNormal align=center style='text-align:center'><strong><span
-  style='font-size:10.0pt;mso-fareast-font-family:"Times New Roman"'><o:p>&nbsp;</o:p></span></strong></p>
+  style='font-size:10.0pt'><o:p>&nbsp;</o:p></span></strong></p>
   </td>
-  <td width=191 valign=top style='width:143.0pt;padding:.75pt .75pt .75pt .75pt'>
+  <td width=160 valign=top style='width:120.2pt;padding:0cm 5.4pt 0cm 5.4pt'>
   <p class=MsoNormal align=center style='text-align:center'><span lang=EN-US
   style='font-size:10.0pt;color:black;mso-ansi-language:EN-US'>The odds of
   bilinguals correctly anticipating with each increase in </span><i><span
   style='white-space:pre-wrap'><span lang=EN-US style='font-size:10.0pt;
   mso-ansi-language:EN-US'>both time bin and trial number together</span></span></i><span
   style='white-space:pre-wrap'><span lang=EN-US style='font-size:10.0pt;
-  mso-ansi-language:EN-US'> <u>increase compared to monolinguals</u> (for later
-  time bins in later trials, bilinguals&#8217; are more likely to correctly
-  anticipate)</span><strong><span lang=EN-US style='font-size:10.0pt;
-  mso-fareast-font-family:"Times New Roman";mso-ansi-language:EN-US'><o:p></o:p></span></strong></p>
+  mso-ansi-language:EN-US'>, compared to monolinguals, <u><span
+  style='-webkit-text-decoration-skip:none;text-decoration-skip-ink:none;
+  white-space:pre-wrap'>decrease slightly</span></u><span style='white-space:
+  pre-wrap'> (for later time bins in later trials, bilinguals&#8217; odds
+  don&#8217;t increase </span><i><span style='white-space:pre-wrap'>as much as
+  monolinguals&#8217;</span></i><span style='white-space:pre-wrap'>)</span><strong><o:p></o:p></strong></span></p>
   </td>
  </tr>
  <tr style='mso-yfti-irow:10'>
-  <td width=202 valign=top style='width:151.3pt;padding:2.85pt 5.65pt 2.85pt 5.65pt'>
+  <td valign=top style='padding:2.85pt 5.65pt 2.85pt 5.65pt'>
   <p class=MsoNormal><span style='font-size:10.0pt;mso-fareast-font-family:
   "Times New Roman"'>N <sub>id</sub><o:p></o:p></span></p>
   </td>
-  <td width=228 colspan=3 valign=top style='width:171.0pt;padding:2.85pt 5.65pt 2.85pt 5.65pt'>
+  <td colspan=3 valign=top style='padding:2.85pt 5.65pt 2.85pt 5.65pt'>
   <p class=MsoNormal><span style='font-size:10.0pt;mso-fareast-font-family:
-  "Times New Roman"'>87<o:p></o:p></span></p>
+  "Times New Roman"'>95<o:p></o:p></span></p>
   </td>
-  <td width=3 valign=top style='width:2.5pt;padding:.75pt .75pt .75pt .75pt'>
+  <td valign=top style='padding:0cm 5.4pt 0cm 5.4pt'>
   <p class=MsoNormal><span style='font-size:10.0pt;mso-fareast-font-family:
   "Times New Roman"'><o:p>&nbsp;</o:p></span></p>
   </td>
-  <td width=191 valign=top style='width:143.0pt;padding:.75pt .75pt .75pt .75pt'>
+  <td width=160 valign=top style='width:120.2pt;padding:0cm 5.4pt 0cm 5.4pt'>
   <p class=MsoNormal><span style='font-size:10.0pt;mso-fareast-font-family:
   "Times New Roman"'><o:p>&nbsp;</o:p></span></p>
   </td>
  </tr>
  <tr style='mso-yfti-irow:11'>
-  <td width=202 valign=top style='width:151.3pt;border:none;border-top:solid windowtext 1.0pt;
+  <td valign=top style='border:none;border-top:solid windowtext 1.0pt;
   mso-border-top-alt:solid windowtext .75pt;padding:2.85pt 5.65pt 2.85pt 5.65pt'>
   <p class=MsoNormal><span class=SpellE><span style='font-size:10.0pt;
   mso-fareast-font-family:"Times New Roman"'>Observations</span></span><span
   style='font-size:10.0pt;mso-fareast-font-family:"Times New Roman"'><o:p></o:p></span></p>
   </td>
-  <td width=228 colspan=3 valign=top style='width:171.0pt;border:none;
-  border-top:solid windowtext 1.0pt;mso-border-top-alt:solid windowtext .75pt;
-  padding:2.85pt 5.65pt 2.85pt 5.65pt'>
+  <td colspan=3 valign=top style='border:none;border-top:solid windowtext 1.0pt;
+  mso-border-top-alt:solid windowtext .75pt;padding:2.85pt 5.65pt 2.85pt 5.65pt'>
   <p class=MsoNormal><span style='font-size:10.0pt;mso-fareast-font-family:
-  "Times New Roman"'>2328<o:p></o:p></span></p>
+  "Times New Roman"'>2101<o:p></o:p></span></p>
   </td>
-  <td width=3 valign=top style='width:2.5pt;border:none;border-top:solid windowtext 1.0pt;
-  mso-border-top-alt:solid windowtext .75pt;padding:.75pt .75pt .75pt .75pt'>
+  <td valign=top style='border:none;border-top:solid windowtext 1.0pt;
+  mso-border-top-alt:solid windowtext .75pt;padding:0cm 5.4pt 0cm 5.4pt'>
   <p class=MsoNormal><span style='font-size:10.0pt;mso-fareast-font-family:
   "Times New Roman"'><o:p>&nbsp;</o:p></span></p>
   </td>
-  <td width=191 valign=top style='width:143.0pt;border:none;border-top:solid windowtext 1.0pt;
-  mso-border-top-alt:solid windowtext .75pt;padding:.75pt .75pt .75pt .75pt'>
+  <td width=160 valign=top style='width:120.2pt;border:none;border-top:solid windowtext 1.0pt;
+  mso-border-top-alt:solid windowtext .75pt;padding:0cm 5.4pt 0cm 5.4pt'>
   <p class=MsoNormal><span style='font-size:10.0pt;mso-fareast-font-family:
   "Times New Roman"'><o:p>&nbsp;</o:p></span></p>
   </td>
  </tr>
  <tr style='mso-yfti-irow:12;mso-yfti-lastrow:yes'>
-  <td width=202 valign=top style='width:151.3pt;padding:2.85pt 5.65pt 2.85pt 5.65pt'>
+  <td valign=top style='padding:2.85pt 5.65pt 2.85pt 5.65pt'>
   <p class=MsoNormal><span style='font-size:10.0pt;mso-fareast-font-family:
   "Times New Roman"'>Marginal R<sup>2</sup> / <span class=SpellE>Conditional</span>
   R<sup>2</sup><o:p></o:p></span></p>
   </td>
-  <td width=228 colspan=3 valign=top style='width:171.0pt;padding:2.85pt 5.65pt 2.85pt 5.65pt'>
+  <td colspan=3 valign=top style='padding:2.85pt 5.65pt 2.85pt 5.65pt'>
   <p class=MsoNormal><span style='font-size:10.0pt;mso-fareast-font-family:
-  "Times New Roman"'>0.103 / 0.622<o:p></o:p></span></p>
+  "Times New Roman"'>0.051 / 0.749<o:p></o:p></span></p>
   </td>
-  <td width=3 valign=top style='width:2.5pt;padding:.75pt .75pt .75pt .75pt'>
+  <td valign=top style='padding:0cm 5.4pt 0cm 5.4pt'>
   <p class=MsoNormal><span style='font-size:10.0pt;mso-fareast-font-family:
   "Times New Roman"'><o:p>&nbsp;</o:p></span></p>
   </td>
-  <td width=191 valign=top style='width:143.0pt;padding:.75pt .75pt .75pt .75pt'>
+  <td width=160 valign=top style='width:120.2pt;padding:0cm 5.4pt 0cm 5.4pt'>
   <p class=MsoNormal><span style='font-size:10.0pt;mso-fareast-font-family:
   "Times New Roman"'><o:p>&nbsp;</o:p></span></p>
   </td>
