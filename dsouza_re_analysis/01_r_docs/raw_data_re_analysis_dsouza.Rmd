@@ -55,6 +55,13 @@ kovacs09 <- "Kovács & Mehler 2009"
 ## Define minimum looking and minimum trial numbers for this study
 MIN_LOOK_PROPORTION <- .5
 MIN_NUMBER_TRIALS <- 5
+
+# define plot colors (color-blind friendly)
+cb_palette <- c("#000000", "#E69F00", "#56B4E9", "#009E73", "#0072B2", "#D55E00", "#CC79A7", "#F0E442")
+
+image(1:length(cb_palette), 1, as.matrix(1:length(cb_palette)), 
+      col= cb_palette,
+      xlab="", ylab = "", xaxt = "n", yaxt = "n", bty = "n")
 ```
 
 # Load data
@@ -178,19 +185,26 @@ data_time_series_antic <- make_time_sequence_data(data_eyetracking_clean,
 
 # Time Series Plots
 
-```{r time_series_plots, echo = FALSE}
+```{r color-blind palette}
+cb_palette <- c("#000000", "#E69F00", "#56B4E9", "#009E73", "#0072B2", "#D55E00", "#CC79A7", "#F0E442")
 
+image(1:length(cb_palette), 1, as.matrix(1:length(cb_palette)), 
+      col= cb_palette,
+      xlab="", ylab = "", xaxt = "n", yaxt = "n", bty = "n")
+```
+
+```{r time_series_plots, echo = FALSE}
 ###----------------------------------------------------------PLOT FULL TRIALS-----------------------------------------
 #line_colors <- c("#D7D7D7", "#FF3366", "#04BDD8")
 #line_colors <- c("#D7D7D7", "#f77a6f", "#0485d6")
-line_colors <- c("#f77a6f", "#016abf")
+line_colors <- c("#D55E00", "#0072B2") #c("#f77a6f", "#016abf") # cb_palette here
 line_types <- c("dotted", "solid", "dashed")
 line_sizes <- c(.6, 0.5, 0.5)
 facet_text <- data.frame(trial_labels = c("Trial 1"), language = c("Monolinguals"), aoi = c("target"), Time = c(3650), trial_type_labs= c("Training", "Test"), prop_looking = c(.875), label = c("Anticipation period")) # adjusted "Time"
 
 time_series_full_trial <-
   data_time_series_full %>%
-  filter(Time >= 2400 & Time <= 5000) %>% # adjusted (cogcontrol = 2150, 3150 ; D'Souza = 3200, 4200)
+  filter(Time >= 2400 & Time <= 5000) %>% # adjusted (cogcontrol = 1400-4000, w/ interest area = 2150, 3150 ; D'Souza = 2400-6600, w/ interest area = 3200, 4200)
   mutate(trial_type_labs = case_when(trial_type == "pre-switch" ~ "Training",
                                      trial_type == "post-switch" ~ "Test")) %>%
   mutate(trial_type_labs = factor(trial_type_labs, levels = c("Training", "Test"))) %>%
@@ -215,10 +229,10 @@ time_series_full_trial <-
   geom_rect(aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax, fill = "Anticipation Period"), alpha = .1, colour = "transparent", show.legend = FALSE) +
   geom_line(aes(alpha = aoi, size = aoi)) +
   scale_color_manual(values = line_colors, guide = guide_legend(order = 1)) +
-  scale_fill_manual(values = "#ffb600", labels = c("Anticipation Period"), guide = guide_legend(order = 3)) +
+  scale_fill_manual(values = "#ffb600", labels = c("Anticipation Period"), guide = guide_legend(order = 3)) + 
   scale_linetype_manual(values = line_types, labels = c("Central fixation cue", "Target", "Distractor"), guide = guide_legend(order = 2)) +
   scale_y_continuous(n.breaks = 3) +
-  scale_x_continuous(breaks = c(2700, 3700, 4700)) + # adjusted here
+  scale_x_continuous(breaks = c(3000, 4000, 5000)) + # adjusted here
   scale_alpha_manual(values = c(0.5, 0.9, 0.725), guide = "none") +
   scale_size_manual(values = line_sizes, guide = "none") +
   labs(linetype = "Area of interest",
@@ -229,7 +243,7 @@ time_series_full_trial <-
   facet_grid(trial_labels ~ trial_type_labs) +
   # annotate("rect", xmin = 2150, xmax = 3150, ymin = -Inf, ymax = Inf, fill = "#fff000", alpha = 0.1) +
   # annotate("text", x = 2650, y = 0.875, label = "Anticipation \n Period", size = 2.75, color = "#927774") +
-  ggtitle("Time course of infant looking on D'Souza et al. (2020)") + # age_group
+  ggtitle("Time course of infant looking in \n D'Souza et al. (2020) - Experiment 1") + # age_group
   theme_minimal(base_size = 13.5) +
   theme(plot.title = element_text(hjust = 0.5),
         strip.background = element_rect(fill = "#D9D9D9", color = "#9b9b9b"),
@@ -246,7 +260,7 @@ time_series_full_trial <-
 time_series_full_trial
 
 ggsave("plot_time_series_full_trial.png", path = here("03_output/02_re_analysis/"), 
-       width = 25, height = 15, units = "cm", dpi = 300)
+       width = 9, height = 9, units = "in", dpi = 300) # 2700 x 2700 pixels (same as study 1a)
 
 # obs. removed: 
 # group_by(language) %>% ; 
@@ -504,7 +518,7 @@ tab_model(final_model_post, show.re.var = FALSE, show.icc = FALSE, file = here("
 
 ggpredict(final_model_pre, terms = c("TimeBin", "trial_num_scaled", "language"), type = "re", ci.lvl = FALSE) %>% 
   plot(colors = "trial_num_scaled", line.size = 1, connect.lines = TRUE) +
-  labs(title = "Predicted values of proportion looking to target during the Training phase", 
+  labs(title = "Predicted values of proportion looking to target during the Training phase \n in D'Souza et al. (2020) - Experiment 1", 
        x = "Time in milliseconds during anticipation period", 
        y = "Proportion looking to target", color = "Trial number") +
   scale_color_manual(values = blues, labels = c(2, 3, 4, 5, 6, 7, 8, 9)) +
@@ -513,12 +527,12 @@ ggpredict(final_model_pre, terms = c("TimeBin", "trial_num_scaled", "language"),
   theme(axis.title.y = element_text(margin = margin(t = 0, r = 10, b = 0, l = 0)),
         axis.title.x = element_text(margin = margin(t = 10, r = 0, b = 0, l = 0)))
 
-#ggsave("plot_model_7_pre_glmer1.png", path = here("figures"), device = "png", width = 7, height = 4, units = "in", dpi = 300)
+ggsave("plot_model_dsouza_pre_glmer.png", path = here("03_output/02_re_analysis/"), device = "png", width = 7, height = 4, units = "in", dpi = 300)
 
 
 ggpredict(final_model_post, terms = c("TimeBin", "trial_num_scaled", "language"), type = "fe", ci.lvl = FALSE) %>% 
   plot(colors = "trial_num_scaled", line.size = 1, connect.lines = TRUE) +
-  labs(title = "Predicted values of proportion looking to target during the Test phase", 
+  labs(title = "Predicted values of proportion looking to target during the Test phase \n in D'Souza et al. (2020) - Experiment 1", 
        x = "Time in milliseconds during anticipation period", 
        y = "Proportion looking to target", color = "Trial number") +
   scale_color_manual(values = blues, labels = c(2, 3, 4, 5, 6, 7, 8, 9)) +
@@ -527,7 +541,7 @@ ggpredict(final_model_post, terms = c("TimeBin", "trial_num_scaled", "language")
   theme(axis.title.y = element_text(margin = margin(t = 0, r = 10, b = 0, l = 0)),
         axis.title.x = element_text(margin = margin(t = 10, r = 0, b = 0, l = 0)))
 
-#ggsave("plot_model_7_post_glmer1.png", path = here("figures"), device = "png", width = 7, height = 4, units = "in", dpi = 300)
+ggsave("plot_model_dsouza_post_glmer.png", path = here("03_output/02_re_analysis/"), device = "png", width = 7, height = 4, units = "in", dpi = 300)
  
 ```
 
