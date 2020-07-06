@@ -394,6 +394,14 @@ data_time_series_antic <- make_time_sequence_data(data_eyetracking_clean,
 ```
 ##Time Series Plots
 
+```{r color-blind palette}
+cb_palette <- c("#000000", "#E69F00", "#56B4E9", "#009E73", "#0072B2", "#D55E00", "#CC79A7", "#F0E442")
+
+image(1:length(cb_palette), 1, as.matrix(1:length(cb_palette)), 
+      col= cb_palette,
+      xlab="", ylab = "", xaxt = "n", yaxt = "n", bty = "n")
+```
+
 ```{r time_series_plots, echo = FALSE}
 
 #--------------------------------------------EyetrackingR Plots - not as flexible as ggplot so will try below with ggplot
@@ -412,10 +420,11 @@ data_time_series_antic <- make_time_sequence_data(data_eyetracking_clean,
 ###----------------------------------------------------------PLOT FULL TRIALS-----------------------------------------
 #line_colors <- c("#D7D7D7", "#FF3366", "#04BDD8")
 #line_colors <- c("#D7D7D7", "#f77a6f", "#0485d6")
-line_colors <- c("#f77a6f", "#016abf")
+line_colors <- c("#D55E00", "#0072B2") #c("#f77a6f", "#016abf")
 line_types <- c("dotted", "solid", "dashed")
 line_sizes <- c(.6, 0.5, 0.5)
 facet_text <- data.frame(trial_labels = c("Trial 1"), language = c("Monolinguals"), aoi = c("target"), Time = c(2650), trial_type_labs= c("Training", "Test"), prop_looking = c(.875), label = c("Anticipation period"))
+
 
 time_series_full_trial <- data_time_series_full %>%
   filter(Time >= 1400 & Time <= 4000) %>%
@@ -438,8 +447,8 @@ time_series_full_trial <- data_time_series_full %>%
          TRUE ~ 0),
          ymax = case_when(Time == 2000 & language == "Monolinguals" & aoi == "target" ~ -Inf,
          TRUE ~ 0),
-         experiment = case_when(age_group == "7 months" ~ 1,
-                                age_group == "20 months" ~ 2)) %>% 
+         experiment = case_when(age_group == "7 months" ~ "1a", # edit here
+                                age_group == "20 months" ~ "2")) %>% 
   group_by(age_group) %>%
   nest() %>%
   #create nested data for easily plotting more than one of the same plot by a group
@@ -460,7 +469,7 @@ time_series_full_trial <- data_time_series_full %>%
   facet_grid(trial_labels ~ trial_type_labs) +
   # annotate("rect", xmin = 2150, xmax = 3150, ymin = -Inf, ymax = Inf, fill = "#fff000", alpha = 0.1) +
   # annotate("text", x = 2650, y = 0.875, label = "Anticipation \n Period", size = 2.75, color = "#927774") +
-  ggtitle(paste0("Time course of infant looking for Experiment ", .$experiment, " (age ", age_group, ")")) +
+  ggtitle(paste0("Time course of infant looking for Study ", .$experiment, " (age ", age_group, ")")) + 
   theme_minimal(base_size = 13.5) +
   theme(plot.title = element_text(hjust = 0.5),
         strip.background = element_rect(fill = "#D9D9D9", color = "#9b9b9b"),
@@ -506,9 +515,8 @@ time_series_full_trial <- data_time_series_full %>%
 plot_full_7 <- time_series_full_trial$plot[[1]] 
 plot_full_20 <- time_series_full_trial$plot[[2]] 
 
-# ggsave("plot_full_trial_7.2.png", path = here("figures"), plot = time_series_full_trial$plot[[1]], device = "png", width = 9, height = 9, units = "in", dpi = 300)
-
-# ggsave("plot_full_trial_20.2.png", path = here("figures"), plot = time_series_full_trial$plot[[2]], device = "png", width = 9, height = 9, units = "in", dpi = 300)
+ggsave("plot_full_trial_7.3.png", path = here("figures"), plot = time_series_full_trial$plot[[1]], device = "png", width = 9, height = 9, units = "in", dpi = 300)
+ggsave("plot_full_trial_20.3.png", path = here("figures"), plot = time_series_full_trial$plot[[2]], device = "png", width = 9, height = 9, units = "in", dpi = 300)
 
 
 ###------------------------------------------PLOT ANTICIPATION PERIOD------------------------------------------
@@ -887,26 +895,26 @@ tab_model(final_model_post_7, show.re.var = FALSE, show.icc = FALSE)
 ###----------------------------------------------------PLOT OF MODEL RESULTS-----------------
 
 ggpredict(final_model_pre_7, terms = c("TimeBin", "trial_num_scaled", "language"), type = "re", ci.lvl = FALSE) %>% plot(colors = "trial_num_scaled", line.size = 1, connect.lines = TRUE) +
-  labs(title = "Predicted values of proportion looking to target during the Training phase \nin Experiment 1 (7 months)", x = "Time in milliseconds during anticipation period", y = "Proportion looking to target", color = "Trial number") +
+  labs(title = "Predicted values of proportion looking to target during the Training phase \nin Study 1a (7 months)", x = "Time in milliseconds during anticipation period", y = "Proportion looking to target", color = "Trial number") +
   scale_color_manual(values = blues, labels = c(2, 3, 4, 5, 6, 7, 8, 9)) +
   scale_x_continuous(breaks = c(0, 2, 4), labels = c("0", "500", "1000")) +
   ylim(-0.1, 1) +
   theme(axis.title.y = element_text(margin = margin(t = 0, r = 10, b = 0, l = 0)),
         axis.title.x = element_text(margin = margin(t = 10, r = 0, b = 0, l = 0)))
 
-ggsave("plot_model_7_pre_glmer1.png", path = here("figures"), device = "png", width = 7, height = 4, units = "in",
+ggsave("plot_model_7_pre_glmer1.2.png", path = here("figures"), device = "png", width = 7, height = 4, units = "in",
    dpi = 300)
  
 
 ggpredict(final_model_post_7, terms = c("TimeBin", "trial_num_scaled", "language"), type = "fe", ci.lvl = FALSE) %>% plot(colors = "trial_num_scaled", line.size = 1, connect.lines = TRUE) +
-  labs(title = "Predicted values of proportion looking to target during the Test phase \nin Experiment 1 (7 months)", x = "Time in milliseconds during anticipation period", y = "Proportion looking to target", color = "Trial number") +
+  labs(title = "Predicted values of proportion looking to target during the Test phase \nin Study 1a (7 months)", x = "Time in milliseconds during anticipation period", y = "Proportion looking to target", color = "Trial number") +
   scale_color_manual(values = blues, labels = c(2, 3, 4, 5, 6, 7, 8, 9)) +
   scale_x_continuous(breaks = c(0, 2, 4), labels = c("0", "500", "1000")) +
   ylim(-0.1, 1) +
   theme(axis.title.y = element_text(margin = margin(t = 0, r = 10, b = 0, l = 0)),
         axis.title.x = element_text(margin = margin(t = 10, r = 0, b = 0, l = 0)))
 
-ggsave("plot_model_7_post_glmer1.png", path = here("figures"), device = "png", width = 7, height = 4, units = "in",
+ggsave("plot_model_7_post_glmer1.2.png", path = here("figures"), device = "png", width = 7, height = 4, units = "in",
    dpi = 300)
  
 ```
@@ -1023,7 +1031,7 @@ pre20predict %>%
   ggplot(aes(x = x, y = predicted, color = group)) +
   geom_line() +
   facet_grid(vocab ~ facet) +
-  labs(title = "Predicted values of proportion looking to target during the Training phase \nin Experiment 2 (20 months)", x = "Time in milliseconds during anticipation period", y = "Proportion looking to target", color = "Trial number") +
+  labs(title = "Predicted values of proportion looking to target during the Training phase \nin Study 2 (20 months)", x = "Time in milliseconds during anticipation period", y = "Proportion looking to target", color = "Trial number") +
   scale_color_manual(values = blues, labels = c(2, 3, 4, 5, 6, 7, 8, 9)) +
   scale_x_continuous(breaks = c(0, 2, 4), labels = c("0", "500", "1000")) +
   ylim(-0.1, 1) +
@@ -1070,7 +1078,7 @@ pre20predict %>%
   ggplot(aes(x = x, y = predicted, color = group)) +
   geom_line() +
   facet_grid(vocab ~ facet) +
-  labs(title = "Predicted values of proportion looking to target during the Training phase \nin Experiment 2 (20 months)", x = "Time in milliseconds during anticipation period", y = "Proportion looking to target", color = "Trial number") +
+  labs(title = "Predicted values of proportion looking to target during the Training phase \nin Study 2 (20 months)", x = "Time in milliseconds during anticipation period", y = "Proportion looking to target", color = "Trial number") +
   scale_color_manual(values = blues, labels = c(2, 3, 4, 5, 6, 7, 8, 9)) +
   scale_x_continuous(breaks = c(0, 2, 4), labels = c("0", "500", "1000")) +
   ylim(-0.1, 1) +
@@ -1079,7 +1087,7 @@ pre20predict %>%
         axis.title.x = element_text(margin = margin(t = 10, r = 0, b = 0, l = 0)),
         panel.spacing = unit(1, "lines"))
 
-ggsave("plot_model_20_post_glmer1.png", path = here("figures"), device = "png", width = 7, height = 7, units = "in",
+ggsave("plot_model_20_pre_glmer1.2.png", path = here("figures"), device = "png", width = 7, height = 7, units = "in",
    dpi = 300)
 
 post20predict <- ggpredict(glmermodel_20post.3, terms = c("TimeBin", "trial_num_scaled", "language", "vocab_scaled"), type = "fe", ci.lvl = FALSE) %>%

@@ -1,7 +1,7 @@
 ---
 title: "raw_data_re_analysis_dsouza"
 author: "Rodrigo Dal Ben"
-date: "June, 8, 2020"
+date: "July, 6, 2020"
 output: html_document
 ---
 
@@ -59,9 +59,6 @@ MIN_NUMBER_TRIALS <- 5
 # define plot colors (color-blind friendly)
 cb_palette <- c("#000000", "#E69F00", "#56B4E9", "#009E73", "#0072B2", "#D55E00", "#CC79A7", "#F0E442")
 
-image(1:length(cb_palette), 1, as.matrix(1:length(cb_palette)), 
-      col= cb_palette,
-      xlab="", ylab = "", xaxt = "n", yaxt = "n", bty = "n")
 ```
 
 # Load data
@@ -243,7 +240,7 @@ time_series_full_trial <-
   facet_grid(trial_labels ~ trial_type_labs) +
   # annotate("rect", xmin = 2150, xmax = 3150, ymin = -Inf, ymax = Inf, fill = "#fff000", alpha = 0.1) +
   # annotate("text", x = 2650, y = 0.875, label = "Anticipation \n Period", size = 2.75, color = "#927774") +
-  ggtitle("Time course of infant looking in \n D'Souza et al. (2020) - Experiment 1") + # age_group
+  ggtitle("Time course of infant looking for Study 1b") + # age_group
   theme_minimal(base_size = 13.5) +
   theme(plot.title = element_text(hjust = 0.5),
         strip.background = element_rect(fill = "#D9D9D9", color = "#9b9b9b"),
@@ -282,7 +279,7 @@ time_series_antic <-
   ggplot(aes(x = trial_num, y = prop_looking, color = language, linetype = aoi)) + 
   geom_smooth(se = FALSE) +
   facet_grid( ~ trial_type) +
-  ggtitle("Time course of looking on D'Souza et al. (2020)") +
+  ggtitle("Time course of looking for Study 1b") +
   theme(plot.title = element_text(hjust = 0.5)) +
   scale_x_continuous(breaks = c(1,2,3,4,5,6,7,8,9)) +  
   xlab("Trial Number")  +
@@ -325,7 +322,7 @@ tnum <-
   coord_cartesian(ylim = c(0,1)) +
   facet_grid(language ~ trial_type) +
   labs(y = "Proportion looking", x = "Time from start of Anticipation Period (ms)") +
-  ggtitle("D'Souza et al. (2020)") +
+  ggtitle("Study 1b - D'Souza et al. (2020)") +
   theme(panel.grid.minor = element_blank())
 
 tnum
@@ -518,7 +515,7 @@ tab_model(final_model_post, show.re.var = FALSE, show.icc = FALSE, file = here("
 
 ggpredict(final_model_pre, terms = c("TimeBin", "trial_num_scaled", "language"), type = "re", ci.lvl = FALSE) %>% 
   plot(colors = "trial_num_scaled", line.size = 1, connect.lines = TRUE) +
-  labs(title = "Predicted values of proportion looking to target during the Training phase \n in D'Souza et al. (2020) - Experiment 1", 
+  labs(title = "Predicted values of proportion looking to target during the Training phase \n in Study 1b", 
        x = "Time in milliseconds during anticipation period", 
        y = "Proportion looking to target", color = "Trial number") +
   scale_color_manual(values = blues, labels = c(2, 3, 4, 5, 6, 7, 8, 9)) +
@@ -532,7 +529,7 @@ ggsave("plot_model_dsouza_pre_glmer.png", path = here("03_output/02_re_analysis/
 
 ggpredict(final_model_post, terms = c("TimeBin", "trial_num_scaled", "language"), type = "fe", ci.lvl = FALSE) %>% 
   plot(colors = "trial_num_scaled", line.size = 1, connect.lines = TRUE) +
-  labs(title = "Predicted values of proportion looking to target during the Test phase \n in D'Souza et al. (2020) - Experiment 1", 
+  labs(title = "Predicted values of proportion looking to target during the Test phase \n in Study 1b", 
        x = "Time in milliseconds during anticipation period", 
        y = "Proportion looking to target", color = "Trial number") +
   scale_color_manual(values = blues, labels = c(2, 3, 4, 5, 6, 7, 8, 9)) +
