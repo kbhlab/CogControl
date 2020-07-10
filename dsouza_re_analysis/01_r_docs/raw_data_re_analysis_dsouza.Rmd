@@ -65,6 +65,8 @@ cb_palette <- c("#000000", "#E69F00", "#56B4E9", "#009E73", "#0072B2", "#D55E00"
 
 ```{r}
 load(here("03_output/01_wrangling/dataset_exp1_v3.rda")) # full data
+
+load(here("03_output/01_wrangling/data_full_trials.rda")) # full data
 ```
 
 # Descriptives 
@@ -76,7 +78,8 @@ load(here("03_output/01_wrangling/dataset_exp1_v3.rda")) # full data
 
 ```{r}
 ###------------------------------------------------FINAL SAMPLE COUNTS PER AGE--------------------------------------
-dataset_exp1_v3 %>%
+#dataset_exp1_v3 %>%
+data_full_trials %>% 
   distinct(id, gender, age_in_days) %>% 
   summarize(count = length(id),
             avg_age_days = floor(mean(age_in_days)),
@@ -85,14 +88,16 @@ dataset_exp1_v3 %>%
             num_female = sum(gender == 1))
   
 ###-----------------------------------------------FINAL SAMPLE COUNTS PER LANG BACKGROUND------------------------------
-dataset_exp1_v3 %>%
+#dataset_exp1_v3 %>%
+data_full_trials %>% 
   distinct(id, language) %>% 
   group_by(language) %>%
   summarize(count = length(id))
 
 ###----------------------------------------------------------COMPARE GROUPS------------------------------
 age_summary <- 
-  dataset_exp1_v3 %>%
+  #dataset_exp1_v3 %>%
+  data_full_trials %>% 
   distinct(id, age_in_days, language)
 
 summary(age_summary$age_in_days)
@@ -105,7 +110,8 @@ t.test(age_in_days ~ language, data = age_summary) # no age diff between mono an
 
 # gender
 gender_summary <- 
-  dataset_exp1_v3 %>%
+  #dataset_exp1_v3 %>%
+  data_full_trials %>% 
   distinct(id, gender, language) %>% 
   group_by(language) %>% 
   count(gender)
@@ -115,7 +121,8 @@ t.test(n ~ language, data = gender_summary) # no gender diff between mono and bi
 ###----------------------------------------------------------COMPARE MATERNAL EDUCATION------------------------------
 # obs. using ses_score (Social Economic Status)
 ses_summary <- 
-  dataset_exp1_v3 %>%
+  #dataset_exp1_v3 %>%
+  data_full_trials %>% 
   distinct(id, age_in_days, language, ses_score)
 
 ggplot(ses_summary, aes(ses_score)) + 
@@ -132,11 +139,11 @@ No information about participants' dominant/other languages are provided. Also, 
 
 ```{r}
 ###----------------------------------------------------CREATE EYETRACKINGR DATA FOR FULL TRIAL PLOTS
-data_eyetracking_full_trials <- make_eyetrackingr_data(dataset_exp1_v3, 
+data_eyetracking_full_trials <- make_eyetrackingr_data(data_full_trials, #dataset_exp1_v3, 
                                 participant_column = "id",
                                 trial_column = "trial_name", 
                                 time_column = "trial_from_zero",
-                                trackloss_column = "look_away",
+                                trackloss_column = "trackloss", #"look_away",
                                 aoi_columns = c('target', 'circle', 'distractor'), # this will calculate prop looking in relation to all AOIs, not just target vs distractor. When I remove circle from here, the plot gets very wonky (I guess because of dividing by 0 in some cases?)
                                 treat_non_aoi_looks_as_missing = TRUE)
 
@@ -161,11 +168,11 @@ trackloss <- trackloss_analysis(data = data_eyetracking_antic_window)
 
 data_eyetracking_clean <- clean_by_trackloss(data = data_eyetracking_antic_window, trial_prop_thresh = .5) #this eliminates all data from trials with 50% or more trackloss (we merged the baby IDs who made it through to the final sample back with the full data, so makes sense we will re-exclude some trials here)
 
-data_eyetracking_clean_nocircle <- make_eyetrackingr_data(dataset_exp1_v3, 
+data_eyetracking_clean_nocircle <- make_eyetrackingr_data(data_full_trials, #dataset_exp1_v3, 
                                 participant_column = "id",
                                 trial_column = "trial_name", 
                                 time_column = "trial_from_zero",
-                                trackloss_column = "look_away",
+                                trackloss_column = "trackloss", #"look_away",
                                 aoi_columns = c('target', 'distractor'), # this will calculate prop looking in relation to just target vs distractor
                                 treat_non_aoi_looks_as_missing = TRUE) %>%
   subset_by_window(window_start_time = 3200,
@@ -256,7 +263,7 @@ time_series_full_trial <-
 
 time_series_full_trial
 
-ggsave("plot_time_series_full_trial.png", path = here("03_output/02_re_analysis/"), 
+ggsave("plot_time_series_full_trial_filter_v2.png", path = here("03_output/02_re_analysis/"), 
        width = 9, height = 9, units = "in", dpi = 300) # 2700 x 2700 pixels (same as study 1a)
 
 # obs. removed: 
@@ -508,8 +515,10 @@ qqline(residuals(final_model_post))
 
 ###----------------------------------------------------TABLE OF MODEL RESULTS-----------------
 
-tab_model(final_model_pre, show.re.var = FALSE, show.icc = FALSE, file = here("03_Output/02_re_analysis/glermodel_pre_dsouza_pruned_full.doc"))
-tab_model(final_model_post, show.re.var = FALSE, show.icc = FALSE, file = here("03_Output/02_re_analysis/glermodel_pos_dsouza_pruned_full.doc"))
+tab_model(final_model_pre, show.re.var = FALSE, show.icc = FALSE, 
+          file = here("03_Output/02_re_analysis/glermodel_pre_dsouza_pruned_full_filter_v2.doc"))
+tab_model(final_model_post, show.re.var = FALSE, show.icc = FALSE, 
+          file = here("03_Output/02_re_analysis/glermodel_pos_dsouza_pruned_full_filter_v2.doc"))
 
 ###----------------------------------------------------PLOT OF MODEL RESULTS-----------------
 

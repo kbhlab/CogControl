@@ -335,7 +335,8 @@ dataset_exp1_v3 <-
     circle = case_when(as.character(look_direction) == "center" ~ 1,  TRUE ~ 0),
     target = case_when(as.character(look_direction) == as.character(reward_side) ~ 1, TRUE ~ 0),
     distractor = case_when(as.character(look_direction) != as.character(reward_side) & as.character(look_direction) != "center" ~ 1, 
-                           TRUE ~ 0)
+                           TRUE ~ 0),
+    trackloss = case_when(target == 1 | distractor == 1 | circle == 1 ~ FALSE, TRUE ~ TRUE), # there is divergence between gaze coordinates & trackloss column from matlab; building our own
     ) %>% 
   filter(!event %in% c("Start", "End")) %>% # get rid of NA in the beginning and end
   mutate(trial_name = factor(str_c(trial_type, trial_num, sep = "_"), levels = trial_name_levels)) %>% 
@@ -354,12 +355,57 @@ dataset_exp1_v3 <-
 
 length(unique(dataset_exp1_v3$id)) # 102
 
-save(dataset_exp1_v3, file = here("/03_output/01_wrangling/dataset_exp1_v3.rda")) # backup
-write_csv(dataset_exp1_v3, here("03_output/01_wrangling/dataset_exp1_v3.csv"))
+save(dataset_exp1_v3, file = here("/03_output/01_wrangling/dataset_exp1_v3.rda")) 
+write_csv(dataset_exp1_v3, here("03_output/01_wrangling/dataset_exp1_v3.csv")) # backup
+
+
+## Define minimum looking and minimum trial numbers for this study
+## from "load_merge.R", added in 09/07/2020
+MIN_LOOK_PROPORTION <- .5 # 50% of looking
+MIN_NUMBER_TRIALS <- 5 # out of 9
+
+data_anticipation <- 
+  dataset_exp1_v3 %>%
+  mutate(
+    look_any = case_when(target == 1 | distractor == 1 | circle == 1 ~ 1, TRUE ~ 0), #looks to either target, distractor, or circle  
+    trial_unique = as.factor(str_c(id, trial_name, sep = "_")) #get a trial identifier that is unique to each participant, trial number, and trial type
+    ) %>% 
+  filter(trial_from_zero >= 3200 & trial_from_zero <= 4200) %>% #D'souza aniticipatory period, which is 150 ms after the offset of the 2000 ms cue, and lasts for 1000 ms
+  group_by(trial_unique) %>%
+  mutate(prop_fixations = mean(look_any)) %>%
+  filter(prop_fixations >= MIN_LOOK_PROPORTION) %>% #removes trials where the child did not fixate on anything for at least 50% of the anticipation period
+  group_by(id, trial_type) %>%
+  mutate(num_good_trials = length(unique(trial_num))) %>%
+  filter(num_good_trials >= MIN_NUMBER_TRIALS) %>% #removes babies who don't have the minimum number of trials 
+  group_by(id) %>%
+  mutate(num_trial_types = length(unique(trial_type))) %>%
+  filter(num_trial_types == 2) %>% #removes babies who don't have data in both trial types
+  ungroup()
+
+
+save(data_anticipation, file = here("03_output/01_wrangling/data_anticipation.rda"))
+write_csv(data_anticipation, here("03_output/01_wrangling/data_anticipation.csv")) # backup
+
+#used for creating data_full_trials object for plotting whole trial
+final_sample_ids <- 
+  data_anticipation %>% 
+  select(id) %>%
+  unique() # 51 left
+
+# we don't need the "final_sample_mslist" df as it only adds vocab measures
+
+# this is the full time series data, but only for infants that made it through to the final anticipation-period sample. Will be used for ploting time series data of whole trial
+data_full_trials <- 
+  inner_join(dataset_exp1_v3, final_sample_ids, by = "id") %>%
+  mutate(id = as.factor(id)) 
+
+
+save(data_full_trials, file = here("03_output/01_wrangling/data_full_trials.rda"))
+write_csv(data_full_trials, here("03_output/01_wrangling/data_full_trials.csv")) # backup
+
 
 # for future wranglings
 load(file = here("/03_output/01_wrangling/dataset_exp1_v2.rda"))
-
 
 
 ########################################################################### OLD CODE ###########################################################################
