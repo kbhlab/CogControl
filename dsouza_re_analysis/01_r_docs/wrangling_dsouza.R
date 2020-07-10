@@ -405,7 +405,7 @@ write_csv(data_full_trials, here("03_output/01_wrangling/data_full_trials.csv"))
 
 
 # for future wranglings
-load(file = here("/03_output/01_wrangling/dataset_exp1_v2.rda"))
+load(file = here("/03_output/01_wrangling/dataset_exp1_v3.rda"))
 
 
 ########################################################################### OLD CODE ###########################################################################

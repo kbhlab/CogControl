@@ -64,9 +64,8 @@ cb_palette <- c("#000000", "#E69F00", "#56B4E9", "#009E73", "#0072B2", "#D55E00"
 # Load data
 
 ```{r}
-load(here("03_output/01_wrangling/dataset_exp1_v3.rda")) # full data
-
-load(here("03_output/01_wrangling/data_full_trials.rda")) # full data
+load(here("03_output/01_wrangling/data_full_trials.rda")) # filtered 51 sample - main article
+load(here("03_output/01_wrangling/dataset_exp1_v3.rda")) # full 102 sample - comparison on supplements
 ```
 
 # Descriptives 
@@ -533,7 +532,7 @@ ggpredict(final_model_pre, terms = c("TimeBin", "trial_num_scaled", "language"),
   theme(axis.title.y = element_text(margin = margin(t = 0, r = 10, b = 0, l = 0)),
         axis.title.x = element_text(margin = margin(t = 10, r = 0, b = 0, l = 0)))
 
-ggsave("plot_model_dsouza_pre_glmer.png", path = here("03_output/02_re_analysis/"), device = "png", width = 7, height = 4, units = "in", dpi = 300)
+ggsave("plot_model_dsouza_pre_glmer_filtered_v2.png", path = here("03_output/02_re_analysis/"), device = "png", width = 7, height = 4, units = "in", dpi = 300)
 
 
 ggpredict(final_model_post, terms = c("TimeBin", "trial_num_scaled", "language"), type = "fe", ci.lvl = FALSE) %>% 
@@ -547,7 +546,7 @@ ggpredict(final_model_post, terms = c("TimeBin", "trial_num_scaled", "language")
   theme(axis.title.y = element_text(margin = margin(t = 0, r = 10, b = 0, l = 0)),
         axis.title.x = element_text(margin = margin(t = 10, r = 0, b = 0, l = 0)))
 
-ggsave("plot_model_dsouza_post_glmer.png", path = here("03_output/02_re_analysis/"), device = "png", width = 7, height = 4, units = "in", dpi = 300)
+ggsave("plot_model_dsouza_post_glmer_filtered_v2.png", path = here("03_output/02_re_analysis/"), device = "png", width = 7, height = 4, units = "in", dpi = 300)
  
 ```
 
