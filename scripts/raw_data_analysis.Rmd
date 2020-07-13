@@ -1062,9 +1062,9 @@ anova(lmermodel_20pre, lmermodel_20pre.3) # need trial num
 #This model is overfitting - let's remove the interaction between vocab and time bin
 glmermodel_20pre <- glmer(SamplesInAOI / SamplesTotal ~ language * TimeBin * vocab_scaled * trial_num_scaled + (trial_num_scaled | recording_name), data = model_data_20_pre, family = binomial, weights = SamplesTotal, control=glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000)))
 
-glmermodel_20pre.2 <- glmer(SamplesInAOI / SamplesTotal ~ language * TimeBin * trial_num_scaled + vocab_scaled + vocab_scaled:trial_num_scaled + vocab_scaled:language + (trial_num_scaled | recording_name), data = model_data_20_pre, family = binomial, weights = SamplesTotal, control=glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000)))
+glmermodel_20pre.2 <- glmer(SamplesInAOI / SamplesTotal ~ language * TimeBin * trial_num_scaled + vocab_scaled * trial_num_scaled + vocab_scaled * language + (trial_num_scaled | recording_name), data = model_data_20_pre, family = binomial, weights = SamplesTotal, control=glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000)))
 
-glmermodel_20pre.3 <- glmer(SamplesInAOI / SamplesTotal ~ language * TimeBin * trial_num_scaled + vocab_scaled + vocab_scaled:trial_num_scaled + vocab_scaled:language + (1 | recording_name), data = model_data_20_pre, family = binomial, weights = SamplesTotal, control=glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000)))
+glmermodel_20pre.3 <- glmer(SamplesInAOI / SamplesTotal ~ language * TimeBin * trial_num_scaled + vocab_scaled * trial_num_scaled + vocab_scaled * language + (1 | recording_name), data = model_data_20_pre, family = binomial, weights = SamplesTotal, control=glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000)))
 
 anova(glmermodel_20pre.2, glmermodel_20pre.3)
 
@@ -1105,7 +1105,7 @@ glmermodel_20post <- glmer(SamplesInAOI / SamplesTotal ~ language * TimeBin * vo
 
 glmermodel_20postnovocab <- glmer(SamplesInAOI / SamplesTotal ~ language * TimeBin * trial_num_scaled + (trial_num_scaled | recording_name), data = model_data_20_post, weights = SamplesTotal, family = binomial, control=glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000)))
 
-glmermodel_20post.2 <- glmer(SamplesInAOI / SamplesTotal ~ language * TimeBin * trial_num_scaled + vocab_scaled + vocab_scaled:trial_num_scaled + vocab_scaled:language + (trial_num_scaled | recording_name), data = model_data_20_post, family = binomial, weights = SamplesTotal, control=glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000)))
+glmermodel_20post.2 <- glmer(SamplesInAOI / SamplesTotal ~ language * TimeBin * trial_num_scaled + vocab_scaled * trial_num_scaled + vocab_scaled * language + (trial_num_scaled | recording_name), data = model_data_20_post, family = binomial, weights = SamplesTotal, control=glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000)))
 
 glmermodel_20post.3 <- glmer(SamplesInAOI / SamplesTotal ~ language * TimeBin * trial_num_scaled + vocab_scaled + vocab_scaled:trial_num_scaled + vocab_scaled:language + (1 | recording_name), data = model_data_20_post, family = binomial, weights = SamplesTotal, control=glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000)))
 
