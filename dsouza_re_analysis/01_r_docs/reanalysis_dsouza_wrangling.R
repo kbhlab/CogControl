@@ -1,32 +1,12 @@
-# Rodrigo Dal Ben, 14/05/2020
-# script to output raw data from D'Souza et al. (2020, doi: 10.1098/rsos.180191) 
+# Author: Rodrigo Dal Ben
+# Date: 14/05/2020 (DD/MM/YYYY)
+# Aim: script to create a raw dataset from D'Souza et al. (2020) individual csv files.
+# Doubts and suggestions: dalbenwork@gmail.com
+
+# References:
+# D'Souza et al. Article: 10.1098/rsos.180191
 # D'Souza OSF: https://osf.io/53gh2/
 # D'Souza Dryad: https://datadryad.org/stash/dataset/doi:10.5061/dryad.3n5tb2rc6 
-
-# summary:
-# 1) matlab:
-# raw events and data (x and y axis) have been pulled from .mat files (10.5061/dryad.3n5tb2rc6),
-# the authors collected data on 3 (independent?) buffers: 1. events, 2. time, 3. samples. 
-# the event buffer had its' own timeline; time and samples buffers were combined following the authors' matlab script;
-# for each participant, one samples file (with a timeline) and one events file (with a timeline) was genereted (02_input_csv folder).
-
-# 2) R:
-# a single dataframe for events and another for samples were created and id was added as a variable.
-# the usual `dplyr::left_join` didn't work for joining these dfs as the timelines between them do not exactly match. 
-# an join baed on time interval was done using `fuzzyjoin::fuzzy_left_join`.
-# this process created a gigantic vector of size greater than 12.5Gb, so my notebook could not handle it.
-# the dfs were broken into lists of smaller dataframes;
-# lists were iterated using `purrr::map2`;
-# some 14 hours later, the full dataset was ready. 
-# rename "data" for "samples" for clarity
-# add participant log to dataset - 95 ids match; we miss 7 participants
-# SES = Social Economic Status
-# Exposure = anything below 90 is coded as Bilingual
-# 18/06/2020: e-mail by D'Souza with updated participant info.
-# 19/06/2020: update participant info, A90 is missing; 
-# A90 retrieved from MATLAB (1 file for exp1 and another for exp2 and 3; they were being overwritten)
-# added A90, now we have the full 102-infants sample
-# moved all the "old/exploratory" code to the end of the script
 
 
 # load library
@@ -125,19 +105,15 @@ events_join <-
     ) %>% 
   dplyr::select(-unknown, -time)
 
-## sanity check
-events_join$start_time[2] - events_join$end_time[1] # 1
-tail(samples_clean$time, 1) - tail(events_join$end_time, 1) # events is 11ms longer (11201)
-
 ## fuzzyjoin::fuzzy_left_join works beautifully on smaller subsets;
-## but exceeds the 12.3 Gb available memory in my notebook;
+## but exceeds the 12.3 Gb available memory in the current computer;
 
 ## slice events and samples into lists 
 events_list <- split(events_join, events_join$id)
 samples_list <- split(samples_clean, samples_clean$id)
 
 ## join each dataframe with purrr::map2
-### I am also assuming that samples before the "Start" event are due to calibration procedures
+### Assume that samples before the "Start" event are due to calibration procedures
 ### takes ~14h to run on 20Gb ram
 dataset <- 
   purrr::map2_df(samples_list, events_list, 
@@ -158,10 +134,6 @@ write_csv(dataset, path = here("03_output/01_wrangling/dataset.csv"))
   # during the post-switch trials. The order of the cue type (AAB, ABB) and reward side (left, right) was
   # counterbalanced (i.e. each child completed one of four presentation orders). The procedure lasted around 2 min.
   # (page 6)
-
-## Krista: 
-  # "the baby should basically 100% be looking at the target once it appears on the screen, (...)
-  # use this to figure out which the target side is (...)"
 
 ## subset experiment 1
 data_exp1 <- 
@@ -187,9 +159,6 @@ data_exp1 <-
 
 write_csv(data_exp1, here("03_output/01_wrangling/dataset_exp1.csv"))
 
-### temporary load of data
-data_exp1 <- read.csv(here("03_output/01_wrangling/dataset_exp1.csv"))
-
 # add participant information
 p_info <- read.csv(here("02_input_csv/p_info.csv"))
 
@@ -199,10 +168,9 @@ p_info_exp1 <-
 
 ## several checks on participant consistency information were ran (check "old code" section)
 
-## from article: "We collected data from 102 infants (seven to nine months of age), of whom 51 were raised in ‘bilingual’ homes and 51 in ‘monolingual’ homes." (p. 4)
-## Is this the final count? After excluding infants for lack o attention? 
-## "Participants were recruited and tested until, for each task, we had useable data from 51 bilingual and 51 monolingual infants. 
-## We defined useable data as eye-tracking data (gaze patterns) from at least 75% of the trials in the task."
+## from article: "We collected data from 102 infants (seven to nine months of age), of whom 51 were raised in ‘bilingual’ homes and 51 in ‘monolingual’ homes..." 
+## "Participants were recruited and tested until, for each task, we had useable data from 51 bilingual and 51 monolingual infants..." 
+## "We defined useable data as eye-tracking data (gaze patterns) from at least 75% of the trials in the task..." (page 4)
 
 ## 18/06/2020 - Update information by D'Souza e-mail:
 ## A02 = m1102170
@@ -214,8 +182,6 @@ p_info_exp1 <-
 ## b2908170 = A51
 ## b300917 = A50
 ## m1608170 = A53
-
-## I will upd p_info and gender to have the codes from the experimental data (not touching the experimental data)
 
 # check if upd labels are in p_info and p_gender lists
 upd_id <- c("m1102170", "m2602170", "A135", "A167", 
@@ -297,7 +263,7 @@ load("03_output/01_wrangling/data_exp1_clean.rda")
 load("03_output/01_wrangling/participant_info_exp1_v3.rda")
 
 ## merge
-dataset_exp1 <- dplyr::left_join(data_exp1_clean2, p_info_exp1_v3, by = "id") # 95 participants
+dataset_exp1 <- dplyr::left_join(data_exp1_clean2, p_info_exp1_v3, by = "id") 
 
 length(unique(dataset_exp1$id)) # 102
 
@@ -392,58 +358,19 @@ final_sample_ids <-
   select(id) %>%
   unique() # 51 left
 
-# we don't need the "final_sample_mslist" df as it only adds vocab measures
-
 # this is the full time series data, but only for infants that made it through to the final anticipation-period sample. Will be used for ploting time series data of whole trial
 data_full_trials <- 
   inner_join(dataset_exp1_v3, final_sample_ids, by = "id") %>%
   mutate(id = as.factor(id)) 
 
-
 save(data_full_trials, file = here("03_output/01_wrangling/data_full_trials.rda"))
 write_csv(data_full_trials, here("03_output/01_wrangling/data_full_trials.csv")) # backup
 
 
-# for future wranglings
-load(file = here("/03_output/01_wrangling/dataset_exp1_v3.rda"))
-
-
 ########################################################################### OLD CODE ###########################################################################
 
-## this should be easy, but "time" does not match between datasets!
+## this should work, but "time" does not match between datasets!
 dataset <- dplyr::left_join(samples_clean, events_clean, by = c("id", "time"))
-
-## further checking
-### Is samples total time greater than events total time?
-### We just need 1 participant
-samples_A02 <- 
-  samples_clean %>% 
-  dplyr::filter(id == "A02")
-
-events_A02 <- 
-  events_clean %>% 
-  dplyr::filter(id == "A02")
-
-## samples timeline vs event timeline
-tail(samples_A02$time, 1) > tail(events_A02$time, 1) # False
-head(samples_A02$time, 1) - head(events_A02$time, 1) # samples starts 65.287.108 (65sec & 287ms)  before samples = calibration? 
-tail(samples_A02$time, 1) - tail(events_A02$time, 1) # events is 11.201 (11ms) longer at the end = pratically together.
-
-## the "unkonown" maybe an adjustment between timelines?
-## try differences between time and "unknown" variable in events - IGNORE Unknown
-tail(events_A02$unknown, 1) # 23559839187 ms 
-sprintf("%.1f", tail(events_A02$time, 1) - tail(events_A02$unknown, 1)) # events time - events unknown = 1509424791634423 ms
-tail(samples_A02$time, 1) - (tail(events_A02$time, 1) - tail(events_A02$unknown, 1)) # unknown has nothing to do with anything
-
-# fuzzy left join
-dataset_raw <- 
-  fuzzyjoin::fuzzy_left_join(samples_clean, events_join, 
-                             by=c("id"="id", "time"="start_time", "time"="end_time"),
-                             match_fun=list(`==`, `>=`, `<=`)
-  ) %>% 
-  dplyr::rename(id = id.x) %>% 
-  dplyr::select(-id.y, -end_time, -start_time)
-
 
 ## ids are consistent between data and log?
 id_exp1 <- levels(data_exp1$id)

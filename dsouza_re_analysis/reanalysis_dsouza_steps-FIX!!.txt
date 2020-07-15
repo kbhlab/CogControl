@@ -1,0 +1,30 @@
+Reanalysis steps for D'Souza et al. (2020) data.
+
+1. Wrangling:
+
+Summary: 
+Raw (sample-by-sample) data was extracted from MATLAB and saved on .csv files.
+These files were then amnipulated on R to produce a single dataset with experimental and demographic data. 
+
+1.1. MATLAB:
+D'Souza et al. recorded data on 3 (independent?) buffers: 1. events, 2. time, 3. samples; 
+Event buffer had its' own timeline; 
+Time and samples buffers were combined adpating the authors' matlab script;
+For each participant, one samples file (with a timeline) and one events file (with a timeline) was genereted;
+This files were saved on csv format.
+
+1.2. R:
+Individual csvs files for events and samples were input;
+`dplyr::left_join` didn't work for joining these dfs as the timelines between them do not exactly match; 
+`purrr::map2` and `fuzzyjoin::fuzzy_left_join` were used to join csvs based on time interval (~ 14 hours of processing);
+Unable to identify 10 participants;
+18/06/2020: Additional information was provided by Dean D'Souza by e-mail;
+19/06/2020: Update participant info, A90 was missing; 
+A90 was retrieved from MATLAB: 1 file was generated for exp1 and another for exp2 and 3; they were being overwritten
+Added A90, full 102-infants sample was identified;
+A single dataframe with experimental and demographic data was generated (this dataset is hosted by...).
+
+
+2. Inferential analysis and visualizations:
+
+The script developed for analysis of Study 1a and Study 2 was adapted.
