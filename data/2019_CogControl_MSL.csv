@@ -122,7 +122,7 @@ CogControl,S12,44668,20 months,CogControl20_S12_44668,Monolinguals_eng,42195,428
 CogControl,S13,42816,20 months,CogControl20_S13_42816,Monolinguals_fr,42188,42834,1years9months6days,21,6,646,1,0,100,0,0,none,none,french,1,none,Great kid!,-,39,39,39,0,1,3
 CogControl,S14,42456,20 months,CogControl20_S14_42456,Monolinguals_eng,42230,42835,1years7months27days,19,27,605,0,94,0,7,0,romanian,none,english,1,none,"fussy, check if enough trials",16,-,16,16,0,1,7
 CogControl,S15,42702,20 months,CogControl20_S15_42702,Monolinguals_fr,42188,42835,1years9months7days,21,7,647,0,0,100,0,0,none,none,french,1,none,"looked at mom a lot, check looking",,70,70,70,0,2,9
-CogControl,S16,42690,20 months,CogControl20_S16_42690,Bilinguals_other,42209,42836,1years8months18days,20,18,627,0,0,39,61,0,kabyle,none,kabyle algeria,1,none,Check looking time,-,9,9,9,0,2,18
+CogControl,S16,42690,20 months,CogControl20_S16_42690,Bilinguals_other,42209,42836,1years8months18days,20,18,627,0,0,39,61,0,kabyle,none,kabyle algeria,0,incomplete_cdi,Check looking time,-,9,9,9,0,2,18
 CogControl,S17,43915,20 months,CogControl20_S17_43915,Bilinguals_other,42221,42843,1years8months13days,20,13,622,0,57,0,43,0,spanish,none,english,1,none,Great!,404,-,404,404,0,1,19
 CogControl,S18,43621,20 months,CogControl20_S18_43621,Bilinguals_engfr,42225,42844,1years8months10days,20,10,619,0,26,73,0,0,none,none,french,1,none,Great!,24,245,269,249,20,2,2
 CogControl,S19,43990,20 months,CogControl20_S19_43990,Monolinguals_fr,42219,42844,1years8months16days,20,16,625,0,10,100,0,0,none,none,french,1,none,Great!,-,149,149,149,0,1,0
@@ -135,7 +135,7 @@ CogControl,S25,42165,20 months,CogControl20_S25_42165,Monolinguals_fr,42292,4292
 CogControl,S26,43535,20 months,CogControl20_S26_43535,none_,42310,42931,1years8months13days,20,13,621,1,80,17,3,0,spanish,none,english,0,language,language,28,3,31,29,2,2,13
 CogControl,S27,43622,20 months,CogControl20_S27_43622,none_,42320,42932,1years8months4days,20,4,612,1,77,24,0,0,none,none,english,0,language,language,59,48,107,79,28,2,7
 CogControl,S28,44730,20 months,CogControl20_S28_44730,Monolinguals_fr,42322,42937,1years8months7days,20,7,615,1,0,100,0,0,none,none,french,1,none,excellent!,-,11,11,11,0,2,4
-CogControl,S29,44681,20 months,CogControl20_S29_44681,Bilinguals_other,42307,42943,1years8months27days,20,27,636,1,0,69,30,1,farsi,arabic,french,1,none,NO CDI in FARSI great baby!,-,317,317,317,0,2,NA
+CogControl,S29,44681,20 months,CogControl20_S29_44681,Bilinguals_other,42307,42943,1years8months27days,20,27,636,1,0,69,30,1,farsi,arabic,french,0,incomplete_cdi,NO CDI in FARSI great baby!,-,317,317,317,0,2,NA
 CogControl,S30,42880,20 months,CogControl20_S30_42880,Monolinguals_eng,42337,42962,1years8months17days,20,17,625,1,100,0,0,0,none,none,english,1,none,looking less at end but good!,205,-,205,205,0,1,5
 CogControl,S31,44171,20 months,CogControl20_S31_44171,Monolinguals_fr,42359,42963,1years7months26days,19,26,604,1,8,92,0,0,none,none,french,1,none,great baby!,-,30,30,30,0,1,16
 CogControl,S32,44170,20 months,CogControl20_S32_44170,Bilinguals_other,42354,42964,1years8months1days,20,1,610,0,57,0,43,0,spanish,none,english,1,none,excellent,48,-,48,48,0,1,18
@@ -186,7 +186,7 @@ CogControl,S76,47467,20 months,CogControl20_S76_47467,Bilinguals_other,42616,432
 CogControl,S77,48561,20 months,CogControl20_S77_48561,Monolinguals_eng,42600,43232,1years8months24days,20,24,632,1,100,0,0,0,none,none,english,1,none,good,72,-,72,72,0,2,0
 CogControl,S78,48777,20 months,CogControl20_S78_48777,none_,42593,43234,1years9months3days,21,3,641,1,76,10,14,0,spanish,none,english,0,language,language criteria,384,-,384,384,0,1,2
 CogControl,S79,49262,20 months,CogControl20_S79_49262,Bilinguals_engfr,42602,43238,1years8months28days,20,28,636,0,48,53,0,0,none,none ,french,0,technical,No eyetracking data. See baby info,239,249,488,329,159,2,17
-CogControl,S80,47292,20 months,CogControl20_S80_47292,Bilinguals_other,42623,43239,1years8months9days,20,9,616,1,8,60,33,0,spanish ,none,french ,1,none,great baby,-,62,62,62,0,1,15
+CogControl,S80,47292,20 months,CogControl20_S80_47292,Bilinguals_other,42623,43239,1years8months9days,20,9,616,1,8,60,33,0,spanish ,none,french ,0,incomplete_cdi,great baby,-,62,62,62,0,1,15
 CogControl,S81,47508,20 months,CogControl20_S81_47508,Monolinguals_fr,42625,43239,1years8months7days,20,7,614,0,0,100,0,0,none,none,french,1,none,great baby,-,76,76,76,0,1,NA
 CogControl,S82,47537,20 months,CogControl20_S82_47537,Bilinguals_engfr,42633,43242,1years8months2days,20,2,609,1,63,37,0,0,none,none,english,0,language,L2 at 4 months,9,4,13,9,4,2,9
 CogControl,S83,47262,20 months,CogControl20_S83_47262,Monolinguals_fr,42618,43242,1years8months17days,20,17,624,0,0,100,0,0,none,none,french,1,none,Great baby but had a cold,,16,16,16,0,1,NA

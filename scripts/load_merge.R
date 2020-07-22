@@ -223,6 +223,8 @@ exclusions <-read_csv(here("data", "2019_CogControl_MSL.csv"), na = "-") %>%
   separate(lang.group,into = c("language", "group")) %>%
   clean_names() %>%
   full_join(data_tobii_cleaned, by = "recording_name") %>%
+  mutate(trial_from_zero = case_when(recording_name == "CogControl20_S34_45196" | recording_name == "CogControl20_S40_42628" ~ 2500,
+                                     TRUE ~ trial_from_zero)) %>% # replace NA trial time for 2 kids with no TOBII data so they don't get filtered out in next step
   filter(trial_from_zero >= 2150 & trial_from_zero <= 3150) %>% #filter to just the aniticpatory period, which is 150 ms after the offset of the 2000 ms cue, and lasts for 1000 ms
   group_by(trial_unique) %>%
   mutate(prop_fixations = mean(look_any),
