@@ -1135,53 +1135,6 @@ qqnorm(residuals(final_model_post_20)) #qq plot is very wiggly
 tab_model(final_model_pre_20, show.re.var = FALSE, show.icc = FALSE)
 tab_model(final_model_post_20, show.re.var = FALSE, show.icc = FALSE)
 
-###----------------------------------------------------PLOT OF MODEL RESULTS - LMER-----------------
-
-pre20predict <- ggpredict(glmermodel_20pre, terms = c("TimeBin", "trial_num_scaled", "language", "vocab_centred"), type = "fe", ci.lvl = FALSE) %>%
-  mutate(vocab = case_when(panel < -60 ~ "low vocab",
-                           panel > 60 ~ "high vocab",
-                           TRUE ~ "average vocab")) %>%
-  mutate(vocab = factor(vocab, levels = c("low vocab", "average vocab", "high vocab")))
-
-pre20predict %>%
-  ggplot(aes(x = x, y = predicted, color = group)) +
-  geom_line() +
-  facet_grid(vocab ~ facet) +
-  labs(title = "Predicted values of proportion looking to target during the Training phase \nin Experiment 2 (20 months)", x = "Time in milliseconds during anticipation period", y = "Proportion looking to target", color = "Trial number") +
-  scale_color_manual(values = blues, labels = c(2, 3, 4, 5, 6, 7, 8, 9)) +
-  scale_x_continuous(breaks = c(0, 2, 4), labels = c("0", "500", "1000")) +
-  ylim(-0.1, 1) +
-  theme_ggeffects() +
-  theme(axis.title.y = element_text(margin = margin(t = 0, r = 10, b = 0, l = 0)),
-        axis.title.x = element_text(margin = margin(t = 10, r = 0, b = 0, l = 0)),
-        panel.spacing = unit(1, "lines"))
-
-ggsave("plot_model_20_pre_glmer1.png", path = here("figures"), device = "png", width = 7, height = 7, units = "in",
-   dpi = 300)
- 
-
-post20predict <- ggpredict(glmermodel_20post, terms = c("TimeBin", "trial_num_scaled", "language", "vocab_scaled"), type = "fe", ci.lvl = FALSE) %>%
-  mutate(vocab = case_when(panel < 0 ~ "low vocab",
-                           panel > .5 ~ "high vocab",
-                           TRUE ~ "average vocab")) %>%
-  mutate(vocab = factor(vocab, levels = c("low vocab", "average vocab", "high vocab")))
-
-post20predict %>%
-  ggplot(aes(x = x, y = predicted, color = group)) +
-  geom_line() +
-  facet_grid(vocab ~ facet) +
-  labs(title = "Predicted values of proportion looking to target during the Training phase \nin Experiment 2 (20 months)", x = "Time in milliseconds during anticipation period", y = "Proportion looking to target", color = "Trial number") +
-  scale_color_manual(values = blues, labels = c(2, 3, 4, 5, 6, 7, 8, 9)) +
-  scale_x_continuous(breaks = c(0, 2, 4), labels = c("0", "500", "1000")) +
-  ylim(-0.1, 1) +
-  theme_ggeffects() +
-  theme(axis.title.y = element_text(margin = margin(t = 0, r = 10, b = 0, l = 0)),
-        axis.title.x = element_text(margin = margin(t = 10, r = 0, b = 0, l = 0)),
-        panel.spacing = unit(1, "lines"))
-
-ggsave("plot_model_20_post_glmer1.png", path = here("figures"), device = "png", width = 7, height = 7, units = "in",
-   dpi = 300)
-
 ##----------------------------------------------------------Predicted values plots - GLMER------------
 
 pre20predict <- ggpredict(final_model_pre_20, terms = c("TimeBin", "trial_num_scaled", "language", "vocab_scaled"), type = "fe", ci.lvl = FALSE) %>%
