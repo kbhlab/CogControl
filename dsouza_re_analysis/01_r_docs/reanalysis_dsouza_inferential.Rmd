@@ -5,6 +5,8 @@ date: "July, 6, 2020"
 output: html_document
 ---
 
+Article: Iliaei, S. P., Killam, H., Dal Ben, R., & Byers-Heinlein, K. (under review). The bilingual advantage in infancy: Evidence from 7- and 20-month-olds.
+
 This script was adapted from the analysis script for Study 1a and Study 2. 
 Original author: Hilary Kilam
 Date: January 27, 2020.

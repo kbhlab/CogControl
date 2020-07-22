@@ -1,0 +1,35 @@
+Article: Iliaei, S. P., Killam, H., Dal Ben, R., & Byers-Heinlein, K. (under review). The bilingual advantage in infancy: Evidence from 7- and 20-month-olds.
+
+Reanalysis steps for D'Souza et al. (2020) data.
+Doubts and suggestions: dalbenwork@gmail.com
+
+1. Wrangling:
+
+Summary: 
+Raw (sample-by-sample) data were extracted from MATLAB and saved on .csv files.
+These files were then manipulated on R to produce a single dataset with experimental and demographic data (i.e., "data_full_trials.csv", "dataset_exp1_v3.csv").
+The final raw datasets are hosted by D'Souza et al. (2020) at: https://osf.io/53gh2/
+
+
+1.1. MATLAB:
+a) D'Souza et al. recorded data on 3 (independent?) buffers: 1. events, 2. time, 3. samples; 
+b) Event buffer had its' own timeline; 
+c) Time and samples buffers were combined adpating the authors' matlab script;
+d) For each participant, one samples file (with a timeline) and one events file (with a timeline) was genereted;
+e) This files were saved on csv format. E-mail: dalbenwork@gmail.com to access it.
+
+1.2. R:
+a) Individual csvs files for events and samples were input;
+b) `dplyr::left_join` didn't work for joining these dfs as the timelines between them do not exactly match; 
+c) `purrr::map2` and `fuzzyjoin::fuzzy_left_join` were used to join csvs based on time interval (~ 14 hours of processing);
+d) Unable to identify 10 participants;
+e) 18/06/2020: Additional information was provided by Dean D'Souza by e-mail;
+f) 19/06/2020: Update participant info, A90 was missing; 
+g) A90 was retrieved from MATLAB: 1 file was generated for exp1 and another for exp2 and 3; they were being overwritten
+h) Added A90, full 102-infants sample was identified;
+i) Two dataframe with experimental and demographic data were generated:
+	- "data_full_trials.csv": containing 51 participants included in the final analysis (main article);
+	- "dataset_exp1_v3.csv": containing 102 participants included in the additional analysis (supplementary material);
+
+2. Inferential analysis and visualizations:
+We adapted the script developed for analysis of Study 1a and Study 2.

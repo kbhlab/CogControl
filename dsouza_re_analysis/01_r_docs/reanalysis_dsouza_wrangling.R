@@ -1,3 +1,4 @@
+# Article: Iliaei, S. P., Killam, H., Dal Ben, R., & Byers-Heinlein, K. (under review). The bilingual advantage in infancy: Evidence from 7- and 20-month-olds.
 # Author: Rodrigo Dal Ben
 # Date: 14/05/2020 (DD/MM/YYYY)
 # Aim: script to create a raw dataset from D'Souza et al. (2020) individual csv files.
