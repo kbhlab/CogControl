@@ -1,0 +1,429 @@
+---
+title: "re_analysis_dsouza_2020"
+author: "Rodrigo Dal Ben"
+date: "July, 6, 2020"
+output: html_document
+---
+
+Article: Iliaei, S. P., Killam, H., Dal Ben, R., & Byers-Heinlein, K. (under review). The bilingual advantage in infancy: Evidence from 7- and 20-month-olds.
+
+This script was adapted from the analysis script for Study 1a and Study 2. 
+Original author: Hilary Kilam
+Date: January 27, 2020.
+
+Re-analyse D'Souza data with the, fine-grained, mixed-effects models used in the Study 1a and Study 2. 
+Doubts and suggestions: dalbenwork@gmail.com
+
+D'Souza et al. (2020) references: 
+- article: 10.1098/rsos.180191) 
+- OSF: https://osf.io/53gh2/
+- Dryad: 10.5061/dryad.3n5tb2rc6 
+
+Doubts and suggestions: dalbenwork@gmail.com
+
+# Load library
+
+```{r}
+knitr::opts_chunk$set(echo = FALSE)
+
+## Load packages
+library(here)
+library(tidyverse)
+library(janitor)
+library(readxl)
+library(patchwork)
+library(grDevices)
+library(RColorBrewer)
+
+library(lme4)
+library(effects)
+library(emmeans)
+library(ggeffects)
+library(interactions)
+library(car)
+library(ez)
+
+library(apa)
+library(apaTables)
+library(gt)
+library(flextable)
+library(sjPlot)
+
+library(eyetrackingR) 
+
+options(scipen = 999) # remove scientific notation
+
+kovacs09 <- "Kovács & Mehler 2009"
+
+## Define minimum looking and minimum trial numbers for this study
+MIN_LOOK_PROPORTION <- .5
+MIN_NUMBER_TRIALS <- 5
+```
+
+# Load data
+
+Analysis were ran for the filtered sample (n = 51), as reported on the main article, and on the full sample (n = 102), as reported on the supplementary materials.
+
+```{r}
+load(here("03_output/01_wrangling/data_full_trials.rda")) # data_full_trials = filtered 51 sample - main article
+load(here("03_output/01_wrangling/dataset_exp1_v3.rda")) # dataset_exp1_v3 = full 102 sample - comparison on supplements
+```
+
+# Descriptives 
+
+* Only one age group (7 ~ 9 months);
+* No vocabulary measures;
+* All exclusions have been made on "reanalysis_dsouza_wrangling.R" script;
+* "Maternal education" is replaced by SES (Social Economic Status): "a composite of four weighted scores based on the carers’ (1) postcode (as an index of socioeconomic deprivation), (2) education attainment, (3) household income and (4) occupation." (D'Souza et al., 2020, p. 4)
+
+```{r}
+###------------------------------------------------FINAL SAMPLE COUNTS PER AGE--------------------------------------
+#dataset_exp1_v3 %>% 
+data_full_trials %>% 
+  distinct(id, gender, age_in_days) %>% 
+  summarize(count = length(id),
+            avg_age_days = floor(mean(age_in_days)),
+            min_age_days = min(age_in_days),
+            max_age_days = max(age_in_days),
+            num_female = sum(gender == 1))
+  
+###-----------------------------------------------FINAL SAMPLE COUNTS PER LANG BACKGROUND------------------------------
+#dataset_exp1_v3 %>%
+data_full_trials %>% 
+  distinct(id, language) %>% 
+  group_by(language) %>%
+  summarize(count = length(id))
+
+###----------------------------------------------------------COMPARE GROUPS------------------------------
+age_summary <- 
+  #dataset_exp1_v3 %>%
+  data_full_trials %>% 
+  distinct(id, age_in_days, language)
+
+summary(age_summary$age_in_days)
+
+ggplot(age_summary, aes(age_in_days)) + 
+  geom_histogram(binwidth = 5) + # adjusted
+  facet_wrap(~ language)
+
+t.test(age_in_days ~ language, data = age_summary) # no age diff between mono and bi
+
+# gender
+gender_summary <- 
+  #dataset_exp1_v3 %>%
+  data_full_trials %>% 
+  distinct(id, gender, language) %>% 
+  group_by(language) %>% 
+  count(gender)
+
+t.test(n ~ language, data = gender_summary) # no gender diff between mono and bi
+
+###----------------------------------------------------------COMPARE MATERNAL EDUCATION------------------------------
+# obs. using ses_score (Social Economic Status)
+ses_summary <- 
+  #dataset_exp1_v3 %>%
+  data_full_trials %>% 
+  distinct(id, age_in_days, language, ses_score)
+
+ggplot(ses_summary, aes(ses_score)) + 
+  geom_histogram(binwidth = 0.05) + # adjusted
+  facet_wrap(~ language)
+
+t.test(ses_score ~ language, data = ses_summary) # no ses diff between mono and bi
+```
+
+# Language tables
+
+D'Souza et al. (2020) article and supplementals do not provide information about participants' dominant/other languages or the percentages of exposure to different languages.
+Unable to produce language tables.
+
+# EyeTrackingR Data
+
+```{r}
+###----------------------------------------------------CREATE EYETRACKINGR DATA FOR FULL TRIAL PLOTS
+data_eyetracking_full_trials <- make_eyetrackingr_data(data_full_trials, #dataset_exp1_v3, 
+                                participant_column = "id",
+                                trial_column = "trial_name", 
+                                time_column = "trial_from_zero",
+                                trackloss_column = "trackloss", 
+                                aoi_columns = c('target', 'circle', 'distractor'), 
+                                treat_non_aoi_looks_as_missing = TRUE)
+
+full_trial_window <- subset_by_window(data_eyetracking_full_trials,
+                                     window_start_time = 0,
+                                     window_end_time = 6600, rezero = TRUE, remove = TRUE)
+
+data_time_series_full <- make_time_sequence_data(full_trial_window,
+                                         time_bin_size = 200,
+                                         predictor_columns = c("language", "trial_type", "trial_num", "ses_score", "exposure"), 
+                                         aois = c("circle", "target", "distractor"))
+
+###---------------------------------------------CREATE EYETRACKINGR DATA FOR ANTICIPATION PERIOD PLOTS
+data_eyetracking_antic_window <- subset_by_window(data_eyetracking_full_trials,
+                                     window_start_time = 3200, # event = antecipOnset + 150
+                                     window_end_time = 4200, # event = rewardOnset + 150
+                                     rezero = TRUE, remove = TRUE)
+
+trackloss <- trackloss_analysis(data = data_eyetracking_antic_window)
+
+data_eyetracking_clean <- clean_by_trackloss(data = data_eyetracking_antic_window, trial_prop_thresh = .5) #this eliminates all data from trials with 50% or more trackloss (we merged the baby IDs who made it through to the final sample back with the full data, so makes sense we will re-exclude some trials here)
+
+data_eyetracking_clean_nocircle <- make_eyetrackingr_data(data_full_trials, #dataset_exp1_v3, 
+                                participant_column = "id",
+                                trial_column = "trial_name", 
+                                time_column = "trial_from_zero",
+                                trackloss_column = "trackloss", 
+                                aoi_columns = c('target', 'distractor'), # this will calculate prop looking in relation to just target vs distractor
+                                treat_non_aoi_looks_as_missing = TRUE) %>%
+  subset_by_window(window_start_time = 3200,
+                   window_end_time = 4200, rezero = TRUE, remove = TRUE) %>%
+  clean_by_trackloss(trial_prop_thresh = .5)
+
+data_time_series_antic <- make_time_sequence_data(data_eyetracking_clean,
+                                         time_bin_size = 200,
+                                         predictor_columns = c("language", "trial_type", "trial_num", "ses_score", "exposure"),
+                                         aois = c("circle", "target", "distractor"))
+```
+
+
+# Time Series Plots
+
+```{r time_series_plots, echo = FALSE}
+###----------------------------------------------------------PLOT FULL TRIALS-----------------------------------------
+line_colors <- c("#D55E00", "#0072B2") # color-blind friendly
+line_types <- c("dotted", "solid", "dashed")
+line_sizes <- c(.6, 0.5, 0.5)
+facet_text <- data.frame(trial_labels = c("Trial 1"), 
+                         language = c("Monolinguals"), 
+                         aoi = c("target"), 
+                         Time = c(3650), 
+                         trial_type_labs = c("Training", "Test"), 
+                         prop_looking = c(.875), 
+                         label = c("Anticipation period"))
+
+time_series_full_trial <-
+  data_time_series_full %>%
+  filter(Time >= 2400 & Time <= 5000) %>% 
+  mutate(trial_type_labs = case_when(trial_type == "pre-switch" ~ "Training",
+                                     trial_type == "post-switch" ~ "Test")) %>%
+  mutate(trial_type_labs = factor(trial_type_labs, levels = c("Training", "Test"))) %>%
+  pivot_wider(names_from = AOI, values_from = Prop) %>%
+  group_by(trial_type_labs, language, Time, trial_num) %>% 
+  summarise(target = mean(target, na.rm=TRUE), 
+            distractor = mean(distractor, na.rm=TRUE),
+            circle = mean(circle, na.rm = TRUE)) %>%
+  pivot_longer(cols = c(circle, target, distractor), names_to = "aoi", values_to = "prop_looking") %>%
+  mutate(aoi = factor(aoi, levels = c("circle", "target", "distractor")),
+         trial_labels = paste0("Trial ", trial_num), 
+         #setting up the layer for the transparent rectangle showing the anticipation period
+         xmin = case_when(Time == 3000 & language == "Monolinguals" & aoi == "target" ~ 3150, 
+         TRUE ~ 3000),
+         xmax = case_when(Time == 3000 & language == "Monolinguals" & aoi == "target" ~ 4150, 
+         TRUE ~ 3000),
+         ymin = case_when(Time == 3000 & language == "Monolinguals" & aoi == "target" ~ Inf, 
+         TRUE ~ 0),
+         ymax = case_when(Time == 3000 & language == "Monolinguals" & aoi == "target" ~ -Inf,
+         TRUE ~ 0)) %>% 
+  ggplot(aes(x = Time, y = prop_looking, color = language, linetype = aoi)) + 
+  geom_rect(aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax, fill = "Anticipation Period"), alpha = .1, colour = "transparent", show.legend = FALSE) +
+  geom_line(aes(alpha = aoi, size = aoi)) +
+  scale_color_manual(values = line_colors, guide = guide_legend(order = 1)) +
+  scale_fill_manual(values = "#ffb600", labels = c("Anticipation Period"), guide = guide_legend(order = 3)) + 
+  scale_linetype_manual(values = line_types, labels = c("Central fixation cue", "Target", "Distractor"), guide = guide_legend(order = 2)) +
+  scale_y_continuous(n.breaks = 3) +
+  scale_x_continuous(breaks = c(3000, 4000, 5000)) + 
+  scale_alpha_manual(values = c(0.5, 0.9, 0.725), guide = "none") +
+  scale_size_manual(values = line_sizes, guide = "none") +
+  labs(linetype = "Area of interest",
+       color = "Language group",
+       fill = "Time period") +
+  geom_text(data = facet_text, label = facet_text$label, show.legend = FALSE, color = "#666666",
+            size = 3) +
+  facet_grid(trial_labels ~ trial_type_labs) +
+  ggtitle("Time course of infant looking for Study 1b") + 
+  theme_minimal(base_size = 13.5) +
+  theme(plot.title = element_text(hjust = 0.5),
+        strip.background = element_rect(fill = "#D9D9D9", color = "#9b9b9b"),
+        panel.background = element_rect(fill = "transparent", color = "transparent"),
+        panel.grid = element_line(color = "#eaeaea"),
+        panel.grid.major = element_line(size = .25),
+        panel.grid.minor = element_blank(),
+        panel.grid.major.x = element_blank(),
+        panel.spacing = unit(.5, "lines"),
+        axis.text = element_text(size = 10)) +
+  xlab("\nTime from trial start (ms)")  +
+  ylab("Proportion looking\n") 
+
+time_series_full_trial
+
+ggsave("plot_time_series_full_trial_filter_v2.png", 
+       path = here("03_output/02_re_analysis/"), 
+       width = 9, height = 9, units = "in", dpi = 300) # 2700 x 2700 pixels 
+
+###------------------------------------------PLOT ANTICIPATION PERIOD------------------------------------------
+
+### These plots show accuracy over the course of trials, not time bins
+time_series_antic <- 
+  data_time_series_antic %>%
+  pivot_wider(names_from = AOI, values_from = Prop) %>%
+  group_by(trial_type, language, trial_num) %>%
+  summarise(target = mean(target, na.rm=TRUE),
+            distractor = mean(distractor, na.rm=TRUE)) %>%
+  pivot_longer(cols = c(target, distractor), names_to = "aoi", values_to = "prop_looking") %>%
+  mutate(aoi = factor(aoi, levels = c("target", "distractor"))) %>%
+  mutate(trial_labels = paste0("Trial ", trial_num)) %>%
+  ggplot(aes(x = trial_num, y = prop_looking, color = language, linetype = aoi)) + 
+  geom_smooth(se = FALSE) +
+  facet_grid( ~ trial_type) +
+  ggtitle("Time course of looking for Study 1b") +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  scale_x_continuous(breaks = c(1,2,3,4,5,6,7,8,9)) +  
+  xlab("Trial Number")  +
+  ylab("Proportion looking")
+ 
+time_series_antic
+```
+
+## Plot real data to compare w/ models
+
+```{r model_with_time_bins, echo = FALSE}
+blues_palette <- colorRampPalette(c("#C6DBEF", "#081D58"))
+blues <- blues_palette(9)
+  
+tnum <- 
+  data_time_series_antic %>%
+  filter(AOI == "target") %>% 
+  mutate(trial_num = factor(trial_num),
+         trial_type = case_when(trial_type == "pre-switch" ~ "Training",
+                                trial_type == "post-switch" ~ "Test"),
+         trial_type = factor(trial_type, levels = c("Training", "Test"))) %>%
+  group_by(TimeBin, trial_num, language, trial_type) %>%
+  summarize(prop_looking = mean(Prop, na.rm = TRUE)) %>%
+  ggplot(aes(x = as.numeric(TimeBin), y = prop_looking, color = trial_num)) +
+  scale_color_manual(values = blues) +
+  scale_x_continuous(labels = c(0, 250, 500, 750, 1000)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE) +
+  coord_cartesian(ylim = c(0,1)) +
+  facet_grid(language ~ trial_type) +
+  labs(y = "Proportion looking", x = "Time from start of Anticipation Period (ms)") +
+  ggtitle("Study 1b - D'Souza et al. (2020)") +
+  theme(panel.grid.minor = element_blank())
+
+tnum
+```
+
+# Model data
+
+```{r}
+model_data <- 
+  data_time_series_antic %>%
+  filter(AOI == "target",
+         trial_num != 1) %>%
+  mutate(trial_num_scaled = trial_num - 2)
+
+model_data_pre <- 
+  model_data %>%
+  filter(trial_type == "pre-switch") 
+
+model_data_post <-  
+  model_data %>%
+  filter(trial_type == "post-switch")
+```
+
+
+# Raw model data plots
+
+```{r}
+model_data_pre %>% 
+  ggplot(aes(x = TimeBin, y = Prop, color = as.factor(trial_num_scaled))) + 
+  geom_jitter(alpha = 0.8, shape = 21, stroke = .75) + 
+  geom_smooth(aes(color = as.factor(trial_num_scaled)), se = FALSE) + 
+  facet_grid( ~ language) + 
+  scale_color_manual(values = blues, labels = c(2, 3, 4, 5, 6, 7, 8, 9)) +
+  labs(color = "trial_num", title = "Pre-Switch")
+
+model_data_post %>% 
+  ggplot(aes(x = TimeBin, y = Prop, color = as.factor(trial_num_scaled))) + 
+  geom_jitter(alpha = 0.8, shape = 21, stroke = .75) + 
+  geom_smooth(aes(color = as.factor(trial_num_scaled)), se = FALSE) + 
+  facet_grid( ~ language) + 
+  scale_color_manual(values = blues, labels = c(2, 3, 4, 5, 6, 7, 8, 9)) +
+  labs(color = "trial_num", title = "Post-Switch")
+```
+
+
+# Models
+
+```{r}
+###-------------------------------------------------------------PRE SWITCH --------------
+###------------------------------------------------------------GLMER ----------------
+
+glmermodel_pre <- 
+  model_data_pre %>% 
+  glmer(SamplesInAOI / SamplesTotal ~ language * TimeBin * trial_num_scaled + (1 | id),
+        data = ., 
+        family = binomial, 
+        weights = SamplesTotal, 
+        control = glmerControl(optimizer="bobyqa", 
+                               optCtrl = list(maxfun = 100000)))
+
+final_model_pre <-  glmermodel_pre
+  
+summary(final_model_pre)
+
+###-------------------------------------------------------------POST SWITCH --------------
+###-------------------------------------------------------------GLMER ----------------
+glmermodel_post <- 
+  model_data_post %>% 
+  glmer(SamplesInAOI / SamplesTotal ~ language * TimeBin * trial_num_scaled + (1|id), 
+        data = ., 
+        family = binomial, 
+        weights = SamplesTotal, 
+        control = glmerControl(optimizer="bobyqa", 
+                               optCtrl = list(maxfun = 100000)))
+
+final_model_post <- glmermodel_post
+
+summary(final_model_post)
+
+###----------------------------------------------------TABLE OF MODEL RESULTS-----------------
+
+tab_model(final_model_pre, show.re.var = FALSE, show.icc = FALSE, 
+          file = here("03_Output/02_re_analysis/glermodel_pre_dsouza_pruned_full_filter_v2.doc"))
+tab_model(final_model_post, show.re.var = FALSE, show.icc = FALSE, 
+          file = here("03_Output/02_re_analysis/glermodel_pos_dsouza_pruned_full_filter_v2.doc"))
+
+###----------------------------------------------------PLOT OF MODEL RESULTS-----------------
+
+ggpredict(final_model_pre, terms = c("TimeBin", "trial_num_scaled", "language"), type = "re", ci.lvl = FALSE) %>% 
+  plot(colors = "trial_num_scaled", line.size = 1, connect.lines = TRUE) +
+  labs(title = "Predicted values of proportion looking to target during the Training phase \n in Study 1b", 
+       x = "Time in milliseconds during anticipation period", 
+       y = "Proportion looking to target", color = "Trial number") +
+  scale_color_manual(values = blues, labels = c(2, 3, 4, 5, 6, 7, 8, 9)) +
+  scale_x_continuous(breaks = c(0, 2, 4), labels = c("0", "500", "1000")) +
+  ylim(-0.1, 1) +
+  theme(axis.title.y = element_text(margin = margin(t = 0, r = 10, b = 0, l = 0)),
+        axis.title.x = element_text(margin = margin(t = 10, r = 0, b = 0, l = 0)))
+
+ggsave("plot_model_dsouza_pre_glmer_filtered_v2.png", 
+       path = here("03_output/02_re_analysis/"), 
+       device = "png", width = 7, height = 4, units = "in", dpi = 300)
+
+
+ggpredict(final_model_post, terms = c("TimeBin", "trial_num_scaled", "language"), type = "fe", ci.lvl = FALSE) %>% 
+  plot(colors = "trial_num_scaled", line.size = 1, connect.lines = TRUE) +
+  labs(title = "Predicted values of proportion looking to target during the Test phase \n in Study 1b", 
+       x = "Time in milliseconds during anticipation period", 
+       y = "Proportion looking to target", color = "Trial number") +
+  scale_color_manual(values = blues, labels = c(2, 3, 4, 5, 6, 7, 8, 9)) +
+  scale_x_continuous(breaks = c(0, 2, 4), labels = c("0", "500", "1000")) +
+  ylim(-0.1, 1) +
+  theme(axis.title.y = element_text(margin = margin(t = 0, r = 10, b = 0, l = 0)),
+        axis.title.x = element_text(margin = margin(t = 10, r = 0, b = 0, l = 0)))
+
+ggsave("plot_model_dsouza_post_glmer_filtered_v2.png", 
+       path = here("03_output/02_re_analysis/"), 
+       device = "png", width = 7, height = 4, units = "in", dpi = 300)
+```
