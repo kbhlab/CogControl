@@ -26,6 +26,8 @@ library(eyetrackingR)
 library(tidylog)
 library(lme4)
 library(ggeffects)
+library(apaTables)
+library(sjPlot)
 
 `%notin%` <- Negate(`%in%`)
 
@@ -413,7 +415,7 @@ final_sample_vis_full_trial %>%
 ```
 
 
-##Models
+s##Models
 
 ```{r}
 
@@ -438,28 +440,33 @@ aud_model_data_post <-  aud_model_data %>%
 ##### Problems converging models without rescaling trial number, so estimates end up being doubled when scaling trial number to half the size. Model estimates for unscaled trial number seem to be the same as for the scaled one (though any effects that include trial number are halved), but have a warning. Models converge without rescaling if only 8 trials are included (trials 2-9 like in the CogControl analysis). I believe the warning is a false positive, but I cannot get them to converge even by changing the optimizer or maximum attempts allowed.
 
 
-aud_model_pre <- glmer(SamplesInAOI / SamplesTotal ~ group * TimeBin * trial_num_halved + (1 | id), data = aud_model_data_pre, family = binomial, weights = SamplesTotal, control=glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000)))
+aud_model_pre <- glmer(SamplesInAOI / SamplesTotal ~ group * TimeBin * trial_num_scaled + (1 | id), data = aud_model_data_pre, family = binomial, weights = SamplesTotal, control=glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000)))
 
 summary(aud_model_pre)
 
-aud_model_pre2 <- glmer(SamplesInAOI / SamplesTotal ~ group * TimeBin * trial_num_scaled + (1 | id), data = aud_model_data_pre, family = binomial, weights = SamplesTotal, control = glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000))) #convergence problems with unscaled trial number & also with centred trial number
+aud_model_pre2 <- glmer(SamplesInAOI / SamplesTotal ~ group * TimeBin * trial_num_halved + (1 | id), data = aud_model_data_pre, family = binomial, weights = SamplesTotal, control = glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000))) #convergence problems with unscaled trial number & also with centred trial number
 
 summary(aud_model_pre2)
 
-allFit(show.meth.tab = TRUE)
-allFit(aud_model_pre2)
 
-tt <- getME(aud_model_pre2,"theta")
-ll <- getME(aud_model_pre2,"lower")
-min(tt[ll==0])
+##----------------------------------check if unscaled models will converge with other optimizers. Short answer: No. But, testing for true failure of convergence doesn't seem like there's a problem... the tt and ll code below is nowhere close to 0. So I think the regular model should be fine to report.
+
+# allFit(show.meth.tab = TRUE)
+# allFit(aud_model_pre)
+# 
+# tt <- getME(aud_model_pre,"theta")
+# ll <- getME(aud_model_pre,"lower")
+# min(tt[ll==0])
 
 
 
-aud_model_post <- glmer(SamplesInAOI / SamplesTotal ~ group * TimeBin * trial_num_halved + (1 | id), data = aud_model_data_post, family = binomial, weights = SamplesTotal, control=glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000))) 
+aud_model_post <- glmer(SamplesInAOI / SamplesTotal ~ group * TimeBin * trial_num_scaled + (1 | id), data = aud_model_data_post, family = binomial, weights = SamplesTotal, control=glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000))) 
 
 summary(aud_model_post)
 
+aud_model_post2 <- glmer(SamplesInAOI / SamplesTotal ~ group * TimeBin * trial_num_halved + (1 | id), data = aud_model_data_post, family = binomial, weights = SamplesTotal, control = glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000))) #convergence problems with unscaled trial number & also with centred trial number
 
+summary(aud_model_post2)
 
 
 ##------------------------------------VISUAL
@@ -483,23 +490,105 @@ vis_model_data_post <-  vis_model_data %>%
 
 ###Same convergence problems in visual dataset, only works with halved trial number but the estimates seem the same as for the unscaled variable (though doubled estimates for effects including trial number)
 
-vis_model_pre <- glmer(SamplesInAOI / SamplesTotal ~ group * TimeBin * trial_num_halved + (1 | id), data = vis_model_data_pre, family = binomial, weights = SamplesTotal, control=glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000)))
+vis_model_pre <- glmer(SamplesInAOI / SamplesTotal ~ group * TimeBin * trial_num_scaled + (1 | id), data = vis_model_data_pre, family = binomial, weights = SamplesTotal, control=glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000)))
 
 summary(vis_model_pre)
 
+vis_model_pre2 <- glmer(SamplesInAOI / SamplesTotal ~ group * TimeBin * trial_num_halved + (1 | id), data = vis_model_data_pre, family = binomial, weights = SamplesTotal, control=glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000)))
 
-vis_model_post <- glmer(SamplesInAOI / SamplesTotal ~ group * TimeBin * trial_num_halved + (1 | id), data = vis_model_data_post, family = binomial, weights = SamplesTotal, control=glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000))) 
+summary(vis_model_pre2)
+
+
+vis_model_post <- glmer(SamplesInAOI / SamplesTotal ~ group * TimeBin * trial_num_scaled + (1 | id), data = vis_model_data_post, family = binomial, weights = SamplesTotal, control=glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000))) 
 
 summary(vis_model_post)
 
+vis_model_post2 <- glmer(SamplesInAOI / SamplesTotal ~ group * TimeBin * trial_num_halved + (1 | id), data = vis_model_data_post, family = binomial, weights = SamplesTotal, control=glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000))) 
+
+summary(vis_model_post2)
+
+
+###----------------------------------------------------MODEL RESULTS TABLES
+
+tab_model(aud_model_pre, show.re.var = FALSE, show.icc = FALSE)
+tab_model(aud_model_post, show.re.var = FALSE, show.icc = FALSE)
+tab_model(vis_model_pre, show.re.var = FALSE, show.icc = FALSE)
+tab_model(vis_model_post, show.re.var = FALSE, show.icc = FALSE)
+
+
 ```
+##Plot actual model data stacked
+
+```{r}
+
+##-----------------------------------------------------------AUDITORY
+
+
+aud_model_data_pre %>% 
+  #filter(trial_num < 10) %>% #uncomment to see data with only trials 1-9
+  ggplot(aes(x = TimeBin, y = Prop, color = as.factor(trial_num_scaled))) + 
+  geom_jitter(alpha = 0.8, shape = 21, stroke = .75) + 
+  geom_smooth(aes(color = as.factor(trial_num_scaled)), se = FALSE) + 
+  facet_grid( ~ group) + 
+  scale_color_manual(values = blues, labels = c(2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12)) +
+  labs(color = "trial_num", title = "Pre-Switch (Auditory)")
+#ggsave("plot_model_data_7pre.png", path = here("figures"), device = "png", width = 7, height = 4, units = "in",
+#   dpi = 300)
+
+
+
+aud_model_data_post %>% 
+  #filter(trial_num < 10) %>%
+  ggplot(aes(x = TimeBin, y = Prop, color = as.factor(trial_num_scaled))) + 
+  geom_jitter(alpha = 0.8, shape = 21, stroke = .75) + 
+  geom_smooth(aes(color = as.factor(trial_num_scaled)), se = FALSE) + 
+  facet_grid( ~ group) +
+  scale_color_manual(values = blues, labels = c(2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12)) +
+  labs(color = "trial_num", title = "Post-Switch (Auditory)")
+#ggsave("plot_model_data_7post.png", path = here("figures"), device = "png", width = 7, height = 4, units = "in",
+#   dpi = 300)
+
+
+##-----------------------------------------------------------VISUAL
+
+
+vis_model_data_pre %>% 
+  #filter(trial_num < 10) %>%
+  ggplot(aes(x = TimeBin, y = Prop, color = as.factor(trial_num_scaled))) + 
+  geom_jitter(alpha = 0.8, shape = 21, stroke = .75) + 
+  geom_smooth(aes(color = as.factor(trial_num_scaled)), se = FALSE) + 
+  facet_grid( ~ group) + 
+  scale_color_manual(values = blues, labels = c(2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12)) +
+  labs(color = "trial_num", title = "Pre-Switch (Visual)")
+#ggsave("plot_model_data_7pre.png", path = here("figures"), device = "png", width = 7, height = 4, units = "in",
+#   dpi = 300)
+
+
+
+vis_model_data_post %>% 
+  #filter(trial_num < 10) %>%  
+  ggplot(aes(x = TimeBin, y = Prop, color = as.factor(trial_num_scaled))) + 
+  geom_jitter(alpha = 0.8, shape = 21, stroke = .75) + 
+  geom_smooth(aes(color = as.factor(trial_num_scaled)), se = FALSE) + 
+  facet_grid( ~ group) +
+  scale_color_manual(values = blues, labels = c(2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12)) +
+  labs(color = "trial_num", title = "Post-Switch (Visual)")
+#ggsave("plot_model_data_7post.png", path = here("figures"), device = "png", width = 7, height = 4, units = "in",
+#   dpi = 300)
+
+  
+```
+
+
+
+
 ##Plot model predicted values
 
 ```{r}
 
 ##-----------------------------------AUDITORY
 
-ggpredict(aud_model_pre, terms = c("TimeBin", "trial_num_halved [0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5]", "group"), type = "fe", ci.lvl = FALSE) %>% plot(colors = "trial_num_halved", line.size = 1, connect.lines = TRUE) +
+ggpredict(aud_model_pre, terms = c("TimeBin", "trial_num_scaled [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]", "group"), type = "fe", ci.lvl = FALSE) %>% plot(colors = "trial_num_scaled", line.size = 1, connect.lines = TRUE) +
   labs(title = "Predicted values of proportion looking to target during the Training phase \nin Experiment 1c (Auditory condition)", x = "Time in milliseconds during anticipation period", y = "Proportion looking to target", color = "Trial number") +
   scale_color_manual(values = blues, labels = c(2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12)) +
   scale_x_continuous(breaks = c(0, 2, 4), labels = c("0", "500", "1000")) +
@@ -507,7 +596,7 @@ ggpredict(aud_model_pre, terms = c("TimeBin", "trial_num_halved [0, 0.5, 1, 1.5,
   theme(axis.title.y = element_text(margin = margin(t = 0, r = 10, b = 0, l = 0)),
         axis.title.x = element_text(margin = margin(t = 10, r = 0, b = 0, l = 0)))
 
-ggpredict(aud_model_post, terms = c("TimeBin", "trial_num_halved [0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5]", "group"), type = "fe", ci.lvl = FALSE) %>% plot(colors = "trial_num_halved", line.size = 1, connect.lines = TRUE) +
+ggpredict(aud_model_post, terms = c("TimeBin", "trial_num_scaled [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]", "group"), type = "fe", ci.lvl = FALSE) %>% plot(colors = "trial_num_scaled", line.size = 1, connect.lines = TRUE) +
   labs(title = "Predicted values of proportion looking to target during the Test phase \nin Experiment 1c (Auditory condition)", x = "Time in milliseconds during anticipation period", y = "Proportion looking to target", color = "Trial number") +
   scale_color_manual(values = blues, labels = c(2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12)) +
   scale_x_continuous(breaks = c(0, 2, 4), labels = c("0", "500", "1000")) +
@@ -518,7 +607,7 @@ ggpredict(aud_model_post, terms = c("TimeBin", "trial_num_halved [0, 0.5, 1, 1.5
 
 ##-----------------------------------VISUAL
 
-ggpredict(vis_model_pre, terms = c("TimeBin", "trial_num_halved [0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5]", "group"), type = "fe", ci.lvl = FALSE) %>% plot(colors = "trial_num_halved", line.size = 1, connect.lines = TRUE) +
+ggpredict(vis_model_pre, terms = c("TimeBin", "trial_num_scaled [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]", "group"), type = "fe", ci.lvl = FALSE) %>% plot(colors = "trial_num_scaled", line.size = 1, connect.lines = TRUE) +
   labs(title = "Predicted values of proportion looking to target during the Training phase \nin Experiment 1c (Visual condition)", x = "Time in milliseconds during anticipation period", y = "Proportion looking to target", color = "Trial number") +
   scale_color_manual(values = blues, labels = c(2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12)) +
   scale_x_continuous(breaks = c(0, 2, 4), labels = c("0", "500", "1000")) +
@@ -526,7 +615,7 @@ ggpredict(vis_model_pre, terms = c("TimeBin", "trial_num_halved [0, 0.5, 1, 1.5,
   theme(axis.title.y = element_text(margin = margin(t = 0, r = 10, b = 0, l = 0)),
         axis.title.x = element_text(margin = margin(t = 10, r = 0, b = 0, l = 0)))
 
-ggpredict(vis_model_post, terms = c("TimeBin", "trial_num_halved [0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5]", "group"), type = "fe", ci.lvl = FALSE) %>% plot(colors = "trial_num_halved", line.size = 1, connect.lines = TRUE) +
+ggpredict(vis_model_post, terms = c("TimeBin", "trial_num_scaled [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]", "group"), type = "fe", ci.lvl = FALSE) %>% plot(colors = "trial_num_scaled", line.size = 1, connect.lines = TRUE) +
   labs(title = "Predicted values of proportion looking to target during the Test phase \nin Experiment 1c (Visual condition)", x = "Time in milliseconds during anticipation period", y = "Proportion looking to target", color = "Trial number") +
   scale_color_manual(values = blues, labels = c(2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12)) +
   scale_x_continuous(breaks = c(0, 2, 4), labels = c("0", "500", "1000")) +
