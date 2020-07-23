@@ -1147,7 +1147,7 @@ pre20predict %>%
   ggplot(aes(x = x, y = predicted, color = group)) +
   geom_line() +
   facet_grid(vocab ~ facet) +
-  labs(title = "Predicted values of proportion looking to target during the Training phase \nin Experiment 2 (20 months)", x = "Time in milliseconds during anticipation period", y = "Proportion looking to target", color = "Trial number") +
+  labs(title = "Predicted values of proportion looking to target during the Training phase \nin Study 2 (20 months)", x = "Time in milliseconds during anticipation period", y = "Proportion looking to target", color = "Trial number") +
   scale_color_manual(values = blues, labels = c(2, 3, 4, 5, 6, 7, 8, 9)) +
   scale_x_continuous(breaks = c(0, 2, 4), labels = c("0", "500", "1000")) +
   ylim(-0.1, 1) +
@@ -1156,7 +1156,7 @@ pre20predict %>%
         axis.title.x = element_text(margin = margin(t = 10, r = 0, b = 0, l = 0)),
         panel.spacing = unit(1, "lines"))
 
-ggsave("plot_model_20_pre_glmer1.png", path = here("figures"), device = "png", width = 7, height = 7, units = "in",
+ggsave("plot_model_20_pre_final.png", path = here("figures"), device = "png", width = 7, height = 7, units = "in",
    dpi = 300)
 
 post20predict <- ggpredict(final_model_post_20, terms = c("TimeBin", "trial_num_scaled", "language", "vocab_scaled"), type = "fe", ci.lvl = FALSE) %>%
@@ -1169,7 +1169,7 @@ post20predict %>%
   ggplot(aes(x = x, y = predicted, color = group)) +
   geom_line() +
   facet_grid(vocab ~ facet) +
-  labs(title = "Predicted values of proportion looking to target during the Test phase \nin Experiment 2 (20 months)", x = "Time in milliseconds during anticipation period", y = "Proportion looking to target", color = "Trial number") +
+  labs(title = "Predicted values of proportion looking to target during the Test phase \nin Study 2 (20 months)", x = "Time in milliseconds during anticipation period", y = "Proportion looking to target", color = "Trial number") +
   scale_color_manual(values = blues, labels = c(2, 3, 4, 5, 6, 7, 8, 9)) +
   scale_x_continuous(breaks = c(0, 2, 4), labels = c("0", "500", "1000")) +
   ylim(-0.1, 1) +
@@ -1178,7 +1178,7 @@ post20predict %>%
         axis.title.x = element_text(margin = margin(t = 10, r = 0, b = 0, l = 0)),
         panel.spacing = unit(1, "lines"))
 
-ggsave("plot_model_20_post_glmer1.png", path = here("figures"), device = "png", width = 7, height = 7, units = "in",
+ggsave("plot_model_20_post_final.png", path = here("figures"), device = "png", width = 7, height = 7, units = "in",
    dpi = 300)
 ```
 

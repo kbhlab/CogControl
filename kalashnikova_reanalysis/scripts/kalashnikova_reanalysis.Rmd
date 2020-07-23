@@ -71,8 +71,7 @@ blues <- blues_palette(12)
 
 ##Prep data
 ```{r}
-
-###-----------------------------------------------------------PREPARE AUDITORY DATA
+###-----------------------------commented script was to investigate IDs that were not matching up
 
 # ids_raw_aud <- aud_right %>% select(id) %>% distinct() %>% bind_rows(ids_raw)
 # 
@@ -102,10 +101,12 @@ blues <- blues_palette(12)
 # 
 # write_csv(ids_final, "kalashnikova_ids.csv")
 
+###-----------------------------------------------------------PREPARE AUDITORY DATA
+
 
 aud_all <- aud_left %>%
-  dplyr::union(aud_right) %>%
-  filter(bin_start_time < 5400 & bin_start_time > 0) %>% #don't need anything after this point, since most trials have no data afterward
+  dplyr::union(aud_right) %>% #merge left and right dataframes
+  filter(bin_start_time < 5400 & bin_start_time > 0) %>% #don't need anything after this point, since most trials have no data afterward except one weird one 
   mutate(id = str_remove(id, "ica"), #fix some id matching problems
          id = str_remove(id, "ic"),
          id = str_remove(id, "ca"),
@@ -119,20 +120,20 @@ aud_all <- aud_left %>%
          trial_num = case_when(trial_num > 12 ~ trial_num - 12, #make 2 sets of 12 trials, instead of 1 to 24
                                TRUE ~ trial_num),
          trial_type = factor(trial_type, levels = c("pre-switch", "post-switch")),
-         target = case_when(target_side == "left" ~ left,
+         target = case_when(target_side == "left" ~ left, #set AOI columns
                             target_side == "right" ~ right),
          distractor = case_when(target_side == "left" ~ right,
                                 target_side == "right" ~ left),
          trial_name = str_c(trial_type, trial_num, sep = "_"),
          trial_unique = str_c(id, trial_name, sep = "_")) %>%
-  inner_join(baby_info, by = "id")%>%
+  inner_join(baby_info, by = "id") %>% #merge with participant info
   mutate(id = as.factor(id),
          trial_num = as.numeric(trial_num),
          trial_name = as.factor(trial_name),
          group = factor(group, levels = c("monolingual", "bilingual"))) %>%
-  filter(id %notin% exclusions$id)
+  filter(id %notin% exclusions$id) #get rid of any kids that match an ID in the exclusions file
 
-
+##-------------------------------------------------------MAKE AUDITORY EYETRACKING DATA
 aud_eyetracking <- aud_all %>%
   make_eyetrackingr_data(participant_column = "id",
                          trial_column = "trial_name",
@@ -204,38 +205,37 @@ baby_info %>% anti_join((vis_all %>% select(id) %>% distinct()), by = "id")
 
 
 #----------------------------------------------RAW PLOTS FOR FIGURING OUT WEIRD STUFF
-vis_all %>%
-  filter(loss == 0) %>%
-  group_by(bin_start_time, trial_num, trial_type, group) %>%
-  summarize(target = mean(target == TRUE, na.rm = TRUE),
-            distractor = mean(distractor == TRUE, na.rm = TRUE),
-            center = mean(center == TRUE, na.rm = TRUE)) %>%
-  pivot_longer(target:center, names_to = "aoi", values_to = "prop") %>%
-  mutate(aoi = factor(aoi, levels = c("target", "distractor", "center"))) %>%
-  ggplot(aes(x = bin_start_time, y = prop, color = group, linetype = aoi, alpha = aoi)) +
-  geom_line() +
-  facet_grid(trial_num ~ trial_type) +
-  scale_alpha_manual(values = c(0.5, 0.75, 1)) 
+# vis_all %>%
+#   filter(loss == 0) %>%
+#   group_by(bin_start_time, trial_num, trial_type, group) %>%
+#   summarize(target = mean(target == TRUE, na.rm = TRUE),
+#             distractor = mean(distractor == TRUE, na.rm = TRUE),
+#             center = mean(center == TRUE, na.rm = TRUE)) %>%
+#   pivot_longer(target:center, names_to = "aoi", values_to = "prop") %>%
+#   mutate(aoi = factor(aoi, levels = c("target", "distractor", "center"))) %>%
+#   ggplot(aes(x = bin_start_time, y = prop, color = group, linetype = aoi, alpha = aoi)) +
+#   geom_line() +
+#   facet_grid(trial_num ~ trial_type) +
+#   scale_alpha_manual(values = c(0.5, 0.75, 1)) 
+# 
+# #ggsave("plot_vis_right.png")
+# 
+# aud_all %>%
+#   filter(loss == 0) %>%
+#   filter(!is.na(group)) %>%
+#   group_by(bin_start_time, trial_num, trial_type, group) %>%
+#   summarize(target = mean(target == TRUE, na.rm = TRUE),
+#             distractor = mean(distractor == TRUE, na.rm = TRUE),
+#             center = mean(center == TRUE, na.rm = TRUE)) %>%
+#   pivot_longer(target:center, names_to = "aoi", values_to = "prop") %>%
+#   mutate(aoi = factor(aoi, levels = c("target", "distractor", "center"))) %>%
+#   ggplot(aes(x = bin_start_time, y = prop, color = group, linetype = aoi, alpha = aoi)) +
+#   geom_line() +
+#   facet_grid(trial_num ~ trial_type) +
+#   scale_alpha_manual(values = c(0.5, 0.75, 1))
+# 
+# #ggsave("audleft.png")
 
-ggsave("plot_vis_right.png")
-
-aud_all %>%
-  filter(loss == 0) %>%
-  filter(!is.na(group)) %>%
-  group_by(bin_start_time, trial_num, trial_type, group) %>%
-  summarize(target = mean(target == TRUE, na.rm = TRUE),
-            distractor = mean(distractor == TRUE, na.rm = TRUE),
-            center = mean(center == TRUE, na.rm = TRUE)) %>%
-  pivot_longer(target:center, names_to = "aoi", values_to = "prop") %>%
-  mutate(aoi = factor(aoi, levels = c("target", "distractor", "center"))) %>%
-  ggplot(aes(x = bin_start_time, y = prop, color = group, linetype = aoi, alpha = aoi)) +
-  geom_line() +
-  facet_grid(trial_num ~ trial_type) +
-  scale_alpha_manual(values = c(0.5, 0.75, 1))
-
-ggsave("audleft.png")
-
-#--------------------------------------------------
 
 
 vis_eyetracking <- vis_all %>%
@@ -275,7 +275,7 @@ final_sample_vis_full_trial <- vis_full_trial %>%
 
 ```
 
-##figures
+##Time series plots
 
 ```{r}
 
@@ -287,12 +287,11 @@ facet_text_vis <- data.frame(trial_labels = c("Trial 1"), group = c("monolingual
 
 
 
-
-###---------------------------------------------------AUDITORY
+###---------------------------------------------------AUDITORY (using anticipation period 2350-3350 ms)
 
 
 final_sample_aud_full_trial %>%
-  filter(Time >= 1550 & Time <= 4150 & !is.na(group)) %>%
+  filter(Time >= 1550 & Time <= 4150 & !is.na(group)) %>% #truncate timeline for plots
   mutate(trial_type_labs = case_when(trial_type == "pre-switch" ~ "Training",
                                      trial_type == "post-switch" ~ "Test"),
          group = factor(group, levels = c("monolingual", "bilingual"))) %>%
@@ -347,10 +346,10 @@ final_sample_aud_full_trial %>%
   xlab("\nTime from trial start (ms)")  +
   ylab("Proportion looking\n")
 
-ggsave("plot_full_trial_auditory.png", path = here("figures"), device = "png", width = 9, height = 11, units = "in", dpi = 300)
+#ggsave("plot_full_trial_auditory.png", path = here("figures"), device = "png", width = 9, height = 11, units = "in", dpi = 300)
 
 
-###---------------------------------------------------VISUAL
+###---------------------------------------------------VISUAL (using anticipation period 3650 - 4650)
 
 
 final_sample_vis_full_trial %>%
@@ -409,7 +408,7 @@ final_sample_vis_full_trial %>%
   xlab("\nTime from trial start (ms)")  +
   ylab("Proportion looking\n")
 
-ggsave("plot_full_trial_visual.png", path = here("figures"), device = "png", width = 9, height = 11, units = "in", dpi = 300)
+#ggsave("plot_full_trial_visual.png", path = here("figures"), device = "png", width = 9, height = 11, units = "in", dpi = 300)
 
 ```
 
@@ -436,14 +435,14 @@ aud_model_data_pre <- aud_model_data %>%
 aud_model_data_post <-  aud_model_data %>%
   filter(trial_type == "post-switch") 
 
-
+##### Problems converging models without rescaling trial number, so estimates end up being doubled when scaling trial number to half the size. Model estimates for unscaled trial number seem to be the same as for the scaled one (though any effects that include trial number are halved), but have a warning. Models converge without rescaling if only 8 trials are included (trials 2-9 like in the CogControl analysis). I believe the warning is a false positive, but I cannot get them to converge even by changing the optimizer or maximum attempts allowed.
 
 
 aud_model_pre <- glmer(SamplesInAOI / SamplesTotal ~ group * TimeBin * trial_num_halved + (1 | id), data = aud_model_data_pre, family = binomial, weights = SamplesTotal, control=glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000)))
 
 summary(aud_model_pre)
 
-aud_model_pre2 <- glmer(SamplesInAOI / SamplesTotal ~ group * TimeBin * trial_num_scaled + (1 | id), data = aud_model_data_pre, family = binomial, weights = SamplesTotal, control = glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000)))
+aud_model_pre2 <- glmer(SamplesInAOI / SamplesTotal ~ group * TimeBin * trial_num_scaled + (1 | id), data = aud_model_data_pre, family = binomial, weights = SamplesTotal, control = glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000))) #convergence problems with unscaled trial number & also with centred trial number
 
 summary(aud_model_pre2)
 
@@ -482,7 +481,7 @@ vis_model_data_post <-  vis_model_data %>%
   filter(trial_type == "post-switch") 
 
 
-
+###Same convergence problems in visual dataset, only works with halved trial number but the estimates seem the same as for the unscaled variable (though doubled estimates for effects including trial number)
 
 vis_model_pre <- glmer(SamplesInAOI / SamplesTotal ~ group * TimeBin * trial_num_halved + (1 | id), data = vis_model_data_pre, family = binomial, weights = SamplesTotal, control=glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000)))
 
@@ -538,59 +537,59 @@ ggpredict(vis_model_post, terms = c("TimeBin", "trial_num_halved [0, 0.5, 1, 1.5
 
 
 
-##Merge data frames
+##OLD MESSY CODE NOT NEEDED
 
 ```{r}
-aud_all %>%
-
-  group_by(bin_start_time, trial_num, trial_type, group) %>%
-  mutate(target_prop = mean(target == "TRUE"),
-         distractor_prop = mean(distractor == "TRUE"),
-         centre_prop = mean(center == "TRUE"),
-         total_prop = (left_prop + right_prop + centre_prop)) %>%
-  pivot_longer(left_prop:total_prop, names_to = "side", values_to = "prop") %>%
-  ggplot(aes(x = bin_start_time, y = prop, color = side)) +
-  geom_line() +
-  scale_y_continuous(limits = c(0, 1)) +
-  facet_grid(trial_num ~ trial_type)
-  
-vis_all %>%
-  
-  filter(!is.na(group)) %>%
-  group_by(bin_start_time, trial_num, trial_type, group) %>%
-  mutate(target_prop = mean(target == "TRUE"),
-         distractor_prop = mean(distractor == "TRUE"),
-         centre_prop = mean(center == "TRUE")) %>%
-  pivot_longer(target_prop:centre_prop, names_to = "side", values_to = "prop") %>%
-  ggplot(aes(x = bin_start_time, y = prop, color = group, linetype = side)) +
-  geom_line() +
-  scale_y_continuous(limits = c(0, 1)) +
-  facet_grid(trial_num ~ trial_type)
-
-ggsave("plot.png")
-
-  
-  
-
-final_sample_vis_full_trial %>%
-  filter(Time >= 1550 & Time <= 4150 & !is.na(group) & trial_num == 1) %>%
-  ggplot(aes(x = Time, y = Prop, linetype = AOI, color = group)) +
-  geom_smooth(se= FALSE) +
-  facet_wrap( ~ trial_type)
-
-final_sample_aud_full_trial %>%
-  filter(Time >= 1550 & Time <= 4150 & !is.na(group) & trial_num == 1) %>%
-  ggplot(aes(x = Time, y = Prop, linetype = AOI, color = group)) +
-  geom_smooth(se= FALSE) +
-  facet_wrap( ~ trial_type)
-
-  
-aud_model_data %>%
-  ggplot(aes(x = TimeBin, y = Prop, color = group)) +
-  geom_smooth(se = FALSE) +
-  facet_grid(trial_type ~ trial_num)
-
-vis_all %>% mutate(message2 = case_when(is.na(parse_number(message)) ~ message, TRUE ~ NA_character_)) %>% select(message2, bin_start_time) %>% filter(!is.na(message2)) %>% distinct()
+# aud_all %>%
+# 
+#   group_by(bin_start_time, trial_num, trial_type, group) %>%
+#   mutate(target_prop = mean(target == "TRUE"),
+#          distractor_prop = mean(distractor == "TRUE"),
+#          centre_prop = mean(center == "TRUE"),
+#          total_prop = (left_prop + right_prop + centre_prop)) %>%
+#   pivot_longer(left_prop:total_prop, names_to = "side", values_to = "prop") %>%
+#   ggplot(aes(x = bin_start_time, y = prop, color = side)) +
+#   geom_line() +
+#   scale_y_continuous(limits = c(0, 1)) +
+#   facet_grid(trial_num ~ trial_type)
+#   
+# vis_all %>%
+#   
+#   filter(!is.na(group)) %>%
+#   group_by(bin_start_time, trial_num, trial_type, group) %>%
+#   mutate(target_prop = mean(target == "TRUE"),
+#          distractor_prop = mean(distractor == "TRUE"),
+#          centre_prop = mean(center == "TRUE")) %>%
+#   pivot_longer(target_prop:centre_prop, names_to = "side", values_to = "prop") %>%
+#   ggplot(aes(x = bin_start_time, y = prop, color = group, linetype = side)) +
+#   geom_line() +
+#   scale_y_continuous(limits = c(0, 1)) +
+#   facet_grid(trial_num ~ trial_type)
+# 
+# ggsave("plot.png")
+# 
+#   
+#   
+# 
+# final_sample_vis_full_trial %>%
+#   filter(Time >= 1550 & Time <= 4150 & !is.na(group) & trial_num == 1) %>%
+#   ggplot(aes(x = Time, y = Prop, linetype = AOI, color = group)) +
+#   geom_smooth(se= FALSE) +
+#   facet_wrap( ~ trial_type)
+# 
+# final_sample_aud_full_trial %>%
+#   filter(Time >= 1550 & Time <= 4150 & !is.na(group) & trial_num == 1) %>%
+#   ggplot(aes(x = Time, y = Prop, linetype = AOI, color = group)) +
+#   geom_smooth(se= FALSE) +
+#   facet_wrap( ~ trial_type)
+# 
+#   
+# aud_model_data %>%
+#   ggplot(aes(x = TimeBin, y = Prop, color = group)) +
+#   geom_smooth(se = FALSE) +
+#   facet_grid(trial_type ~ trial_num)
+# 
+# vis_all %>% mutate(message2 = case_when(is.na(parse_number(message)) ~ message, TRUE ~ NA_character_)) %>% select(message2, bin_start_time) %>% filter(!is.na(message2)) %>% distinct()
 
 ```
 
