@@ -427,3 +427,72 @@ ggsave("plot_model_dsouza_post_glmer_filtered_v2.png",
        path = here("03_output/02_re_analysis/"), 
        device = "png", width = 7, height = 4, units = "in", dpi = 300)
 ```
+
+# Correlation
+
+Check if overall performance correlates across conditions
+
+## Data
+
+```{r}
+corr_data <- 
+  model_data %>% 
+  group_by(trial_type, language, id) %>% 
+  summarise(mean_prop = mean(Prop, na.rm = T)) %>% 
+  ungroup()
+
+corr_mono <- 
+  corr_data %>% 
+  filter(language == "Monolinguals") %>% 
+  spread(key = trial_type, value = mean_prop)
+
+corr_bi <- 
+  corr_data %>% 
+  filter(language == "Bilinguals") %>% 
+  spread(key = trial_type, value = mean_prop)
+```
+
+## Model - Bilinguals
+
+```{r}
+###----------------------------------------------------Bilinguals -----------------
+# package for visualization
+library("ggpubr")
+
+# correlations
+cor(corr_bi$`pre-switch`, corr_bi$`post-switch`, method = "pearson")
+cor.test(corr_bi$`pre-switch`, corr_bi$`post-switch`, method = "pearson")
+
+# normality assumptions
+shapiro.test(corr_bi$`pre-switch`) # 0.8168
+shapiro.test(corr_bi$`post-switch`) # 0.1813
+ggqqplot(corr_bi$`pre-switch`, ylab = "pre-switch")
+ggqqplot(corr_bi$`post-switch`, ylab = "post-switch")
+
+# visualization
+ggscatter(corr_bi, x = "post-switch", y = "pre-switch", 
+          add = "reg.line", conf.int = TRUE, 
+          cor.coef = TRUE, cor.method = "pearson",
+          xlab = "post-switch", ylab = "pre-switch")
+```
+
+## Model - Monolinguals
+
+```{r}
+###----------------------------------------------------Monolinguals -----------------
+# correlations
+cor(corr_mono$`pre-switch`, corr_mono$`post-switch`, method = "pearson")
+cor.test(corr_mono$`pre-switch`, corr_mono$`post-switch`, method = "pearson")
+
+# normality assumptions
+shapiro.test(corr_mono$`pre-switch`) # 0.003
+shapiro.test(corr_mono$`post-switch`) # 0.0001
+ggqqplot(corr_mono$`pre-switch`, ylab = "pre-switch")
+ggqqplot(corr_mono$`post-switch`, ylab = "post-switch")
+
+# visualization
+ggscatter(corr_mono, x = "post-switch", y = "pre-switch", 
+          add = "reg.line", conf.int = TRUE, 
+          cor.coef = TRUE, cor.method = "pearson",
+          xlab = "post-switch", ylab = "pre-switch")
+```

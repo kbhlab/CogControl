@@ -1751,4 +1751,112 @@ post_20_bi <-  block_data %>%
 
 ```
 
+# Correlation
 
+Check if overall performance correlates across conditions
+
+## Data
+```{r}
+###----------------------------------------------------Data -----------------
+# package for visualization
+library("ggpubr")
+
+corr_data <- 
+  model_data %>% 
+  group_by(trial_type, language, age_group, recording_name) %>% 
+  summarise(mean_prop = mean(Prop, na.rm = T)) %>% 
+  ungroup()
+
+# 7
+corr_mono_7 <- 
+  corr_data %>% 
+  filter(language == "Monolinguals", age_group == "7 months") %>% 
+  spread(key = trial_type, value = mean_prop)
+
+corr_bi_7 <- 
+  corr_data %>% 
+  filter(language == "Bilinguals", age_group == "7 months") %>% 
+  spread(key = trial_type, value = mean_prop)
+
+# 20
+corr_mono_20 <- 
+  corr_data %>% 
+  filter(language == "Monolinguals", age_group == "20 months") %>% 
+  spread(key = trial_type, value = mean_prop)
+
+corr_bi_20 <- 
+  corr_data %>% 
+  filter(language == "Bilinguals", age_group == "20 months") %>% 
+  spread(key = trial_type, value = mean_prop)
+
+###----------------------------------------------------Bilinguals -----------------
+# 7-months
+# correlations
+cor(corr_bi_7$`pre-switch`, corr_bi_7$`post-switch`, method = "pearson")
+cor.test(corr_bi_7$`pre-switch`, corr_bi_7$`post-switch`, method = "pearson")
+
+# normality assumptions
+shapiro.test(corr_bi_7$`pre-switch`) # 0.02
+shapiro.test(corr_bi_7$`post-switch`) # 0.02
+ggqqplot(corr_bi_7$`pre-switch`, ylab = "pre-switch")
+ggqqplot(corr_bi_7$`post-switch`, ylab = "post-switch")
+
+# visualization
+ggscatter(corr_bi_7, x = "post-switch", y = "pre-switch", 
+          add = "reg.line", conf.int = TRUE, 
+          cor.coef = TRUE, cor.method = "pearson",
+          xlab = "post-switch", ylab = "pre-switch")
+
+# 20-months
+# correlations
+cor(corr_bi_20$`pre-switch`, corr_bi_20$`post-switch`, method = "pearson")
+cor.test(corr_bi_20$`pre-switch`, corr_bi_20$`post-switch`, method = "pearson")
+
+# normality assumptions
+shapiro.test(corr_bi_20$`pre-switch`) # 0.24
+shapiro.test(corr_bi_20$`post-switch`) # 0.45
+ggqqplot(corr_bi_20$`pre-switch`, ylab = "pre-switch")
+ggqqplot(corr_bi_20$`post-switch`, ylab = "post-switch")
+
+# visualization
+ggscatter(corr_bi_20, x = "post-switch", y = "pre-switch", 
+          add = "reg.line", conf.int = TRUE, 
+          cor.coef = TRUE, cor.method = "pearson",
+          xlab = "post-switch", ylab = "pre-switch")
+
+###----------------------------------------------------Monolinguals -----------------
+# 7-months
+# correlations
+cor(corr_mono_7$`pre-switch`, corr_mono_7$`post-switch`, method = "pearson")
+cor.test(corr_mono_7$`pre-switch`, corr_mono_7$`post-switch`, method = "pearson")
+
+# normality assumptions
+shapiro.test(corr_mono_7$`pre-switch`) # 0.25
+shapiro.test(corr_mono_7$`post-switch`) # 0.000004
+ggqqplot(corr_mono_7$`pre-switch`, ylab = "pre-switch")
+ggqqplot(corr_mono_7$`post-switch`, ylab = "post-switch")
+
+# visualization
+ggscatter(corr_mono_7, x = "post-switch", y = "pre-switch", 
+          add = "reg.line", conf.int = TRUE, 
+          cor.coef = TRUE, cor.method = "pearson",
+          xlab = "post-switch", ylab = "pre-switch")
+
+# 20-months
+# correlations
+cor(corr_mono_20$`pre-switch`, corr_mono_20$`post-switch`, method = "pearson")
+cor.test(corr_mono_20$`pre-switch`, corr_mono_20$`post-switch`, method = "pearson")
+
+# normality assumptions
+shapiro.test(corr_mono_20$`pre-switch`) # 0.50
+shapiro.test(corr_mono_20$`post-switch`) # 0.03
+ggqqplot(corr_mono_20$`pre-switch`, ylab = "pre-switch")
+ggqqplot(corr_mono_20$`post-switch`, ylab = "post-switch")
+
+# visualization
+ggscatter(corr_mono_20, x = "post-switch", y = "pre-switch", 
+          add = "reg.line", conf.int = TRUE, 
+          cor.coef = TRUE, cor.method = "pearson",
+          xlab = "post-switch", ylab = "pre-switch")
+
+```
