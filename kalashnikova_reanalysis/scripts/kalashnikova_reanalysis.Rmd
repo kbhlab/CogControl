@@ -4,18 +4,11 @@ author: "Hilary Killam"
 date: "07/07/2020"
 output: html_document
 ---
-
+##Setup
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 
 options(scipen = 999)
-
-```
-
-
-##Load Packages and Data
-
-```{r}
 
 library(tidyverse)
 library(lubridate)
@@ -31,10 +24,20 @@ library(sjPlot)
 
 `%notin%` <- Negate(`%in%`)
 
+```
+
+
+##Load Data
+```{r}
+
 baby_info <- read_excel(here("data", "Metadata.xlsx")) %>% clean_names() %>%
   mutate(group = case_when(group == "monolingual sp" ~ "monolingual",
                            group == "monoligual" ~ "monolingual",
-                           TRUE ~ group))
+                           TRUE ~ group),
+         visual_tl = case_when(id == "5314" ~ auditory_tl, #looks like this kid had a mistake in the baby info sheet... they have data for auditory trackloss but no data for visual trackloss, yet they only participated in the visual session. I double checked the trackloss number for the visual session, and it matches what was put under auditory, so I think they should be swapped.
+                               TRUE ~ visual_tl),
+         auditory_tl = case_when(id == "5314" ~ visual_tl,
+                                 TRUE ~ auditory_tl)) 
 
 exclusions <- read_excel(here("data", "Metadata.xlsx"), sheet = 2) %>% clean_names() %>%
   mutate(id = as.character(id))
@@ -69,7 +72,10 @@ vis_right <- read_csv(here("data", "visual_right_FA.csv")) %>% clean_names() %>%
 ##set up colours for plotting model preidctions
 blues_palette <- colorRampPalette(c("#C6DBEF", "#081D58"))
 blues <- blues_palette(12)
+
+
 ```
+#Analysis with our exclusion criteria
 
 ##Prep data
 ```{r}
@@ -171,6 +177,19 @@ aud_final_sample_ids <- aud_anticipation_window %>%
 final_sample_aud_full_trial <- aud_full_trial %>%
   inner_join(aud_final_sample_ids, by = "id")
 
+full_sample_aud_full_trial <- aud_eyetracking %>%
+  filter(auditory_tl <= 0.6) %>%
+  make_time_sequence_data(time_bin_size = 200,
+                          predictor_columns = c("group", "trial_type", "trial_num"),
+                          aois = c("center", "target", "distractor"))
+
+full_sample_aud_anticipation_window <- aud_eyetracking %>%
+  filter(auditory_tl <= 0.6) %>% #Kalashnikova's original trackloss threshold
+  subset_by_window(window_start_time = 2350,
+                                            window_end_time = 3350,
+                                            rezero = TRUE,
+                                            remove = TRUE) 
+
 ###-----------------------------------------------------------PREPARE VISUAL DATA
 
 vis_all <- vis_left %>%
@@ -178,6 +197,8 @@ vis_all <- vis_left %>%
   filter(bin_start_time > 0 & bin_start_time < 6740) %>%
   mutate(id = str_remove(id, "icv"),
          id = str_remove(id, "ica"),
+         id = case_when(str_detect(id, "5332") ~ "5532", #typo in eyetracking ID
+                        TRUE ~ id),
          trial_num = parse_number(trial_label),
          trial_type = case_when(trial_num <= 12 ~ "pre-switch",
                                 TRUE ~ "post-switch"),
@@ -190,8 +211,7 @@ vis_all <- vis_left %>%
                                 target_side == "right" ~ left),
          trial_name = str_c(trial_type, trial_num, sep = "_"),
          trial_unique = str_c(id, trial_name, sep = "_")) %>%
-  filter(id != "5332") %>% #no match to this id
-  left_join(baby_info, by = "id") %>%
+  inner_join(baby_info, by = "id") %>%
   mutate(id = as.factor(id),
          trial_num = as.numeric(trial_num),
          trial_name = as.factor(trial_name),
@@ -203,7 +223,7 @@ vis_all <- vis_left %>%
 vis_all %>% select(id) %>% distinct() %>% anti_join(baby_info, by = "id")
 baby_info %>% anti_join((vis_all %>% select(id) %>% distinct()), by = "id")
 
-#two kids in eyetracking data but not info data, so remove them in script above
+#two kids in eyetracking data but not info data
 
 
 #----------------------------------------------RAW PLOTS FOR FIGURING OUT WEIRD STUFF
@@ -275,7 +295,50 @@ vis_final_sample_ids <- vis_anticipation_window %>%
 final_sample_vis_full_trial <- vis_full_trial %>%
   inner_join(vis_final_sample_ids, by = "id")
 
+full_sample_vis_full_trial <- vis_eyetracking %>%
+  filter(visual_tl <= 0.6) %>%
+  make_time_sequence_data(time_bin_size = 200,
+                          predictor_columns = c("group", "trial_type", "trial_num"),
+                          aois = c("center", "target", "distractor"))
+
+full_sample_vis_anticipation_window <- vis_eyetracking %>%
+  filter(visual_tl <= 0.6) %>% #Kalashnikova's original trackloss threshold
+  subset_by_window(window_start_time = 3650,
+                                            window_end_time = 4650,
+                                            rezero = TRUE,
+                                            remove = TRUE) 
+
 ```
+
+##Descriptives
+
+```{r}
+#language group counts per condition in final sample
+
+final_sample_aud_full_trial %>%
+  select(id, group) %>%
+  distinct() %>%
+  count(group)
+
+final_sample_vis_full_trial %>%
+  select(id, group) %>%
+  distinct() %>%
+  count(group)
+
+#language group counts per condition in full sample
+
+full_sample_aud_full_trial %>%
+  select(id, group) %>%
+  distinct() %>%
+  count(group)
+
+full_sample_vis_full_trial  %>%
+  select(id, group) %>%
+  distinct() %>%
+  count(group)
+
+```
+
 
 ##Time series plots
 
@@ -334,7 +397,7 @@ final_sample_aud_full_trial %>%
   facet_grid(trial_labels ~ trial_type_labs) +
   # annotate("rect", xmin = 2150, xmax = 3150, ymin = -Inf, ymax = Inf, fill = "#fff000", alpha = 0.1) +
   # annotate("text", x = 2650, y = 0.875, label = "Anticipation \n Period", size = 2.75, color = "#927774") +
-  ggtitle("Time course of infant looking for Auditory Study") + 
+  ggtitle("Time course of infant looking for Study 1c (auditory condition)") + 
   theme_minimal(base_size = 13.5) +
   theme(plot.title = element_text(hjust = 0.5),
         strip.background = element_rect(fill = "#D9D9D9", color = "#9b9b9b"),
@@ -396,7 +459,7 @@ final_sample_vis_full_trial %>%
   facet_grid(trial_labels ~ trial_type_labs) +
   # annotate("rect", xmin = 2150, xmax = 3150, ymin = -Inf, ymax = Inf, fill = "#fff000", alpha = 0.1) +
   # annotate("text", x = 2650, y = 0.875, label = "Anticipation \n Period", size = 2.75, color = "#927774") +
-  ggtitle("Time course of infant looking for Visual Study") + 
+  ggtitle("Time course of infant looking for Study 1c (visual condition)") + 
   theme_minimal(base_size = 13.5) +
   theme(plot.title = element_text(hjust = 0.5),
         strip.background = element_rect(fill = "#D9D9D9", color = "#9b9b9b"),
@@ -415,7 +478,7 @@ final_sample_vis_full_trial %>%
 ```
 
 
-s##Models
+##Models
 
 ```{r}
 
@@ -517,6 +580,60 @@ tab_model(vis_model_post, show.re.var = FALSE, show.icc = FALSE)
 
 
 ```
+
+
+##Flipped language level models (to see Bilingual baseline effects) - only using the unscaled trial number variable 
+
+```{r}
+
+##------------------------------------AUDITORY
+
+aud_model_data_pre_flipped <- aud_model_data %>%
+  filter(trial_type == "pre-switch") %>%
+  mutate(group = factor(group, levels = c("bilingual", "monolingual")))
+
+aud_model_data_post_flipped <-  aud_model_data %>%
+  filter(trial_type == "post-switch") %>%
+  mutate(group = factor(group, levels = c("bilingual", "monolingual")))
+
+
+aud_model_pre_flipped <- glmer(SamplesInAOI / SamplesTotal ~ group * TimeBin * trial_num_scaled + (1 | id), data = aud_model_data_pre_flipped, family = binomial, weights = SamplesTotal, control=glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000)))
+
+summary(aud_model_pre_flipped)
+
+aud_model_post_flipped <- glmer(SamplesInAOI / SamplesTotal ~ group * TimeBin * trial_num_scaled + (1 | id), data = aud_model_data_post_flipped, family = binomial, weights = SamplesTotal, control=glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000))) 
+
+summary(aud_model_post_flipped)
+
+##------------------------------------VISUAL
+
+vis_model_data_pre_flipped <- vis_model_data %>%
+  filter(trial_type == "pre-switch") %>%
+  mutate(group = factor(group, levels = c("bilingual", "monolingual")))
+
+vis_model_data_post_flipped <-  vis_model_data %>%
+  filter(trial_type == "post-switch") %>%
+  mutate(group = factor(group, levels = c("bilingual", "monolingual")))
+
+vis_model_pre_flipped <- glmer(SamplesInAOI / SamplesTotal ~ group * TimeBin * trial_num_scaled + (1 | id), data = vis_model_data_pre_flipped, family = binomial, weights = SamplesTotal, control=glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000)))
+
+summary(vis_model_pre_flipped)
+
+vis_model_post_flipped <- glmer(SamplesInAOI / SamplesTotal ~ group * TimeBin * trial_num_scaled + (1 | id), data = vis_model_data_post_flipped, family = binomial, weights = SamplesTotal, control=glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000))) 
+
+summary(vis_model_post_flipped)
+
+
+###----------------------------------------------------MODEL RESULTS TABLES
+# 
+tab_model(aud_model_pre_flipped, show.re.var = FALSE, show.icc = FALSE)
+tab_model(aud_model_post_flipped, show.re.var = FALSE, show.icc = FALSE)
+tab_model(vis_model_pre_flipped, show.re.var = FALSE, show.icc = FALSE)
+tab_model(vis_model_post_flipped, show.re.var = FALSE, show.icc = FALSE)
+
+
+```
+
 ##Plot actual model data stacked
 
 ```{r}
@@ -623,8 +740,266 @@ ggpredict(vis_model_post, terms = c("TimeBin", "trial_num_scaled [0, 1, 2, 3, 4,
   theme(axis.title.y = element_text(margin = margin(t = 0, r = 10, b = 0, l = 0)),
         axis.title.x = element_text(margin = margin(t = 10, r = 0, b = 0, l = 0)))
 ```
+#Analysis with their full sample
+
+##Problems with their data...
+
+```{r}
 
 
+#-----------------------------The following numbers for Auditory condition are very close to Kalashnikova's
+
+aud_all %>%
+  mutate(auditory_tl = case_when(id == "5314" ~ visual_tl, 
+                                 TRUE ~ auditory_tl)) %>%
+  filter(auditory_tl <= .6) %>%
+  filter(bin_start_time >= 2250 & bin_start_time <= 3250) %>%
+  mutate(trial_type = case_when(trial_index > 12 ~ "post_switch",
+                                TRUE ~ "pre-switch")) %>%
+  filter(loss != 1) %>%
+  filter(left + right > 0) %>%
+  group_by(id, group, trial_type, trial_index) %>%
+  summarize(prop_target = mean(target == TRUE, na.rm = TRUE))  %>%
+  mutate(block = case_when(trial_index > 20 ~ 3,
+                           trial_index > 16 ~ 2,
+                           trial_index > 12 ~ 1,
+                           trial_index > 8 ~ 3,
+                           trial_index > 4 ~ 2,
+                           trial_index > 0 ~ 1,
+                           TRUE ~ NA_real_)) %>% 
+  group_by(id, block, group, trial_type) %>%
+  summarize(prop_target = mean(prop_target),
+            n = length(unique(id))) %>%
+  #get means
+  
+  group_by(block, group, trial_type) %>%
+  summarize(mean = round(mean(prop_target, na.rm = TRUE), digits = 2),
+            sd = round(sd(prop_target, na.rm = TRUE), digits = 2),
+            n = sum(n)) %>%
+  pivot_wider(id_cols = c(trial_type, block), names_from = group, values_from = c(mean, sd, n)) %>%
+  select(trial_type, block, mean_monolingual, sd_monolingual, n_monolingual, mean_bilingual, sd_bilingual, n_bilingual) %>%
+  arrange(desc(trial_type), block) %>% View()
+
+
+#-----------------------------The following numbers for Visual condition are very close to Kalashnikova's, proving that they analyzed the incorrect time window. What they analyzed was NOT the anticipation period, but instead when the kids were all looking at the circle
+
+vis_all %>%
+  mutate(visual_tl = case_when(id == "5314" ~ auditory_tl, 
+                                 TRUE ~ visual_tl)) %>%
+  filter(visual_tl <= .6) %>%
+  filter(original_start_time >= 2250 & original_start_time <= 3250) %>%
+  mutate(trial_type = case_when(trial_index > 12 ~ "post_switch",
+                                TRUE ~ "pre-switch")) %>%
+  filter(loss != 1) %>%
+  filter(left + right > 0) %>%
+  group_by(id, group, trial_type, trial_index) %>%
+  summarize(prop_target = mean(target == TRUE, na.rm = TRUE))  %>%
+  mutate(block = case_when(trial_index > 20 ~ 3,
+                           trial_index > 16 ~ 2,
+                           trial_index > 12 ~ 1,
+                           trial_index > 8 ~ 3,
+                           trial_index > 4 ~ 2,
+                           trial_index > 0 ~ 1,
+                           TRUE ~ NA_real_)) %>% 
+  group_by(id, block, group, trial_type) %>%
+  summarize(prop_target = mean(prop_target),
+            n = length(unique(id))) %>%
+  #get means
+  
+  group_by(block, group, trial_type) %>%
+  summarize(mean = round(mean(prop_target, na.rm = TRUE), digits = 2),
+            sd = round(sd(prop_target, na.rm = TRUE), digits = 2),
+            n = sum(n)) %>%
+  pivot_wider(id_cols = c(trial_type, block), names_from = group, values_from = c(mean, sd, n)) %>%
+  select(trial_type, block, mean_monolingual, sd_monolingual, n_monolingual, mean_bilingual, sd_bilingual, n_bilingual) %>%
+  arrange(desc(trial_type), block) %>% View()
+
+
+  
+##----------------------try visual condition again with more appropriate anticipation period and the attention-getter times removed
+  
+  
+vis_all %>%
+  mutate(visual_tl = case_when(id == "5314" ~ auditory_tl, 
+                                 TRUE ~ visual_tl)) %>%
+  filter(visual_tl <= .6) %>%
+  filter(bin_start_time >= 3650 & bin_start_time <= 4650) %>%
+  mutate(trial_type = case_when(trial_index > 12 ~ "post_switch",
+                                TRUE ~ "pre-switch")) %>%
+  filter(loss != 1) %>%
+  filter(left + right > 0) %>%
+  group_by(id, group, trial_type, trial_index) %>%
+  summarize(prop_target = mean(target == TRUE, na.rm = TRUE))  %>%
+  mutate(block = case_when(trial_index > 20 ~ 3,
+                           trial_index > 16 ~ 2,
+                           trial_index > 12 ~ 1,
+                           trial_index > 8 ~ 3,
+                           trial_index > 4 ~ 2,
+                           trial_index > 0 ~ 1,
+                           TRUE ~ NA_real_)) %>% 
+  group_by(id, block, group, trial_type) %>%
+  summarize(prop_target = mean(prop_target),
+            n = length(unique(id))) %>%
+  #get means
+  
+  group_by(block, group, trial_type) %>%
+  summarize(mean = round(mean(prop_target, na.rm = TRUE), digits = 2),
+            sd = round(sd(prop_target, na.rm = TRUE), digits = 2),
+            n = sum(n)) %>%
+  pivot_wider(id_cols = c(trial_type, block), names_from = group, values_from = c(mean, sd, n)) %>%
+  select(trial_type, block, mean_monolingual, sd_monolingual, n_monolingual, mean_bilingual, sd_bilingual, n_bilingual) %>%
+  arrange(desc(trial_type), block) %>% View()
+  
+  
+#-------------------------------------------How many N per trial?
+
+aud_all %>%
+  mutate(auditory_tl = case_when(id == "5314" ~ visual_tl, 
+                                 TRUE ~ auditory_tl)) %>%
+  filter(auditory_tl <= .6) %>%
+  filter(bin_start_time >= 2250 & bin_start_time <= 3250) %>%
+  mutate(trial_type = case_when(trial_index > 12 ~ "post_switch",
+                                TRUE ~ "pre-switch")) %>%
+  filter(loss != 1) %>%
+  filter(left + right > 0) %>%
+  group_by(group, trial_type, trial_index) %>%
+  summarize(n = length(unique(id))) %>% 
+  ungroup() %>%
+  arrange(group, desc(trial_type), trial_index) %>% View()
+
+vis_all %>%
+  mutate(auditory_tl = case_when(id == "5314" ~ auditory_tl, 
+                                 TRUE ~ visual_tl)) %>%
+  filter(visual_tl <= .6) %>%
+  filter(original_start_time >= 2250 & original_start_time <= 3250) %>%
+  mutate(trial_type = case_when(trial_index > 12 ~ "post_switch",
+                                TRUE ~ "pre-switch")) %>%
+  filter(loss != 1) %>%
+  filter(left + right > 0) %>%
+  group_by(group, trial_type, trial_index) %>%
+  summarize(n = length(unique(id))) %>% 
+  ungroup() %>%
+  arrange(group, desc(trial_type), trial_index) %>% View()
+
+vis_all %>%
+  mutate(auditory_tl = case_when(id == "5314" ~ auditory_tl, 
+                                 TRUE ~ visual_tl)) %>%
+  filter(visual_tl <= .6) %>%
+  filter(bin_start_time >= 3650 & bin_start_time <= 4650) %>%
+  mutate(trial_type = case_when(trial_index > 12 ~ "post_switch",
+                                TRUE ~ "pre-switch")) %>%
+  filter(loss != 1) %>%
+  filter(left + right > 0) %>%
+  group_by(group, trial_type, trial_index) %>%
+  summarize(n = length(unique(id))) %>% 
+  ungroup() %>%
+  arrange(group, desc(trial_type), trial_index) %>% View()
+
+#---------------------------Block means by baby 
+
+aud_by_part_means_original <- aud_all %>%
+  mutate(auditory_tl = case_when(id == "5314" ~ visual_tl, 
+                                 TRUE ~ auditory_tl)) %>%
+  filter(auditory_tl <= .6) %>%
+  filter(bin_start_time >= 2250 & bin_start_time <= 3250) %>%
+  mutate(trial_type = case_when(trial_index > 12 ~ "post_switch",
+                                TRUE ~ "pre-switch")) %>%
+  filter(loss != 1) %>%
+  filter(left + right > 0) %>%
+  group_by(id, group, trial_type, trial_index) %>%
+  summarize(prop_target = mean(target == TRUE, na.rm = TRUE),
+            prop_distractor = mean(distractor == TRUE, na.rm = TRUE))  %>%
+  mutate(binary_score = case_when(prop_target > prop_distractor ~ 1, 
+                                  TRUE ~ 0)) %>%
+  mutate(block = case_when(trial_index > 20 ~ 3,
+                           trial_index > 16 ~ 2,
+                           trial_index > 12 ~ 1,
+                           trial_index > 8 ~ 3,
+                           trial_index > 4 ~ 2,
+                           trial_index > 0 ~ 1,
+                           TRUE ~ NA_real_)) %>% 
+  group_by(id, block, group, trial_type) %>%
+  summarize(prop_target = mean(prop_target),
+            prop_score = mean(binary_score),
+            n = length(unique(id))) %>%
+  arrange(block, desc(trial_type), id)
+
+
+
+vis_by_part_means_original <- vis_all %>%
+  mutate(visual_tl = case_when(id == "5314" ~ auditory_tl, 
+                                 TRUE ~ visual_tl)) %>%
+  filter(visual_tl <= .6) %>%
+  filter(original_start_time >= 2250 & original_start_time <= 3250) %>%
+  mutate(trial_type = case_when(trial_index > 12 ~ "post_switch",
+                                TRUE ~ "pre-switch")) %>%
+  filter(loss != 1) %>%
+  filter(left + right > 0) %>%
+  group_by(id, group, trial_type, trial_index) %>%
+  summarize(prop_target = mean(target == TRUE, na.rm = TRUE),
+            prop_distractor = mean(distractor == TRUE, na.rm = TRUE))  %>%
+  mutate(binary_score = case_when(prop_target > prop_distractor ~ 1, 
+                                  TRUE ~ 0)) %>%
+  mutate(block = case_when(trial_index > 20 ~ 3,
+                           trial_index > 16 ~ 2,
+                           trial_index > 12 ~ 1,
+                           trial_index > 8 ~ 3,
+                           trial_index > 4 ~ 2,
+                           trial_index > 0 ~ 1,
+                           TRUE ~ NA_real_)) %>% 
+  group_by(id, block, group, trial_type) %>%
+  summarize(prop_target = mean(prop_target),
+            prop_score = mean(binary_score),
+            n = length(unique(id))) %>%
+  arrange(block, desc(trial_type), id)
+
+
+vis_by_part_means_adjusted <- vis_all %>%
+  mutate(visual_tl = case_when(id == "5314" ~ auditory_tl, 
+                                 TRUE ~ visual_tl)) %>%
+  filter(visual_tl <= .6) %>%
+  filter(bin_start_time >= 3650 & bin_start_time <= 4650) %>%
+  mutate(trial_type = case_when(trial_index > 12 ~ "post_switch",
+                                TRUE ~ "pre-switch")) %>%
+  filter(loss != 1) %>%
+  filter(left + right > 0) %>%
+  group_by(id, group, trial_type, trial_index) %>%
+  summarize(prop_target = mean(target == TRUE, na.rm = TRUE),
+            prop_distractor = mean(distractor == TRUE, na.rm = TRUE))  %>%
+  mutate(binary_score = case_when(prop_target > prop_distractor ~ 1, 
+                                  TRUE ~ 0)) %>%
+  mutate(block = case_when(trial_index > 20 ~ 3,
+                           trial_index > 16 ~ 2,
+                           trial_index > 12 ~ 1,
+                           trial_index > 8 ~ 3,
+                           trial_index > 4 ~ 2,
+                           trial_index > 0 ~ 1,
+                           TRUE ~ NA_real_)) %>% 
+  group_by(id, block, group, trial_type) %>%
+  summarize(prop_target = mean(prop_target),
+            prop_score = mean(binary_score),
+            n = length(unique(id))) %>%
+  arrange(block, desc(trial_type), id)
+
+  
+m1 <- lmer(prop_target ~ group * trial_type + block + (1 | id), data = aud_by_part_means_original) #very similar results to Kalashnikova, despite singular fit
+m2 <- lmer(prop_target ~ group * trial_type + block + (1 | id), data = vis_by_part_means_original) #very similar results to Kalashnikova
+m3 <- lmer(prop_target ~ group * trial_type + block + (1 | id), data = vis_by_part_means_adjusted) #singular fit
+
+
+
+#---------------------------check if typo matches trackloss for another ID
+
+vis_left %>% filter(str_detect(id, "5332")) %>% make_eyetrackingr_data(participant_column = "id",
+                                                                       trackloss_column = "loss",
+                                                                       time_column = "bin_start_time",
+                                                                       trial_column = "trial_index",
+                                                                       aoi_columns = c("left", "right", "center"),
+                                                                       treat_non_aoi_looks_as_missing = TRUE) %>%
+  trackloss_analysis()
+
+
+```
 
 ##OLD MESSY CODE NOT NEEDED
 
@@ -680,7 +1055,50 @@ ggpredict(vis_model_post, terms = c("TimeBin", "trial_num_scaled [0, 1, 2, 3, 4,
 # 
 # vis_all %>% mutate(message2 = case_when(is.na(parse_number(message)) ~ message, TRUE ~ NA_character_)) %>% select(message2, bin_start_time) %>% filter(!is.na(message2)) %>% distinct()
 
-```
+### Anticipation period is obviously wrong
+# 
+# vis_left %>% 
+#   filter(bin_start_time > 0) %>%
+#   mutate(target = case_when(trial_index <= 12 ~ left,
+#                             trial_index >= 13 ~ right),
+#          ant_start = case_when(message == "Ant Start" ~ bin_start_time,
+#                                TRUE ~ NA_real_),
+#          rew_start = case_when(message == "Reward" ~ bin_start_time,
+#                                TRUE ~ NA_real_)) %>% 
+#   group_by(bin_start_time, trial_index, ant_start, rew_start) %>%
+#   summarize(prop = mean(target == TRUE)) %>%
+#   ggplot(aes(x = bin_start_time, y = prop)) + 
+#   geom_point() + 
+#   facet_wrap(~ trial_index) + 
+#   annotate("rect", xmin = 2250, xmax = 3250, ymin = 0, ymax = 1,
+#   alpha = .2)
 
+
+
+
+# novel <- read_csv(here("for_amg.csv"))
+# novel_ids <- read_csv(here("amg_ids.csv"))
+# 
+# novel %>% inner_join(novel_ids, by = c("baby_id", "study_name")) %>%
+#   mutate(en_data = case_when(!is.na(en_1) | !is.na(en_2) | !is.na(en_3) ~ "yes",
+#                              TRUE ~ "no"),
+#          fr_data = case_when(!is.na(fr_1) | !is.na(fr_2) | !is.na(fr_3) ~ "yes",
+#                              TRUE ~ "no"),
+#          en_comp = case_when(is.na(en_comp) & en_data == "yes" ~ 0,
+#                              en_data == "no" ~ NA_real_,
+#                              TRUE ~ en_comp),
+#          en_prod = case_when(is.na(en_prod) & en_data == "yes" ~ 0,
+#                              en_data == "no" ~ NA_real_,
+#                              TRUE ~ en_prod),
+#          fr_comp = case_when(is.na(fr_comp) & fr_data == "yes" ~ 0,
+#                              fr_data == "no" ~ NA_real_,
+#                              TRUE ~ fr_comp),
+#          fr_prod = case_when(is.na(fr_prod) & fr_data == "yes" ~ 0,
+#                              fr_data == "no" ~ NA_real_,
+#                              TRUE ~ fr_prod)) %>%
+#   select(baby_id, study_name, en_data, en_comp, en_prod, fr_data, fr_comp, fr_prod) %>%
+#   write_csv("cdi_missing_info.csv")
+
+```
 
 
