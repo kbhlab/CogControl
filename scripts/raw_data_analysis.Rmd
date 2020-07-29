@@ -1181,6 +1181,31 @@ post20predict %>%
 ggsave("plot_model_20_post_final.png", path = here("figures"), device = "png", width = 7, height = 7, units = "in",
    dpi = 300)
 ```
+##Models plus flipped models to compare baseline effects
+
+```{r}
+#monolinguals as baseline
+tab_model(final_model_pre_7)
+tab_model(final_model_post_7)
+tab_model(final_model_pre_20)
+tab_model(final_model_post_20)
+
+#bilinguals as baseline
+flipped_pre_7 <- glmer(SamplesInAOI / SamplesTotal ~ factor(language, levels = c("Bilinguals", "Monolinguals")) * TimeBin * trial_num_scaled + (1 | recording_name), data = model_data_7_pre, family = binomial, weights = SamplesTotal, control=glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000)))
+
+flipped_post_7 <-glmer(SamplesInAOI / SamplesTotal ~ factor(language, levels = c("Bilinguals", "Monolinguals")) * TimeBin * trial_num_scaled + (1 | recording_name), data = model_data_7_post, family = binomial, weights = SamplesTotal, control=glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000)))
+
+flipped_pre_20 <- glmer(SamplesInAOI / SamplesTotal ~ factor(language, levels = c("Bilinguals", "Monolinguals")) * TimeBin * trial_num_scaled + vocab_scaled + vocab_scaled:trial_num_scaled + vocab_scaled:language + (1 | recording_name), data = model_data_20_pre, family = binomial, weights = SamplesTotal, control=glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000)))
+
+flipped_post_20 <- glmer(SamplesInAOI / SamplesTotal ~ factor(language, levels = c("Bilinguals", "Monolinguals")) * TimeBin * trial_num_scaled + vocab_scaled + vocab_scaled:trial_num_scaled + vocab_scaled:language + (1 | recording_name), data = model_data_20_post, family = binomial, weights = SamplesTotal, control=glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000)))
+
+
+tab_model(flipped_pre_7)
+tab_model(flipped_post_7)
+tab_model(flipped_pre_20)
+tab_model(flipped_post_20)
+
+```
 
 
 ##Block data
