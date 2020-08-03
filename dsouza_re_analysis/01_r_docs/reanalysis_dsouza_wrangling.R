@@ -2,7 +2,7 @@
 # Author: Rodrigo Dal Ben
 # Date: 14/05/2020 (DD/MM/YYYY)
 # Aim: script to create a raw dataset from D'Souza et al. (2020) individual csv files.
-# Doubts and suggestions: dalbenwork@gmail.com
+# Feedback and suggestions: dalbenwork@gmail.com
 
 # References:
 # D'Souza et al. Article: 10.1098/rsos.180191

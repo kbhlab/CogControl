@@ -19,7 +19,7 @@ D'Souza et al. (2020) references:
 - OSF: https://osf.io/53gh2/
 - Dryad: 10.5061/dryad.3n5tb2rc6 
 
-Doubts and suggestions: dalbenwork@gmail.com
+Feedback and suggestions: dalbenwork@gmail.com
 
 # Load library
 
