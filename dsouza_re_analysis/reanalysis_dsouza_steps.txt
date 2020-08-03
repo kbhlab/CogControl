@@ -1,4 +1,4 @@
-Article: Iliaei, S. P., Killam, H., Dal Ben, R., & Byers-Heinlein, K. (under review). The bilingual advantage in infancy: Evidence from 7- and 20-month-olds.
+Article: Iliaei, S. P., Killam, H., Dal Ben, R., & Byers-Heinlein, K. (under review). Bilingualism affects infant cognition: Evidence from new and reanalyzed data.
 OSF: https://osf.io/bz8jn/
 
 Reanalysis steps for D'Souza et al. (2020) data.
