@@ -500,7 +500,7 @@ time_series_full_trial <- data_time_series_full %>%
   geom_line(aes(alpha = aoi, size = aoi)) +
   scale_color_manual(values = line_colors, guide = guide_legend(order = 1)) +
   scale_fill_manual(values = "#ffb600", labels = c("Anticipation Period"), guide = guide_legend(order = 3)) +
-  scale_linetype_manual(values = line_types, labels = c("Central fixation cue", "Target", "Distractor"), guide = guide_legend(order = 2)) +
+  scale_linetype_manual(values = line_types, labels = c("Central fixation area", "Correct side", "Incorrect side"), guide = guide_legend(order = 2)) +
   scale_y_continuous(n.breaks = 3) +
   scale_x_continuous(breaks = c(2000, 3000, 4000)) +
   scale_alpha_manual(values = c(0.5, 0.9, 0.725), guide = "none") +
@@ -558,8 +558,8 @@ time_series_full_trial <- data_time_series_full %>%
 plot_full_7 <- time_series_full_trial$plot[[1]] 
 plot_full_20 <- time_series_full_trial$plot[[2]] 
 
-ggsave("plot_full_trial_7.3.png", path = here("figures"), plot = time_series_full_trial$plot[[1]], device = "png", width = 9, height = 9, units = "in", dpi = 300)
-ggsave("plot_full_trial_20.3.png", path = here("figures"), plot = time_series_full_trial$plot[[2]], device = "png", width = 9, height = 9, units = "in", dpi = 300)
+ggsave("plot_full_trial_7_final.png", path = here("figures"), plot = time_series_full_trial$plot[[1]], device = "png", width = 9, height = 9, units = "in", dpi = 300)
+ggsave("plot_full_trial_20_final.png", path = here("figures"), plot = time_series_full_trial$plot[[2]], device = "png", width = 9, height = 9, units = "in", dpi = 300)
 
 
 ###------------------------------------------PLOT ANTICIPATION PERIOD------------------------------------------
@@ -715,10 +715,13 @@ ggsave("trial_models_20.png", plot = tnum_20)
 
 ```{r}
 
+#---------------------------------Model data with time bin 2 as baseline (the middle)
+
 model_data <- data_time_series_antic %>%
   filter(AOI == "target",
          trial_num != 1) %>%
-  mutate(trial_num_scaled = trial_num - 2)
+  mutate(trial_num_scaled = trial_num - 2,
+         time_bin_centred = TimeBin - 2)
 
 model_data_7_pre <- model_data %>%
   filter(age_group == "7 months",
@@ -741,6 +744,7 @@ model_data_20_post <- model_data %>%
          !is.na(cdi_tot_vocab_prod)) %>%
   mutate(vocab_centred = as.numeric(vocab_centred),
          vocab_scaled = as.numeric(vocab_scaled))
+
 
 ```
 
@@ -910,9 +914,9 @@ ggsave("plot_vocab_bi_20post.png", path = here("figures"), device = "png", width
 ###-------------------------------------------------------------PRE SWITCH 7 LMER--------------
 
 #full model
-lmermodel_7pre <- lmer(Prop ~ language * TimeBin * trial_num_scaled + (1 | recording_name), data = model_data_7_pre, REML = FALSE)
+lmermodel_7pre <- lmer(Prop ~ language * time_bin_centred * trial_num_scaled + (1 | recording_name), data = model_data_7_pre, REML = FALSE)
 #without trial number
-lmermodel_7pre2 <- lmer(Prop ~ language * TimeBin + (1 | recording_name), data = model_data_7_pre, REML = FALSE)
+lmermodel_7pre2 <- lmer(Prop ~ language * time_bin_centred + (1 | recording_name), data = model_data_7_pre, REML = FALSE)
 #without time bin
 lmermodel_7pre3 <- lmer(Prop ~ language * trial_num_scaled + (1 | recording_name), data = model_data_7_pre, REML = FALSE)
 #intercept only
@@ -931,10 +935,10 @@ anova(lmermodel_7pre, lmermodel_7pre2) # the full model is the best
 
 ###------------------------------------------------------------GLMER - MORE APPROPRIATE-----
 #-----------random intercept
-glmermodel_7pre <- glmer(SamplesInAOI / SamplesTotal ~ language * TimeBin * trial_num_scaled + (1 | recording_name), data = model_data_7_pre, family = binomial, weights = SamplesTotal, control=glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000))) # nearly everything is significant in the glmer model
+glmermodel_7pre <- glmer(SamplesInAOI / SamplesTotal ~ language * time_bin_centred * trial_num_scaled + (1 | recording_name), data = model_data_7_pre, family = binomial, weights = SamplesTotal, control=glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000))) # nearly everything is significant in the glmer model
 
 #-----------random intercept and random slope
-glmermodel_7pre.2 <- glmer(SamplesInAOI / SamplesTotal ~ language * TimeBin * trial_num_scaled + (trial_num_scaled | recording_name), data = model_data_7_pre, family = binomial, weights = SamplesTotal, control=glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000))) # nearly everything is significant in the glmer model
+glmermodel_7pre.2 <- glmer(SamplesInAOI / SamplesTotal ~ language * time_bin_centred * trial_num_scaled + (trial_num_scaled | recording_name), data = model_data_7_pre, family = binomial, weights = SamplesTotal, control=glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000))) # nearly everything is significant in the glmer model
 
 #Null model
 glmer_null_7pre <- glmer(SamplesInAOI / SamplesTotal ~ 1 + (1 | recording_name), data = model_data_7_pre, family = binomial, weights = SamplesTotal, control=glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000)))
@@ -950,9 +954,9 @@ summary(final_model_pre_7)
 ###-------------------------------------------------------------POST SWITCH 7--------------
 
 #full model
-lmermodel_7post <- lmer(Prop ~ language * TimeBin * trial_num_scaled + (1 | recording_name), data = model_data_7_post, REML = FALSE)
+lmermodel_7post <- lmer(Prop ~ language * time_bin_centred * trial_num_scaled + (1 | recording_name), data = model_data_7_post, REML = FALSE)
 #without trial number
-lmermodel_7post2 <- lmer(Prop ~ language * TimeBin + (1 | recording_name), data = model_data_7_post, REML = FALSE)
+lmermodel_7post2 <- lmer(Prop ~ language * time_bin_centred + (1 | recording_name), data = model_data_7_post, REML = FALSE)
 #without time bin
 lmermodel_7post3 <- lmer(Prop ~ language * trial_num_scaled + (1 | recording_name), data = model_data_7_post, REML = FALSE)
 #intercept only
@@ -971,12 +975,12 @@ anova(lmermodel_7post, lmermodel_7post2) # the full model is slightly significan
 ###-------------------------------------------------------------GLMER model--------------------
 
 #glmer no random slope
-glmermodel_7post <- glmer(SamplesInAOI / SamplesTotal ~ language * TimeBin * trial_num_scaled + (1 | recording_name), data = model_data_7_post, family = binomial, weights = SamplesTotal, control=glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000))) # nearly everything is significant in the glmer model
+glmermodel_7post <- glmer(SamplesInAOI / SamplesTotal ~ language * time_bin_centred * trial_num_scaled + (1 | recording_name), data = model_data_7_post, family = binomial, weights = SamplesTotal, control=glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000))) # nearly everything is significant in the glmer model
 tab_model(glmermodel_7post, show.re.var = FALSE, show.icc = FALSE)
 
 
 #glmer with random slope
-glmermodel_7post.2 <- glmer(SamplesInAOI / SamplesTotal ~ language * TimeBin * trial_num_scaled + (trial_num_scaled | recording_name), data = model_data_7_post, family = binomial, weights = SamplesTotal, control=glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000))) # nearly everything is significant in the glmer model
+glmermodel_7post.2 <- glmer(SamplesInAOI / SamplesTotal ~ language * time_bin_centred * trial_num_scaled + (trial_num_scaled | recording_name), data = model_data_7_post, family = binomial, weights = SamplesTotal, control=glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000))) # nearly everything is significant in the glmer model
 tab_model(glmermodel_7post.2, show.re.var = FALSE, show.icc = FALSE)
 
 final_model_post_7 <- glmermodel_7post
@@ -1003,31 +1007,28 @@ tab_model(final_model_post_7, show.re.var = FALSE, show.icc = FALSE)
 
 ###----------------------------------------------------PLOT OF MODEL RESULTS-----------------
 
-ggpredict(final_model_pre_7, terms = c("TimeBin", "trial_num_scaled", "language"), type = "re", ci.lvl = FALSE) %>% plot(colors = "trial_num_scaled", line.size = 1, connect.lines = TRUE) +
-  labs(title = "Predicted values of proportion looking to target during the Training phase \nin Experiment 1 (7 months)", x = "Time in milliseconds during anticipation period", y = "Proportion looking to target", color = "Trial number") +
+ggpredict(final_model_pre_7, terms = c("time_bin_centred", "trial_num_scaled", "language"), type = "re", ci.lvl = FALSE) %>% plot(colors = "trial_num_scaled", line.size = 1, connect.lines = TRUE) +
+  labs(title = "Predicted values of proportion looking to target during the Training phase \nin Experiment 1a (7 months)", x = "Time in milliseconds during anticipation period", y = "Proportion looking to target", color = "Trial number") +
   scale_color_manual(values = blues, labels = c(2, 3, 4, 5, 6, 7, 8, 9)) +
-  scale_x_continuous(breaks = c(0, 2, 4), labels = c("0", "500", "1000")) +
+  scale_x_continuous(breaks = c(-2, 0, 2), labels = c("0", "500", "1000")) +
   ylim(-0.1, 1) +
   theme(axis.title.y = element_text(margin = margin(t = 0, r = 10, b = 0, l = 0)),
         axis.title.x = element_text(margin = margin(t = 10, r = 0, b = 0, l = 0)))
 
-ggsave("plot_model_7_pre_glmer1.png", path = here("figures"), device = "png", width = 7, height = 4, units = "in",
-   dpi = 300)
+#ggsave("plot_model_7_pre.png", path = here("figures"), device = "png", width = 7, height = 4, units = "in", dpi = 300)
  
 
-ggpredict(final_model_post_7, terms = c("TimeBin", "trial_num_scaled", "language"), type = "fe", ci.lvl = FALSE) %>% plot(colors = "trial_num_scaled", line.size = 1, connect.lines = TRUE) +
-  labs(title = "Predicted values of proportion looking to target during the Test phase \nin Experiment 1 (7 months)", x = "Time in milliseconds during anticipation period", y = "Proportion looking to target", color = "Trial number") +
+ggpredict(final_model_post_7, terms = c("time_bin_centred", "trial_num_scaled", "language"), type = "fe", ci.lvl = FALSE) %>% plot(colors = "trial_num_scaled", line.size = 1, connect.lines = TRUE) +
+  labs(title = "Predicted values of proportion looking to target during the Test phase \nin Experiment 1a (7 months)", x = "Time in milliseconds during anticipation period", y = "Proportion looking to target", color = "Trial number") +
   scale_color_manual(values = blues, labels = c(2, 3, 4, 5, 6, 7, 8, 9)) +
-  scale_x_continuous(breaks = c(0, 2, 4), labels = c("0", "500", "1000")) +
+  scale_x_continuous(breaks = c(-2, 0, 2), labels = c("0", "500", "1000")) +
   ylim(-0.1, 1) +
   theme(axis.title.y = element_text(margin = margin(t = 0, r = 10, b = 0, l = 0)),
         axis.title.x = element_text(margin = margin(t = 10, r = 0, b = 0, l = 0)))
 
-ggsave("plot_model_7_post_glmer1.png", path = here("figures"), device = "png", width = 7, height = 4, units = "in",
-   dpi = 300)
+#ggsave("plot_model_7_post.png", path = here("figures"), device = "png", width = 7, height = 4, units = "in", dpi = 300)
  
 ```
-
 
 
 #models - 20 m
@@ -1035,9 +1036,9 @@ ggsave("plot_model_7_post_glmer1.png", path = here("figures"), device = "png", w
 
 ###-------------------------------------------------------------PRE SWITCH 20--------------
 
-lmermodel_20pre_novocab <- lmer(Prop ~ language * TimeBin * trial_num_scaled + (1 | recording_name), data = model_data_20_pre, REML = FALSE)
+lmermodel_20pre_novocab <- lmer(Prop ~ language * time_bin_centred * trial_num_scaled + (1 | recording_name), data = model_data_20_pre, REML = FALSE)
 
-lmermodel_20pre <- lmer(Prop ~ language * vocab_centred * TimeBin * trial_num_scaled + (1 | recording_name), data = model_data_20_pre, REML = FALSE)
+lmermodel_20pre <- lmer(Prop ~ language * vocab_centred * time_bin_centred * trial_num_scaled + (1 | recording_name), data = model_data_20_pre, REML = FALSE)
 
 lmermodel_20pre.2 <- lmer(Prop ~ language * vocab_centred + (1 | recording_name), data = model_data_20_pre, REML = FALSE)
 
@@ -1060,11 +1061,11 @@ anova(lmermodel_20pre, lmermodel_20pre.3) # need trial num
 ###------------------------------------------------------------GLMER MODELS-----------------
 
 #This model is overfitting - let's remove the interaction between vocab and time bin
-glmermodel_20pre <- glmer(SamplesInAOI / SamplesTotal ~ language * TimeBin * vocab_scaled * trial_num_scaled + (trial_num_scaled | recording_name), data = model_data_20_pre, family = binomial, weights = SamplesTotal, control=glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000)))
+glmermodel_20pre <- glmer(SamplesInAOI / SamplesTotal ~ language * time_bin_centred * vocab_scaled * trial_num_scaled + (trial_num_scaled | recording_name), data = model_data_20_pre, family = binomial, weights = SamplesTotal, control=glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000)))
 
-glmermodel_20pre.2 <- glmer(SamplesInAOI / SamplesTotal ~ language * TimeBin * trial_num_scaled + vocab_scaled * trial_num_scaled + vocab_scaled * language + (trial_num_scaled | recording_name), data = model_data_20_pre, family = binomial, weights = SamplesTotal, control=glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000)))
+glmermodel_20pre.2 <- glmer(SamplesInAOI / SamplesTotal ~ language * time_bin_centred * trial_num_scaled + vocab_scaled * trial_num_scaled + vocab_scaled * language + (trial_num_scaled | recording_name), data = model_data_20_pre, family = binomial, weights = SamplesTotal, control=glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000)))
 
-glmermodel_20pre.3 <- glmer(SamplesInAOI / SamplesTotal ~ language * TimeBin * trial_num_scaled + vocab_scaled * trial_num_scaled + vocab_scaled * language + (1 | recording_name), data = model_data_20_pre, family = binomial, weights = SamplesTotal, control=glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000)))
+glmermodel_20pre.3 <- glmer(SamplesInAOI / SamplesTotal ~ language * time_bin_centred * trial_num_scaled + vocab_scaled * trial_num_scaled + vocab_scaled * language + (1 | recording_name), data = model_data_20_pre, family = binomial, weights = SamplesTotal, control=glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000)))
 
 anova(glmermodel_20pre.2, glmermodel_20pre.3)
 
@@ -1076,9 +1077,9 @@ final_model_pre_20 <- glmermodel_20pre.3
 
 ###-------------------------------------------------------------POST SWITCH 20--------------
 
-lmermodel_20post_novocab <- lmer(Prop ~ language * TimeBin * trial_num_scaled + (1 | recording_name), data = model_data_20_post, REML = FALSE)
+lmermodel_20post_novocab <- lmer(Prop ~ language * time_bin_centred * trial_num_scaled + (1 | recording_name), data = model_data_20_post, REML = FALSE)
 
-lmermodel_20post <- lmer(Prop ~ language * vocab_centred * TimeBin * trial_num_scaled + (1 | recording_name), data = model_data_20_post, REML = FALSE)
+lmermodel_20post <- lmer(Prop ~ language * vocab_centred * time_bin_centred * trial_num_scaled + (1 | recording_name), data = model_data_20_post, REML = FALSE)
 
 lmermodel_20post.2 <- lmer(Prop ~ language * vocab_centred + (1 | recording_name), data = model_data_20_post, REML = FALSE)
 
@@ -1101,13 +1102,13 @@ anova(lmermodel_20post, lmermodel_20post.3) # full model better
 ###--------------------------------------------------------------GLMER MODELS--------------
 
 #This model is overfitting - let's remove the interaction between vocab and time bin
-glmermodel_20post <- glmer(SamplesInAOI / SamplesTotal ~ language * TimeBin * vocab_scaled * trial_num_scaled + (trial_num_scaled | recording_name), data = model_data_20_post, weights = SamplesTotal, family = binomial, control=glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000)))
+glmermodel_20post <- glmer(SamplesInAOI / SamplesTotal ~ language * time_bin_centred * vocab_scaled * trial_num_scaled + (trial_num_scaled | recording_name), data = model_data_20_post, weights = SamplesTotal, family = binomial, control=glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000)))
 
-glmermodel_20postnovocab <- glmer(SamplesInAOI / SamplesTotal ~ language * TimeBin * trial_num_scaled + (trial_num_scaled | recording_name), data = model_data_20_post, weights = SamplesTotal, family = binomial, control=glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000)))
+glmermodel_20postnovocab <- glmer(SamplesInAOI / SamplesTotal ~ language * time_bin_centred * trial_num_scaled + (trial_num_scaled | recording_name), data = model_data_20_post, weights = SamplesTotal, family = binomial, control=glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000)))
 
-glmermodel_20post.2 <- glmer(SamplesInAOI / SamplesTotal ~ language * TimeBin * trial_num_scaled + vocab_scaled * trial_num_scaled + vocab_scaled * language + (trial_num_scaled | recording_name), data = model_data_20_post, family = binomial, weights = SamplesTotal, control=glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000)))
+glmermodel_20post.2 <- glmer(SamplesInAOI / SamplesTotal ~ language * time_bin_centred * trial_num_scaled + vocab_scaled * trial_num_scaled + vocab_scaled * language + (trial_num_scaled | recording_name), data = model_data_20_post, family = binomial, weights = SamplesTotal, control=glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000)))
 
-glmermodel_20post.3 <- glmer(SamplesInAOI / SamplesTotal ~ language * TimeBin * trial_num_scaled + vocab_scaled + vocab_scaled:trial_num_scaled + vocab_scaled:language + (1 | recording_name), data = model_data_20_post, family = binomial, weights = SamplesTotal, control=glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000)))
+glmermodel_20post.3 <- glmer(SamplesInAOI / SamplesTotal ~ language * time_bin_centred * trial_num_scaled + vocab_scaled + vocab_scaled:trial_num_scaled + vocab_scaled:language + (1 | recording_name), data = model_data_20_post, family = binomial, weights = SamplesTotal, control=glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000)))
 
 anova(glmermodel_20post.2, glmermodel_20post.3, test = "Chisq")
 
@@ -1137,7 +1138,7 @@ tab_model(final_model_post_20, show.re.var = FALSE, show.icc = FALSE)
 
 ##----------------------------------------------------------Predicted values plots - GLMER------------
 
-pre20predict <- ggpredict(final_model_pre_20, terms = c("TimeBin", "trial_num_scaled", "language", "vocab_scaled"), type = "fe", ci.lvl = FALSE) %>%
+pre20predict <- ggpredict(final_model_pre_20, terms = c("time_bin_centred", "trial_num_scaled", "language", "vocab_scaled"), type = "fe", ci.lvl = FALSE) %>%
   mutate(vocab = case_when(panel < -.25 ~ "low vocab",
                            panel > .25 ~ "high vocab",
                            TRUE ~ "average vocab")) %>%
@@ -1149,7 +1150,7 @@ pre20predict %>%
   facet_grid(vocab ~ facet) +
   labs(title = "Predicted values of proportion looking to target during the Training phase \nin Study 2 (20 months)", x = "Time in milliseconds during anticipation period", y = "Proportion looking to target", color = "Trial number") +
   scale_color_manual(values = blues, labels = c(2, 3, 4, 5, 6, 7, 8, 9)) +
-  scale_x_continuous(breaks = c(0, 2, 4), labels = c("0", "500", "1000")) +
+  scale_x_continuous(breaks = c(-2, 0, 2), labels = c("0", "500", "1000")) +
   ylim(-0.1, 1) +
   theme_ggeffects() +
   theme(axis.title.y = element_text(margin = margin(t = 0, r = 10, b = 0, l = 0)),
@@ -1159,7 +1160,7 @@ pre20predict %>%
 ggsave("plot_model_20_pre_final.png", path = here("figures"), device = "png", width = 7, height = 7, units = "in",
    dpi = 300)
 
-post20predict <- ggpredict(final_model_post_20, terms = c("TimeBin", "trial_num_scaled", "language", "vocab_scaled"), type = "fe", ci.lvl = FALSE) %>%
+post20predict <- ggpredict(final_model_post_20, terms = c("time_bin_centred", "trial_num_scaled", "language", "vocab_scaled"), type = "fe", ci.lvl = FALSE) %>%
   mutate(vocab = case_when(panel < -.25 ~ "low vocab",
                            panel > .25 ~ "high vocab",
                            TRUE ~ "average vocab")) %>%
@@ -1171,7 +1172,7 @@ post20predict %>%
   facet_grid(vocab ~ facet) +
   labs(title = "Predicted values of proportion looking to target during the Test phase \nin Study 2 (20 months)", x = "Time in milliseconds during anticipation period", y = "Proportion looking to target", color = "Trial number") +
   scale_color_manual(values = blues, labels = c(2, 3, 4, 5, 6, 7, 8, 9)) +
-  scale_x_continuous(breaks = c(0, 2, 4), labels = c("0", "500", "1000")) +
+  scale_x_continuous(breaks = c(-2, 0, 2), labels = c("0", "500", "1000")) +
   ylim(-0.1, 1) +
   theme_ggeffects() +
   theme(axis.title.y = element_text(margin = margin(t = 0, r = 10, b = 0, l = 0)),
@@ -1191,13 +1192,13 @@ tab_model(final_model_pre_20)
 tab_model(final_model_post_20)
 
 #bilinguals as baseline
-flipped_pre_7 <- glmer(SamplesInAOI / SamplesTotal ~ factor(language, levels = c("Bilinguals", "Monolinguals")) * TimeBin * trial_num_scaled + (1 | recording_name), data = model_data_7_pre, family = binomial, weights = SamplesTotal, control=glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000)))
+flipped_pre_7 <- glmer(SamplesInAOI / SamplesTotal ~ factor(language, levels = c("Bilinguals", "Monolinguals")) * time_bin_centred * trial_num_scaled + (1 | recording_name), data = model_data_7_pre, family = binomial, weights = SamplesTotal, control=glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000)))
 
-flipped_post_7 <-glmer(SamplesInAOI / SamplesTotal ~ factor(language, levels = c("Bilinguals", "Monolinguals")) * TimeBin * trial_num_scaled + (1 | recording_name), data = model_data_7_post, family = binomial, weights = SamplesTotal, control=glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000)))
+flipped_post_7 <-glmer(SamplesInAOI / SamplesTotal ~ factor(language, levels = c("Bilinguals", "Monolinguals")) * time_bin_centred * trial_num_scaled + (1 | recording_name), data = model_data_7_post, family = binomial, weights = SamplesTotal, control=glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000)))
 
-flipped_pre_20 <- glmer(SamplesInAOI / SamplesTotal ~ factor(language, levels = c("Bilinguals", "Monolinguals")) * TimeBin * trial_num_scaled + vocab_scaled + vocab_scaled:trial_num_scaled + vocab_scaled:language + (1 | recording_name), data = model_data_20_pre, family = binomial, weights = SamplesTotal, control=glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000)))
+flipped_pre_20 <- glmer(SamplesInAOI / SamplesTotal ~ factor(language, levels = c("Bilinguals", "Monolinguals")) * time_bin_centred * trial_num_scaled + vocab_scaled + vocab_scaled:trial_num_scaled + vocab_scaled:language + (1 | recording_name), data = model_data_20_pre, family = binomial, weights = SamplesTotal, control=glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000)))
 
-flipped_post_20 <- glmer(SamplesInAOI / SamplesTotal ~ factor(language, levels = c("Bilinguals", "Monolinguals")) * TimeBin * trial_num_scaled + vocab_scaled + vocab_scaled:trial_num_scaled + vocab_scaled:language + (1 | recording_name), data = model_data_20_post, family = binomial, weights = SamplesTotal, control=glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000)))
+flipped_post_20 <- glmer(SamplesInAOI / SamplesTotal ~ factor(language, levels = c("Bilinguals", "Monolinguals")) * time_bin_centred * trial_num_scaled + vocab_scaled + vocab_scaled:trial_num_scaled + vocab_scaled:language + (1 | recording_name), data = model_data_20_post, family = binomial, weights = SamplesTotal, control=glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000)))
 
 
 tab_model(flipped_pre_7)

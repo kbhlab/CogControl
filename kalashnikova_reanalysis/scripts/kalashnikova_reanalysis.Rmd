@@ -36,7 +36,7 @@ baby_info <- read_excel(here("data", "Metadata.xlsx")) %>% clean_names() %>%
                            TRUE ~ group),
          visual_tl = case_when(id == "5314" ~ auditory_tl, #looks like this kid had a mistake in the baby info sheet... they have data for auditory trackloss but no data for visual trackloss, yet they only participated in the visual session. I double checked the trackloss number for the visual session, and it matches what was put under auditory, so I think they should be swapped.
                                TRUE ~ visual_tl),
-         auditory_tl = case_when(id == "5314" ~ visual_tl,
+         auditory_tl = case_when(id == "5314" ~ NA_real_,
                                  TRUE ~ auditory_tl)) 
 
 exclusions <- read_excel(here("data", "Metadata.xlsx"), sheet = 2) %>% clean_names() %>%
@@ -383,9 +383,9 @@ final_sample_aud_full_trial %>%
   ggplot(aes(x = Time, y = prop_looking, color = group, linetype = aoi)) + 
   geom_rect(aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax, fill = "Anticipation Period"), alpha = .1, colour = "transparent", show.legend = FALSE) +
   geom_line(aes(alpha = aoi, size = aoi)) +
-  scale_color_manual(values = line_colors, guide = guide_legend(order = 1)) +
+  scale_color_manual(values = line_colors, guide = guide_legend(order = 1), labels = c("Monolinguals", "Bilinguals")) +
   scale_fill_manual(values = "#ffb600", labels = c("Anticipation Period"), guide = guide_legend(order = 3)) +
-  scale_linetype_manual(values = line_types, labels = c("Central fixation cue", "Target", "Distractor"), guide = guide_legend(order = 2)) +
+  scale_linetype_manual(values = line_types, labels = c("Central fixation area", "Correct side", "Incorrect side"), guide = guide_legend(order = 2)) +
   scale_y_continuous(n.breaks = 3) +
   scale_x_continuous(breaks = c(2000, 3000, 4000)) +
   scale_alpha_manual(values = c(0.5, 0.9, 0.725), guide = "none") +
@@ -397,7 +397,7 @@ final_sample_aud_full_trial %>%
   facet_grid(trial_labels ~ trial_type_labs) +
   # annotate("rect", xmin = 2150, xmax = 3150, ymin = -Inf, ymax = Inf, fill = "#fff000", alpha = 0.1) +
   # annotate("text", x = 2650, y = 0.875, label = "Anticipation \n Period", size = 2.75, color = "#927774") +
-  ggtitle("Time course of infant looking for Study 1c (auditory condition)") + 
+  ggtitle("Time course of infant looking for Study 1d (Auditory cue)") + 
   theme_minimal(base_size = 13.5) +
   theme(plot.title = element_text(hjust = 0.5),
         strip.background = element_rect(fill = "#D9D9D9", color = "#9b9b9b"),
@@ -411,7 +411,7 @@ final_sample_aud_full_trial %>%
   xlab("\nTime from trial start (ms)")  +
   ylab("Proportion looking\n")
 
-#ggsave("plot_full_trial_auditory.png", path = here("figures"), device = "png", width = 9, height = 11, units = "in", dpi = 300)
+ggsave("plot_full_trial_auditory.png", path = here("figures"), device = "png", width = 9, height = 11, units = "in", dpi = 300)
 
 
 ###---------------------------------------------------VISUAL (using anticipation period 3650 - 4650)
@@ -445,9 +445,9 @@ final_sample_vis_full_trial %>%
   geom_rect(aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax, fill = "Anticipation Period 1"), alpha = .1, colour = "transparent", show.legend = FALSE) +
  # geom_rect(aes(xmin = xmin2, xmax = xmax2, ymin = ymin2, ymax = ymax2, fill = "Anticipation Period 2"), alpha = .1, colour = "transparent", show.legend = FALSE) +
   geom_line(aes(alpha = aoi, size = aoi)) +
-  scale_color_manual(values = line_colors, guide = guide_legend(order = 1)) +
+  scale_color_manual(values = line_colors, guide = guide_legend(order = 1), labels = c("Monolinguals", "Bilinguals")) +
   scale_fill_manual(values = c("#ffb600", "#556677"), labels = c("Anticipation Period 1", "Anticipation Period 2"), guide = guide_legend(order = 3)) +
-  scale_linetype_manual(values = line_types, labels = c("Central fixation cue", "Target", "Distractor"), guide = guide_legend(order = 2)) +
+  scale_linetype_manual(values = line_types, labels = c("Central fixation area", "Correct side", "Incorrect side"), guide = guide_legend(order = 2)) +
   scale_y_continuous(n.breaks = 3) +
   scale_x_continuous(breaks = c(1000, 2000, 3000, 4000, 5000, 6000)) +
   scale_alpha_manual(values = c(0.5, 0.9, 0.725), guide = "none") +
@@ -459,7 +459,7 @@ final_sample_vis_full_trial %>%
   facet_grid(trial_labels ~ trial_type_labs) +
   # annotate("rect", xmin = 2150, xmax = 3150, ymin = -Inf, ymax = Inf, fill = "#fff000", alpha = 0.1) +
   # annotate("text", x = 2650, y = 0.875, label = "Anticipation \n Period", size = 2.75, color = "#927774") +
-  ggtitle("Time course of infant looking for Study 1c (visual condition)") + 
+  ggtitle("Time course of infant looking for Study 1c (Visual cue)") + 
   theme_minimal(base_size = 13.5) +
   theme(plot.title = element_text(hjust = 0.5),
         strip.background = element_rect(fill = "#D9D9D9", color = "#9b9b9b"),
@@ -473,7 +473,7 @@ final_sample_vis_full_trial %>%
   xlab("\nTime from trial start (ms)")  +
   ylab("Proportion looking\n")
 
-#ggsave("plot_full_trial_visual.png", path = here("figures"), device = "png", width = 9, height = 11, units = "in", dpi = 300)
+ggsave("plot_full_trial_visual.png", path = here("figures"), device = "png", width = 9, height = 11, units = "in", dpi = 300)
 
 ```
 
@@ -492,7 +492,9 @@ aud_model_data <- make_time_sequence_data(aud_anticipation_window,
   filter(trial_num != 1) %>%
   mutate(trial_num_scaled = trial_num - 2,
          trial_num_halved = trial_num_scaled/2,
-         trial_num_centred = trial_num - 7) 
+         trial_num_centred = trial_num - 7,
+         time_bin_centred = TimeBin -2,
+         group = factor(group, levels = c("monolingual", "bilingual"), labels = c("Monolinguals", "Bilinguals"))) 
 
 aud_model_data_pre <- aud_model_data %>%
   filter(trial_type == "pre-switch")
@@ -503,11 +505,11 @@ aud_model_data_post <-  aud_model_data %>%
 ##### Problems converging models without rescaling trial number, so estimates end up being doubled when scaling trial number to half the size. Model estimates for unscaled trial number seem to be the same as for the scaled one (though any effects that include trial number are halved), but have a warning. Models converge without rescaling if only 8 trials are included (trials 2-9 like in the CogControl analysis). I believe the warning is a false positive, but I cannot get them to converge even by changing the optimizer or maximum attempts allowed.
 
 
-aud_model_pre <- glmer(SamplesInAOI / SamplesTotal ~ group * TimeBin * trial_num_scaled + (1 | id), data = aud_model_data_pre, family = binomial, weights = SamplesTotal, control=glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000)))
+aud_model_pre <- glmer(SamplesInAOI / SamplesTotal ~ group * time_bin_centred * trial_num_scaled + (1 | id), data = aud_model_data_pre, family = binomial, weights = SamplesTotal, control=glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000)))
 
 summary(aud_model_pre)
 
-aud_model_pre2 <- glmer(SamplesInAOI / SamplesTotal ~ group * TimeBin * trial_num_halved + (1 | id), data = aud_model_data_pre, family = binomial, weights = SamplesTotal, control = glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000))) #convergence problems with unscaled trial number & also with centred trial number
+aud_model_pre2 <- glmer(SamplesInAOI / SamplesTotal ~ group * time_bin_centred * trial_num_halved + (1 | id), data = aud_model_data_pre, family = binomial, weights = SamplesTotal, control = glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000))) #convergence problems with unscaled trial number & also with centred trial number
 
 summary(aud_model_pre2)
 
@@ -523,11 +525,11 @@ summary(aud_model_pre2)
 
 
 
-aud_model_post <- glmer(SamplesInAOI / SamplesTotal ~ group * TimeBin * trial_num_scaled + (1 | id), data = aud_model_data_post, family = binomial, weights = SamplesTotal, control=glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000))) 
+aud_model_post <- glmer(SamplesInAOI / SamplesTotal ~ group * time_bin_centred * trial_num_scaled + (1 | id), data = aud_model_data_post, family = binomial, weights = SamplesTotal, control=glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000))) 
 
 summary(aud_model_post)
 
-aud_model_post2 <- glmer(SamplesInAOI / SamplesTotal ~ group * TimeBin * trial_num_halved + (1 | id), data = aud_model_data_post, family = binomial, weights = SamplesTotal, control = glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000))) #convergence problems with unscaled trial number & also with centred trial number
+aud_model_post2 <- glmer(SamplesInAOI / SamplesTotal ~ group * time_bin_centred * trial_num_halved + (1 | id), data = aud_model_data_post, family = binomial, weights = SamplesTotal, control = glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000))) #convergence problems with unscaled trial number & also with centred trial number
 
 summary(aud_model_post2)
 
@@ -542,7 +544,9 @@ vis_model_data <- make_time_sequence_data(vis_anticipation_window,
   filter(trial_num != 1) %>%
   mutate(trial_num_scaled = trial_num - 2,
          trial_num_halved = trial_num_scaled/2,
-         trial_num_centred = trial_num - 7) 
+         trial_num_centred = trial_num - 7,
+         time_bin_centred = TimeBin -2,
+         group = factor(group, levels = c("monolingual", "bilingual"), labels = c("Monolinguals", "Bilinguals"))) 
 
 vis_model_data_pre <- vis_model_data %>%
   filter(trial_type == "pre-switch")
@@ -553,31 +557,36 @@ vis_model_data_post <-  vis_model_data %>%
 
 ###Same convergence problems in visual dataset, only works with halved trial number but the estimates seem the same as for the unscaled variable (though doubled estimates for effects including trial number)
 
-vis_model_pre <- glmer(SamplesInAOI / SamplesTotal ~ group * TimeBin * trial_num_scaled + (1 | id), data = vis_model_data_pre, family = binomial, weights = SamplesTotal, control=glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000)))
+vis_model_pre <- glmer(SamplesInAOI / SamplesTotal ~ group * time_bin_centred * trial_num_scaled + (1 | id), data = vis_model_data_pre, family = binomial, weights = SamplesTotal, control=glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000)))
 
 summary(vis_model_pre)
 
-vis_model_pre2 <- glmer(SamplesInAOI / SamplesTotal ~ group * TimeBin * trial_num_halved + (1 | id), data = vis_model_data_pre, family = binomial, weights = SamplesTotal, control=glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000)))
+vis_model_pre2 <- glmer(SamplesInAOI / SamplesTotal ~ group * time_bin_centred * trial_num_halved + (1 | id), data = vis_model_data_pre, family = binomial, weights = SamplesTotal, control=glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000)))
 
 summary(vis_model_pre2)
 
 
-vis_model_post <- glmer(SamplesInAOI / SamplesTotal ~ group * TimeBin * trial_num_scaled + (1 | id), data = vis_model_data_post, family = binomial, weights = SamplesTotal, control=glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000))) 
+vis_model_post <- glmer(SamplesInAOI / SamplesTotal ~ group * time_bin_centred * trial_num_scaled + (1 | id), data = vis_model_data_post, family = binomial, weights = SamplesTotal, control=glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000))) 
 
 summary(vis_model_post)
 
-vis_model_post2 <- glmer(SamplesInAOI / SamplesTotal ~ group * TimeBin * trial_num_halved + (1 | id), data = vis_model_data_post, family = binomial, weights = SamplesTotal, control=glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000))) 
+vis_model_post2 <- glmer(SamplesInAOI / SamplesTotal ~ group * time_bin_centred * trial_num_halved + (1 | id), data = vis_model_data_post, family = binomial, weights = SamplesTotal, control=glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000))) 
 
 summary(vis_model_post2)
 
 
 ###----------------------------------------------------MODEL RESULTS TABLES
 
-tab_model(aud_model_pre, show.re.var = FALSE, show.icc = FALSE)
+table_aud_pre <- tab_model(aud_model_pre, show.re.var = FALSE, show.icc = FALSE)
 tab_model(aud_model_post, show.re.var = FALSE, show.icc = FALSE)
 tab_model(vis_model_pre, show.re.var = FALSE, show.icc = FALSE)
 tab_model(vis_model_post, show.re.var = FALSE, show.icc = FALSE)
 
+
+# save(vis_model_pre, file = here::here("data", "vis_model_pre.Rda"))
+# save(vis_model_post, file = here::here("data", "vis_model_post.Rda"))
+# save(aud_model_pre, file = here::here("data", "aud_model_pre.Rda"))
+# save(aud_model_post, file = here::here("data", "aud_model_post.Rda"))
 
 ```
 
@@ -590,18 +599,18 @@ tab_model(vis_model_post, show.re.var = FALSE, show.icc = FALSE)
 
 aud_model_data_pre_flipped <- aud_model_data %>%
   filter(trial_type == "pre-switch") %>%
-  mutate(group = factor(group, levels = c("bilingual", "monolingual")))
+  mutate(group = factor(group, levels = c("Bilinguals", "Monolinguals")))
 
 aud_model_data_post_flipped <-  aud_model_data %>%
   filter(trial_type == "post-switch") %>%
-  mutate(group = factor(group, levels = c("bilingual", "monolingual")))
+  mutate(group = factor(group, levels = c("Bilinguals", "Monolinguals")))
 
 
-aud_model_pre_flipped <- glmer(SamplesInAOI / SamplesTotal ~ group * TimeBin * trial_num_scaled + (1 | id), data = aud_model_data_pre_flipped, family = binomial, weights = SamplesTotal, control=glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000)))
+aud_model_pre_flipped <- glmer(SamplesInAOI / SamplesTotal ~ group * time_bin_centred * trial_num_scaled + (1 | id), data = aud_model_data_pre_flipped, family = binomial, weights = SamplesTotal, control=glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000)))
 
 summary(aud_model_pre_flipped)
 
-aud_model_post_flipped <- glmer(SamplesInAOI / SamplesTotal ~ group * TimeBin * trial_num_scaled + (1 | id), data = aud_model_data_post_flipped, family = binomial, weights = SamplesTotal, control=glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000))) 
+aud_model_post_flipped <- glmer(SamplesInAOI / SamplesTotal ~ group * time_bin_centred * trial_num_scaled + (1 | id), data = aud_model_data_post_flipped, family = binomial, weights = SamplesTotal, control=glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000))) 
 
 summary(aud_model_post_flipped)
 
@@ -609,17 +618,17 @@ summary(aud_model_post_flipped)
 
 vis_model_data_pre_flipped <- vis_model_data %>%
   filter(trial_type == "pre-switch") %>%
-  mutate(group = factor(group, levels = c("bilingual", "monolingual")))
+  mutate(group = factor(group, levels = c("Bilinguals", "Monolinguals")))
 
 vis_model_data_post_flipped <-  vis_model_data %>%
   filter(trial_type == "post-switch") %>%
-  mutate(group = factor(group, levels = c("bilingual", "monolingual")))
+  mutate(group = factor(group, levels = c("Bilinguals", "Monolinguals")))
 
-vis_model_pre_flipped <- glmer(SamplesInAOI / SamplesTotal ~ group * TimeBin * trial_num_scaled + (1 | id), data = vis_model_data_pre_flipped, family = binomial, weights = SamplesTotal, control=glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000)))
+vis_model_pre_flipped <- glmer(SamplesInAOI / SamplesTotal ~ group * time_bin_centred * trial_num_scaled + (1 | id), data = vis_model_data_pre_flipped, family = binomial, weights = SamplesTotal, control=glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000)))
 
 summary(vis_model_pre_flipped)
 
-vis_model_post_flipped <- glmer(SamplesInAOI / SamplesTotal ~ group * TimeBin * trial_num_scaled + (1 | id), data = vis_model_data_post_flipped, family = binomial, weights = SamplesTotal, control=glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000))) 
+vis_model_post_flipped <- glmer(SamplesInAOI / SamplesTotal ~ group * time_bin_centred * trial_num_scaled + (1 | id), data = vis_model_data_post_flipped, family = binomial, weights = SamplesTotal, control=glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000))) 
 
 summary(vis_model_post_flipped)
 
@@ -713,6 +722,8 @@ ggpredict(aud_model_pre, terms = c("TimeBin", "trial_num_scaled [0, 1, 2, 3, 4, 
   theme(axis.title.y = element_text(margin = margin(t = 0, r = 10, b = 0, l = 0)),
         axis.title.x = element_text(margin = margin(t = 10, r = 0, b = 0, l = 0)))
 
+ ggsave("plot_model_predictions_aud_pre.png", path = here("figures"), device = "png", width = 7, height = 4, units = "in", dpi = 300)
+
 ggpredict(aud_model_post, terms = c("TimeBin", "trial_num_scaled [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]", "group"), type = "fe", ci.lvl = FALSE) %>% plot(colors = "trial_num_scaled", line.size = 1, connect.lines = TRUE) +
   labs(title = "Predicted values of proportion looking to target during the Test phase \nin Experiment 1c (Auditory condition)", x = "Time in milliseconds during anticipation period", y = "Proportion looking to target", color = "Trial number") +
   scale_color_manual(values = blues, labels = c(2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12)) +
@@ -721,6 +732,7 @@ ggpredict(aud_model_post, terms = c("TimeBin", "trial_num_scaled [0, 1, 2, 3, 4,
   theme(axis.title.y = element_text(margin = margin(t = 0, r = 10, b = 0, l = 0)),
         axis.title.x = element_text(margin = margin(t = 10, r = 0, b = 0, l = 0)))
 
+ ggsave("plot_model_predictions_aud_post.png", path = here("figures"), device = "png", width = 7, height = 4, units = "in", dpi = 300)
 
 ##-----------------------------------VISUAL
 
@@ -732,6 +744,8 @@ ggpredict(vis_model_pre, terms = c("TimeBin", "trial_num_scaled [0, 1, 2, 3, 4, 
   theme(axis.title.y = element_text(margin = margin(t = 0, r = 10, b = 0, l = 0)),
         axis.title.x = element_text(margin = margin(t = 10, r = 0, b = 0, l = 0)))
 
+ ggsave("plot_model_predictions_vis_pre.png", path = here("figures"), device = "png", width = 7, height = 4, units = "in", dpi = 300)
+
 ggpredict(vis_model_post, terms = c("TimeBin", "trial_num_scaled [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]", "group"), type = "fe", ci.lvl = FALSE) %>% plot(colors = "trial_num_scaled", line.size = 1, connect.lines = TRUE) +
   labs(title = "Predicted values of proportion looking to target during the Test phase \nin Experiment 1c (Visual condition)", x = "Time in milliseconds during anticipation period", y = "Proportion looking to target", color = "Trial number") +
   scale_color_manual(values = blues, labels = c(2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12)) +
@@ -739,19 +753,26 @@ ggpredict(vis_model_post, terms = c("TimeBin", "trial_num_scaled [0, 1, 2, 3, 4,
   ylim(-0.1, 1) +
   theme(axis.title.y = element_text(margin = margin(t = 0, r = 10, b = 0, l = 0)),
         axis.title.x = element_text(margin = margin(t = 10, r = 0, b = 0, l = 0)))
+
+ ggsave("plot_model_predictions_vis_post.png", path = here("figures"), device = "png", width = 7, height = 4, units = "in", dpi = 300)
+
 ```
 #Analysis with their full sample
 
-##Problems with their data...
+```{r}
+#ADD ANALYSIS HERE BUT WITHOUT EXCLUDING KIDS
+
+```
+
+
+##Problems with Kalashnikova's data...
 
 ```{r}
 
 
 #-----------------------------The following numbers for Auditory condition are very close to Kalashnikova's
 
-aud_all %>%
-  mutate(auditory_tl = case_when(id == "5314" ~ visual_tl, 
-                                 TRUE ~ auditory_tl)) %>%
+aud_all %>%                       TRUE ~ auditory_tl)) %>%
   filter(auditory_tl <= .6) %>%
   filter(bin_start_time >= 2250 & bin_start_time <= 3250) %>%
   mutate(trial_type = case_when(trial_index > 12 ~ "post_switch",
@@ -784,8 +805,6 @@ aud_all %>%
 #-----------------------------The following numbers for Visual condition are very close to Kalashnikova's, proving that they analyzed the incorrect time window. What they analyzed was NOT the anticipation period, but instead when the kids were all looking at the circle
 
 vis_all %>%
-  mutate(visual_tl = case_when(id == "5314" ~ auditory_tl, 
-                                 TRUE ~ visual_tl)) %>%
   filter(visual_tl <= .6) %>%
   filter(original_start_time >= 2250 & original_start_time <= 3250) %>%
   mutate(trial_type = case_when(trial_index > 12 ~ "post_switch",
@@ -820,8 +839,6 @@ vis_all %>%
   
   
 vis_all %>%
-  mutate(visual_tl = case_when(id == "5314" ~ auditory_tl, 
-                                 TRUE ~ visual_tl)) %>%
   filter(visual_tl <= .6) %>%
   filter(bin_start_time >= 3650 & bin_start_time <= 4650) %>%
   mutate(trial_type = case_when(trial_index > 12 ~ "post_switch",
@@ -854,8 +871,6 @@ vis_all %>%
 #-------------------------------------------How many N per trial?
 
 aud_all %>%
-  mutate(auditory_tl = case_when(id == "5314" ~ visual_tl, 
-                                 TRUE ~ auditory_tl)) %>%
   filter(auditory_tl <= .6) %>%
   filter(bin_start_time >= 2250 & bin_start_time <= 3250) %>%
   mutate(trial_type = case_when(trial_index > 12 ~ "post_switch",
@@ -898,11 +913,37 @@ vis_all %>%
 #---------------------------Block means by baby 
 
 aud_by_part_means_original <- aud_all %>%
+  filter(auditory_tl <= .6) %>%
+  filter(bin_start_time >= 2250 & bin_start_time <= 3250) %>%
+  mutate(trial_type = case_when(trial_index > 12 ~ "post-switch",
+                                TRUE ~ "pre-switch")) %>%
+  filter(loss != 1) %>%
+  filter(left + right > 0) %>%
+  group_by(id, group, trial_type, trial_index) %>%
+  summarize(prop_target = mean(target == TRUE, na.rm = TRUE),
+            prop_distractor = mean(distractor == TRUE, na.rm = TRUE))  %>%
+  mutate(binary_score = case_when(prop_target > prop_distractor ~ 1, 
+                                  TRUE ~ 0)) %>%
+  mutate(block = case_when(trial_index > 20 ~ 3,
+                           trial_index > 16 ~ 2,
+                           trial_index > 12 ~ 1,
+                           trial_index > 8 ~ 3,
+                           trial_index > 4 ~ 2,
+                           trial_index > 0 ~ 1,
+                           TRUE ~ NA_real_)) %>% 
+  group_by(id, block, group, trial_type) %>%
+  summarize(prop_target = mean(prop_target),
+            prop_score = mean(binary_score),
+            n = length(unique(id))) %>%
+  arrange(block, desc(trial_type), id)
+
+
+aud_by_part_means_adjusted <- aud_all %>%
   mutate(auditory_tl = case_when(id == "5314" ~ visual_tl, 
                                  TRUE ~ auditory_tl)) %>%
   filter(auditory_tl <= .6) %>%
-  filter(bin_start_time >= 2250 & bin_start_time <= 3250) %>%
-  mutate(trial_type = case_when(trial_index > 12 ~ "post_switch",
+  filter(bin_start_time >= 2350 & bin_start_time <= 3350) %>%
+  mutate(trial_type = case_when(trial_index > 12 ~ "post-switch",
                                 TRUE ~ "pre-switch")) %>%
   filter(loss != 1) %>%
   filter(left + right > 0) %>%
@@ -931,7 +972,7 @@ vis_by_part_means_original <- vis_all %>%
                                  TRUE ~ visual_tl)) %>%
   filter(visual_tl <= .6) %>%
   filter(original_start_time >= 2250 & original_start_time <= 3250) %>%
-  mutate(trial_type = case_when(trial_index > 12 ~ "post_switch",
+  mutate(trial_type = case_when(trial_index > 12 ~ "post-switch",
                                 TRUE ~ "pre-switch")) %>%
   filter(loss != 1) %>%
   filter(left + right > 0) %>%
@@ -959,7 +1000,7 @@ vis_by_part_means_adjusted <- vis_all %>%
                                  TRUE ~ visual_tl)) %>%
   filter(visual_tl <= .6) %>%
   filter(bin_start_time >= 3650 & bin_start_time <= 4650) %>%
-  mutate(trial_type = case_when(trial_index > 12 ~ "post_switch",
+  mutate(trial_type = case_when(trial_index > 12 ~ "post-switch",
                                 TRUE ~ "pre-switch")) %>%
   filter(loss != 1) %>%
   filter(left + right > 0) %>%
@@ -986,6 +1027,357 @@ m1 <- lmer(prop_target ~ group * trial_type + block + (1 | id), data = aud_by_pa
 m2 <- lmer(prop_target ~ group * trial_type + block + (1 | id), data = vis_by_part_means_original) #very similar results to Kalashnikova
 m3 <- lmer(prop_target ~ group * trial_type + block + (1 | id), data = vis_by_part_means_adjusted) #singular fit
 
+##----------------------------------------------Try to recreate their long data frame to reproduce models
+
+ant_long <- aud_by_part_means_original %>%
+  mutate(condition = "auditory") %>%
+  bind_rows(vis_by_part_means_original) %>%
+  ungroup() %>%
+  mutate(condition = case_when(is.na(condition) ~ "visual",
+                               TRUE ~ condition),
+         condition = factor(condition),
+         group = factor(group, levels = c("monolingual", "bilingual")))
+
+ant_long_adjusted <- aud_by_part_means_adjusted %>%
+  mutate(condition = "auditory") %>%
+  bind_rows(vis_by_part_means_adjusted) %>%
+  ungroup() %>%
+  mutate(condition = case_when(is.na(condition) ~ "visual",
+                               TRUE ~ condition),
+         condition = factor(condition),
+         group = factor(group, levels = c("monolingual", "bilingual")))
+
+Ant_Long <- read_csv(here("data", "Anticipation_Long.csv"))
+Ant_Long$Group<-as.factor(Ant_Long$Group)
+
+# Model without interaction term – compare correct anticipation period to Kalashnikova's (no differences in conclusions)
+
+m4_orig<-lmer(Prop_Gaze~Group+Task+Phase+Block+(1|ID), data=Ant_Long)
+summary(m4_orig)
+Anova(m4_orig, test="F") %>% View()
+
+m4<-lmer(prop_target ~ group + condition + trial_type + block + (1 | id), data = ant_long)
+summary(m4)
+Anova(m4, test="F") %>% View()
+
+m4_adjusted <- lmer(prop_target ~ group + condition + trial_type + block + (1 | id), data = ant_long_adjusted)
+summary(m4_adjusted)
+Anova(m4_adjusted, test="F") %>% View()
+
+# Model without interaction term – compare correct anticipation period to Kalashnikova's (no differences in conclusions)
+
+m5_orig<-lmer(Prop_Gaze~Group*Task*Phase+Block+(1|ID), data=Ant_Long)
+summary(m5_orig)
+Anova(m5_orig, test="F") %>% View()
+
+m5<-lmer(prop_target ~ group * condition * trial_type + block + (1 | id), data = ant_long)
+summary(m5)
+Anova(m5, test="F") %>% View()
+
+m5_adjusted <- lmer(prop_target ~ group * condition * trial_type + block + (1 | id), data = ant_long_adjusted)
+summary(m5_adjusted)
+Anova(m5_adjusted, test="F") %>% View()
+
+
+# Auditory model – compare correct anticipation period to Kalashnikova's (no differences in conclusions)
+
+aud_data_orig <- Ant_Long %>% subset(Task == "Auditory")
+aud_data_replicated <- ant_long %>% subset(condition == "auditory")
+aud_data_adjusted <- ant_long_adjusted %>% subset(condition == "auditory")
+vis_data_orig <- Ant_Long %>% subset(Task == "Visual")
+vis_data_replicated <- ant_long %>% subset(condition == "visual")
+vis_data_adjusted <- ant_long_adjusted %>% subset(condition == "visual")
+  
+
+maud_orig<-lmer(Prop_Gaze~Group*Phase+Block+(1|ID), data=aud_data_orig)
+summary(maud_orig)
+Anova(maud_orig, test="F") %>% View()
+
+maud<-lmer(prop_target ~ group * trial_type + block + (1 | id), data = aud_data_replicated)
+summary(maud)
+Anova(maud, test="F") %>% View()
+
+maud_adjusted <- lmer(prop_target ~ group * trial_type + block + (1 | id), data = aud_data_adjusted)
+summary(maud_adjusted)
+Anova(maud_adjusted, test="F") %>% View()
+
+
+# Visual model – compare correct anticipation period to Kalashnikova's (no differences in conclusions)
+
+
+mvis_orig<-lmer(Prop_Gaze~Group*Phase+Block+(1|ID), data=vis_data_orig)
+summary(mvis_orig)
+Anova(mvis_orig, test="F") %>% View()
+
+mvis<-lmer(prop_target ~ group * trial_type + block + (1 | id), data = vis_data_replicated)
+summary(mvis)
+Anova(mvis, test="F") %>% View()
+
+mvis_adjusted <- lmer(prop_target ~ group * trial_type + block + (1 | id), data = vis_data_adjusted)
+summary(mvis_adjusted)
+Anova(mvis_adjusted, test="F") %>% View()
+
+#-------------------------------------------------------------------------------- Reward period models
+
+
+#Reward data 
+reward_data_orig <- read_csv(here("data", "Reward_Long.csv"))
+reward_data_orig$Group <- as.factor(reward_data_orig$Group)
+
+reward_aud_original <- aud_all %>%
+  mutate(auditory_tl = case_when(id == "5314" ~ visual_tl, 
+                                 TRUE ~ auditory_tl)) %>%
+  filter(auditory_tl <= .6) %>%
+  filter(bin_start_time >= 3250 & bin_start_time <= 5000) %>%
+  mutate(trial_type = case_when(trial_index > 12 ~ "post-switch",
+                                TRUE ~ "pre-switch")) %>%
+  filter(loss != 1) %>%
+  filter(left + right > 0) %>%
+  group_by(id, group, trial_type, trial_index) %>%
+  summarize(prop_target = mean(target == TRUE, na.rm = TRUE),
+            prop_distractor = mean(distractor == TRUE, na.rm = TRUE))  %>%
+  mutate(binary_score = case_when(prop_target > prop_distractor ~ 1, 
+                                  TRUE ~ 0)) %>%
+  mutate(block = case_when(trial_index > 20 ~ 3,
+                           trial_index > 16 ~ 2,
+                           trial_index > 12 ~ 1,
+                           trial_index > 8 ~ 3,
+                           trial_index > 4 ~ 2,
+                           trial_index > 0 ~ 1,
+                           TRUE ~ NA_real_)) %>% 
+  group_by(id, block, group, trial_type) %>%
+  summarize(prop_target = mean(prop_target),
+            prop_score = mean(binary_score),
+            n = length(unique(id))) %>%
+  arrange(block, desc(trial_type), id)
+
+
+reward_aud_adjusted <- aud_all %>%
+  mutate(auditory_tl = case_when(id == "5314" ~ visual_tl, 
+                                 TRUE ~ auditory_tl)) %>%
+  filter(auditory_tl <= .6) %>%
+  filter(bin_start_time >= 3350 & bin_start_time <= 5100) %>%
+  mutate(trial_type = case_when(trial_index > 12 ~ "post-switch",
+                                TRUE ~ "pre-switch")) %>%
+  filter(loss != 1) %>%
+  filter(left + right > 0) %>%
+  group_by(id, group, trial_type, trial_index) %>%
+  summarize(prop_target = mean(target == TRUE, na.rm = TRUE),
+            prop_distractor = mean(distractor == TRUE, na.rm = TRUE))  %>%
+  mutate(binary_score = case_when(prop_target > prop_distractor ~ 1, 
+                                  TRUE ~ 0)) %>%
+  mutate(block = case_when(trial_index > 20 ~ 3,
+                           trial_index > 16 ~ 2,
+                           trial_index > 12 ~ 1,
+                           trial_index > 8 ~ 3,
+                           trial_index > 4 ~ 2,
+                           trial_index > 0 ~ 1,
+                           TRUE ~ NA_real_)) %>% 
+  group_by(id, block, group, trial_type) %>%
+  summarize(prop_target = mean(prop_target),
+            prop_score = mean(binary_score),
+            n = length(unique(id))) %>%
+  arrange(block, desc(trial_type), id)
+
+
+reward_vis_original <- vis_all %>%
+  mutate(visual_tl = case_when(id == "5314" ~ auditory_tl, 
+                                 TRUE ~ visual_tl)) %>%
+  filter(visual_tl <= .6) %>%
+  filter(original_start_time >= 3250 & original_start_time <= 5000) %>%
+  mutate(trial_type = case_when(trial_index > 12 ~ "post-switch",
+                                TRUE ~ "pre-switch")) %>%
+  filter(loss != 1) %>%
+  filter(left + right > 0) %>%
+  group_by(id, group, trial_type, trial_index) %>%
+  summarize(prop_target = mean(target == TRUE, na.rm = TRUE),
+            prop_distractor = mean(distractor == TRUE, na.rm = TRUE))  %>%
+  mutate(binary_score = case_when(prop_target > prop_distractor ~ 1, 
+                                  TRUE ~ 0)) %>%
+  mutate(block = case_when(trial_index > 20 ~ 3,
+                           trial_index > 16 ~ 2,
+                           trial_index > 12 ~ 1,
+                           trial_index > 8 ~ 3,
+                           trial_index > 4 ~ 2,
+                           trial_index > 0 ~ 1,
+                           TRUE ~ NA_real_)) %>% 
+  group_by(id, block, group, trial_type) %>%
+  summarize(prop_target = mean(prop_target),
+            prop_score = mean(binary_score),
+            n = length(unique(id))) %>%
+  arrange(block, desc(trial_type), id)
+
+
+reward_vis_adjusted <- vis_all %>%
+  mutate(visual_tl = case_when(id == "5314" ~ auditory_tl, 
+                                 TRUE ~ visual_tl)) %>%
+  filter(visual_tl <= .6) %>%
+  filter(bin_start_time >= 4650 & bin_start_time <= 6400) %>%
+  mutate(trial_type = case_when(trial_index > 12 ~ "post-switch",
+                                TRUE ~ "pre-switch")) %>%
+  filter(loss != 1) %>%
+  filter(left + right > 0) %>%
+  group_by(id, group, trial_type, trial_index) %>%
+  summarize(prop_target = mean(target == TRUE, na.rm = TRUE),
+            prop_distractor = mean(distractor == TRUE, na.rm = TRUE))  %>%
+  mutate(binary_score = case_when(prop_target > prop_distractor ~ 1, 
+                                  TRUE ~ 0)) %>%
+  mutate(block = case_when(trial_index > 20 ~ 3,
+                           trial_index > 16 ~ 2,
+                           trial_index > 12 ~ 1,
+                           trial_index > 8 ~ 3,
+                           trial_index > 4 ~ 2,
+                           trial_index > 0 ~ 1,
+                           TRUE ~ NA_real_)) %>% 
+  group_by(id, block, group, trial_type) %>%
+  summarize(prop_target = mean(prop_target),
+            prop_score = mean(binary_score),
+            n = length(unique(id))) %>%
+  arrange(block, desc(trial_type), id)
+
+reward_data_replicated <- reward_aud_original %>%
+  mutate(condition = "auditory") %>%
+  bind_rows(reward_vis_original) %>%
+  ungroup() %>%
+  mutate(condition = case_when(is.na(condition) ~ "visual",
+                               TRUE ~ condition),
+         condition = factor(condition),
+         group = factor(group, levels = c("monolingual", "bilingual")))
+
+reward_data_adjusted <- reward_aud_adjusted %>%
+  mutate(condition = "auditory") %>%
+  bind_rows(reward_vis_adjusted) %>%
+  ungroup() %>%
+  mutate(condition = case_when(is.na(condition) ~ "visual",
+                               TRUE ~ condition),
+         condition = factor(condition),
+         group = factor(group, levels = c("monolingual", "bilingual")))
+
+#### Reward models 
+
+reward_orig_interact <-lmer(Prop_Gaze~Group*Task*Phase+Block+(1|ID), data=reward_data_orig)
+summary(reward_orig_interact)
+Anova(reward_orig_interact, test="F") %>% View()
+
+reward_replicated_interact <-lmer(prop_target ~ group * condition* trial_type + block + (1 | id), data = reward_data_replicated)
+summary(reward_replicated_interact)
+Anova(reward_replicated_interact, test="F") %>% View()
+
+reward_adjusted_interact <-lmer(prop_target ~ group * condition* trial_type + block + (1 | id), data = reward_data_adjusted)
+summary(reward_adjusted_interact)
+Anova(reward_adjusted_interact, test="F") %>% View()
+
+rewardS <- read_csv(here("data", "Reward_Short.csv"))
+
+reward_replicated_s <- reward_data_replicated %>%
+  select(-prop_score, -n) %>%
+  pivot_wider(names_from = c("condition", "trial_type", "block"), values_from = "prop_target") %>%
+  select(1, 2, 3, 5, 7, 4, 6, 8, 9, 11, 13, 10, 12, 14)
+
+reward_adjusted_s <- reward_data_adjusted %>%
+  select(-prop_score, -n) %>%
+  pivot_wider(names_from = c("condition", "trial_type", "block"), values_from = "prop_target") %>%
+  select(1, 2, 3, 5, 7, 4, 6, 8, 9, 11, 13, 10, 12, 14)
+
+reward_means_orig <- describeBy(rewardS, list(rewardS$Group))
+reward_means_replicated <- describeBy(reward_replicated_s, list(reward_replicated_s$group))
+reward_means_adjusted <- describeBy(reward_adjusted_s, list(reward_adjusted_s$group))
+
+reward_means_orig_all <- reward_means_orig[[1]] %>%
+  mutate(group = "monolingual") %>%
+  bind_rows(reward_means_orig[[2]]) %>%
+  mutate(group = case_when(is.na(group) ~ "bilingual",
+                               TRUE ~ group))
+
+reward_means_replicated_all <- reward_means_replicated[[1]] %>%
+  mutate(group = "monolingual") %>%
+  bind_rows(reward_means_replicated[[2]]) %>%
+  mutate(group = case_when(is.na(group) ~ "bilingual",
+                               TRUE ~ group))
+
+reward_means_adjusted_all <- reward_means_adjusted[[1]] %>%
+  mutate(group = "monolingual") %>%
+  bind_rows(reward_means_adjusted[[2]]) %>%
+  mutate(group = case_when(is.na(group) ~ "bilingual",
+                               TRUE ~ group))
+  
+reward_means_orig_all %>%
+  mutate(rowname = case_when(vars == 8 ~ "aud_pre_block1",
+                             vars == 9 ~ "aud_pre_block2",
+                             vars == 10 ~ "aud_pre_block3",
+                             vars == 11 ~ "aud_post_block1",
+                             vars == 12 ~ "aud_post_block2",
+                             vars == 13 ~ "aud_post_block3",
+                             vars == 14 ~ "vis_pre_block1",
+                             vars == 15 ~ "vis_pre_block2",
+                             vars == 16 ~ "vis_pre_block3",
+                             vars == 17 ~ "vis_post_block1",
+                             vars == 18 ~ "vis_post_block2",
+                             vars == 19 ~ "vis_post_block3")) %>%
+  filter(!is.na(rowname)) %>%
+  select(group, rowname, mean, sd) %>%
+  separate(rowname, into = c("condition", "trial_type", "block")) %>%
+  pivot_wider(names_from = "group", values_from = c("mean", "sd")) %>%
+  pivot_wider(names_from = "condition", values_from = c("mean_monolingual", "sd_monolingual", "mean_bilingual", "sd_bilingual"))%>%
+  select(1, 2, 3, 5, 4, 6, 7, 9, 8, 10) %>% View()
+
+
+reward_means_replicated_all %>%
+  mutate(rowname = case_when(vars == 3 ~ "aud_pre_block1",
+                             vars == 4 ~ "aud_pre_block2",
+                             vars == 5 ~ "aud_pre_block3",
+                             vars == 6 ~ "aud_post_block1",
+                             vars == 7 ~ "aud_post_block2",
+                             vars == 8 ~ "aud_post_block3",
+                             vars == 9 ~ "vis_pre_block1",
+                             vars == 10 ~ "vis_pre_block2",
+                             vars == 11 ~ "vis_pre_block3",
+                             vars == 12 ~ "vis_post_block1",
+                             vars == 13 ~ "vis_post_block2",
+                             vars == 14 ~ "vis_post_block3")) %>%
+  filter(!is.na(rowname)) %>%
+  select(group, rowname, mean, sd) %>%
+  separate(rowname, into = c("condition", "trial_type", "block")) %>%
+  pivot_wider(names_from = "group", values_from = c("mean", "sd")) %>%
+  pivot_wider(names_from = "condition", values_from = c("mean_monolingual", "sd_monolingual", "mean_bilingual", "sd_bilingual"))%>%
+  select(1, 2, 3, 5, 4, 6, 7, 9, 8, 10) %>% View()
+
+#----------------------------------------T Tests for Reward phase
+
+#Original data
+
+RewardMo<-subset(reward_data_orig, Group == "1")
+RewardBi<-subset(reward_data_orig, Group == "2")
+
+t.test(RewardMo$AU_PRE_Block1, mu=.5)
+t.test(RewardMo$AU_PRE_Block2, mu=.5)
+t.test(RewardMo$AU_PRE_Block3, mu=.5)
+t.test(RewardMo$AU_POST_Block1, mu=.5)
+t.test(RewardMo$AU_POST_Block2, mu=.5)
+t.test(RewardMo$AU_POST_Block3, mu=.5)
+t.test(RewardMo$VI_PRE_Block1, mu=.5)
+t.test(RewardMo$VI_PRE_Block2, mu=.5)
+t.test(RewardMo$VI_PRE_Block3, mu=.5)
+t.test(RewardMo$VI_POST_Block1, mu=.5)
+t.test(RewardMo$VI_POST_Block2, mu=.5)
+t.test(RewardMo$VI_POST_Block3, mu=.5)
+
+
+t.test(RewardBi$AU_PRE_Block1, mu=.5)
+t.test(RewardBi$AU_PRE_Block2, mu=.5)
+t.test(RewardBi$AU_PRE_Block3, mu=.5)
+t.test(RewardBi$AU_POST_Block1, mu=.5)
+t.test(RewardBi$AU_POST_Block2, mu=.5)
+t.test(RewardBi$AU_POST_Block3, mu=.5)
+t.test(RewardBi$VI_PRE_Block1, mu=.5)
+t.test(RewardBi$VI_PRE_Block2, mu=.5)
+t.test(RewardBi$VI_PRE_Block3, mu=.5)
+t.test(RewardBi$VI_POST_Block1, mu=.5)
+t.test(RewardBi$VI_POST_Block2, mu=.5)
+t.test(RewardBi$VI_POST_Block3, mu=.5)
+
+#Corrected data
+  
 
 
 #---------------------------check if typo matches trackloss for another ID
@@ -998,6 +1390,22 @@ vis_left %>% filter(str_detect(id, "5332")) %>% make_eyetrackingr_data(participa
                                                                        treat_non_aoi_looks_as_missing = TRUE) %>%
   trackloss_analysis()
 
+compare_dfs <- Ant_Long %>% 
+  mutate(trial_type = case_when(Phase == "Pre-switch" ~ "pre-switch",
+                                Phase == "Post-switch" ~ "post-switch"),
+         group = case_when(Group == 1 ~ "monolingual",
+                           Group == 2 ~ "bilingual"),
+         Task_Order = case_when(Task_Order == "Aud" ~ "auditory",
+                                Task_Order == "Vis" ~ "visual"),
+         Task = case_when(Task == "Auditory" ~ "auditory",
+                          Task == "Visual" ~ "visual")) %>%
+  rename(id = ID,
+         block = Block,
+         condition = Task) %>%
+  full_join(ant_long, by = c("id", "trial_type", "block", "group", "condition"))
+  
+
+compare_dfs %>% filter(is.na(n))
 
 ```
 
