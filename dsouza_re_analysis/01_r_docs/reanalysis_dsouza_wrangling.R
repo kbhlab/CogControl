@@ -2,13 +2,12 @@
 # Author: Rodrigo Dal Ben
 # Date: 14/05/2020 (DD/MM/YYYY)
 # Aim: script to create a raw dataset from D'Souza et al. (2020) individual csv files.
-# Doubts and suggestions: dalbenwork@gmail.com
+# Feedback and suggestions: dalbenwork@gmail.com
 
 # References:
 # D'Souza et al. Article: 10.1098/rsos.180191
 # D'Souza OSF: https://osf.io/53gh2/
 # D'Souza Dryad: https://datadryad.org/stash/dataset/doi:10.5061/dryad.3n5tb2rc6 
-
 
 # load library
 library(tidyverse)
@@ -124,7 +123,7 @@ dataset <-
   dplyr::rename(id = id.x) %>% 
   dplyr::select(-id.y, -end_time, -start_time) %>% 
   dplyr::mutate(
-    event = as.factor(if_else(is.na(event), "calibration", as.character(event))) # assuming calibration
+    event = as.factor(if_else(is.na(event), "fixation", as.character(event))) 
   )
 
 write_csv(dataset, path = here("03_output/01_wrangling/dataset.csv"))
@@ -286,6 +285,7 @@ dataset_exp1_v2 <-
 length(unique(dataset_exp1_v2$id)) # 102
 
 save(dataset_exp1_v2, file = here("/03_output/01_wrangling/dataset_exp1_v2.rda")) # backup
+#load(here("/03_output/01_wrangling/dataset_exp1_v2.rda")) # for future wranglings
 
 ## additional variables from CogControl analysis script
 trial_name_levels <- c("pre-switch_1", "pre-switch_2", "pre-switch_3", 
@@ -305,7 +305,7 @@ dataset_exp1_v3 <-
                            TRUE ~ 0),
     trackloss = case_when(target == 1 | distractor == 1 | circle == 1 ~ FALSE, TRUE ~ TRUE), # there is divergence between gaze coordinates & trackloss column from matlab; building our own
     ) %>% 
-  filter(!event %in% c("Start", "End")) %>% # get rid of NA in the beginning and end
+  filter(!event %in% c("Start", "End")) %>% # delete samples at "Start" and "End" messages (from each phase)
   mutate(trial_name = factor(str_c(trial_type, trial_num, sep = "_"), levels = trial_name_levels)) %>% 
   group_by(id, trial_name) %>%
   mutate(
@@ -318,18 +318,69 @@ dataset_exp1_v3 <-
     trial_type = factor(trial_type, levels = c("pre-switch", "post-switch")),
     gender = factor(gender, levels = c(0, 1)),
     id = as.factor(id)
-  )
+  ) 
+
+# make sure that the antcipation period is aligned for all participants
+## because of the "fuzzyjoin" between samples' and events' timelines.
+## start by taking some statistics
+ap <- 
+  dataset_exp1_v3 %>% 
+  filter(event == "anticipOnset") %>% 
+  select(id, event, trial_from_zero, trial_name) %>% 
+  group_by(id, event, trial_name) %>% 
+  summarise(
+    ap_start = min(trial_from_zero),
+    ap_end = max(trial_from_zero),
+    duration = ap_end - ap_start
+  ) %>% 
+  ungroup()
+
+## start
+min(ap$ap_start) # 3008
+max(ap$ap_start) # 3099
+mean(ap$ap_start) # 3028
+median(ap$ap_start) # 3033
+
+## end
+min(ap$ap_end) # 4007
+max(ap$ap_end) # 4141
+mean(ap$ap_end) # 4035
+median(ap$ap_end) # 4041
+
+## duration
+min(ap$duration) # 983
+max(ap$duration) # 1042
+mean(ap$duration) # 1006
+median(ap$duration) # 1008
+
+# align anticipation period (first "anticipOnset" message) start at 3000
+dataset_exp1_v3 <- 
+  dataset_exp1_v3 %>% 
+  group_by(id, trial_name, event) %>% 
+  mutate(
+    sample_num = row_number(),
+    diff_timeline = if_else(event == "anticipOnset" & sample_num == 1,
+                            3000 - trial_from_zero,
+                            as.numeric(NA)
+                            )
+  ) %>% 
+  ungroup() %>% 
+  group_by(id, trial_name) %>% 
+  mutate(time_align = trial_from_zero - abs(mean(diff_timeline, na.rm = T))) %>% 
+  select(-sample_num, -diff_timeline) %>% # comment this line for sanity check
+  ungroup()
 
 length(unique(dataset_exp1_v3$id)) # 102
 
 save(dataset_exp1_v3, file = here("/03_output/01_wrangling/dataset_exp1_v3.rda")) 
 write_csv(dataset_exp1_v3, here("03_output/01_wrangling/dataset_exp1_v3.csv")) # backup
 
-
 ## Define minimum looking and minimum trial numbers for this study
 ## from "load_merge.R", added in 09/07/2020
 MIN_LOOK_PROPORTION <- .5 # 50% of looking
 MIN_NUMBER_TRIALS <- 5 # out of 9
+ANTICIP_START_OFF <- 3000 + 150 # anticipation start + offset 
+ANTICIP_END_OFF <- 4000 + 150 # anticipation start + offset 
 
 data_anticipation <- 
   dataset_exp1_v3 %>%
@@ -337,7 +388,7 @@ data_anticipation <-
     look_any = case_when(target == 1 | distractor == 1 | circle == 1 ~ 1, TRUE ~ 0), #looks to either target, distractor, or circle  
     trial_unique = as.factor(str_c(id, trial_name, sep = "_")) #get a trial identifier that is unique to each participant, trial number, and trial type
     ) %>% 
-  filter(trial_from_zero >= 3200 & trial_from_zero <= 4200) %>% #D'souza aniticipatory period, which is 150 ms after the offset of the 2000 ms cue, and lasts for 1000 ms
+  filter(time_align >= ANTICIP_START_OFF & time_align <= ANTICIP_END_OFF) %>% #D'souza aniticipatory period, which is 150 ms after the offset
   group_by(trial_unique) %>%
   mutate(prop_fixations = mean(look_any)) %>%
   filter(prop_fixations >= MIN_LOOK_PROPORTION) %>% #removes trials where the child did not fixate on anything for at least 50% of the anticipation period
@@ -349,20 +400,19 @@ data_anticipation <-
   filter(num_trial_types == 2) %>% #removes babies who don't have data in both trial types
   ungroup()
 
-
 save(data_anticipation, file = here("03_output/01_wrangling/data_anticipation.rda"))
 write_csv(data_anticipation, here("03_output/01_wrangling/data_anticipation.csv")) # backup
 
-#used for creating data_full_trials object for plotting whole trial
+# used for creating data_full_trials object for plotting whole trial
 final_sample_ids <- 
   data_anticipation %>% 
   select(id) %>%
-  unique() # 51 left
+  unique() # 53 left (49 gone)
 
-# this is the full time series data, but only for infants that made it through to the final anticipation-period sample. Will be used for ploting time series data of whole trial
+# this is the full time series data, but only for infants that made it through to the final anticipation-period sample
 data_full_trials <- 
   inner_join(dataset_exp1_v3, final_sample_ids, by = "id") %>%
-  mutate(id = as.factor(id)) 
+  mutate(id = as.factor(id))
 
 save(data_full_trials, file = here("03_output/01_wrangling/data_full_trials.rda"))
 write_csv(data_full_trials, here("03_output/01_wrangling/data_full_trials.csv")) # backup
