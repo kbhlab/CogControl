@@ -1,11 +1,12 @@
 Article: Iliaei, S. P., Killam, H., Dal Ben, R., & Byers-Heinlein, K. (under review). The bilingual advantage in infancy: Evidence from 7- and 20-month-olds.
+OSF: https://osf.io/bz8jn/
 
 Code book for variables from the raw datasets used to reanalyze data from D'Souza et al. (2020):
 	- "data_full_trials.csv": containing 51 participants included in the final analysis (main article);
 	- "dataset_exp1_v3.csv": containing 102 participants included in the additional analysis (supplementary material);
 
 These raw datasets are hosted by D'Souza et al. (2020) at: https://osf.io/53gh2/
-Doubts and suggestions: dalbenwork@gmail.com
+Feedback and suggestions: dalbenwork@gmail.com
 
 Variables:
 - id: factor, participant id;
@@ -23,19 +24,15 @@ Variables:
 - event: string, message signaling events (stim3Onset, stim3Offset, stim2Onset, stim2Offset, stim1Onset, stim1Offset, anticipOnset, anticipOffset, rewardOnset, rewardOffset) in the experiment from MATLAB buffers (events);
 - exposure: double, predominat language exposure from participants log "RSOS_participants_FINAL.csv";
 - age_in_days: integer, age in days from participants log "RSOS_participants_FINAL.csv";
-- exclude: logical, TRUE signals exclusion, FALSE signals inclusion, from participants log "RSOS_participants_FINAL.csv";
+- exclude: logical, TRUE signals participant-level exclusion, FALSE signals inclusion, from participants log "RSOS_participants_FINAL.csv";
 - ses_score: double, socioeconomic status from participants log "RSOS_participants_FINAL.csv";
-- gender: 1 signals female, 0 signals male, from "Laboratory log v2 - a version with fewer indirect identifiers.doc";
+- gender: 1 represents female, 0 represents male, from "Laboratory log v2 - a version with fewer indirect identifiers.doc";
 - language: factor, Monolingual or Bilingual;
 - trial_type: factor, pre-switch or post-switch;
 - circle: logical, TRUE if gaze is on center, FALSE if it is not;
 - target: logical, TRUE if gaze is on target, FALSE if it is not;
 - distractor: logical, TRUE if gaze is on target, FALSE if it is not;
-- trackloss: logical, TRUE if gaze is not on left, center, or right side of the screen, FALSE otherwise;
+- trackloss: logical, FALSE if gaze is on left, center, or right side of the screen, TRUE otherwise;
 - trial_name: string, concatenation of "trial_type" and "trial_num";
 - trial_from_zero: integer, time (ms) starting at 0 for each trial (sampling at 120Hz);
-- look_any: logical, TRUE if gaze is on left, center, or right side of the screen, FALSE otherwise (reverse of trackloss);
-- trial_unique: string, concatenation of "id", "trial_type", and "trial_num";
-- prop_fixations: double, mean of "look_any" for each "trial_unique";
-- num_good_trials: integer, number of trials who had "prop_fixations" greater than .5;  
-- num_trial_types: integer, number of "trial_types" (pre- and post-switch) with "num_good_trials" greater than 5.
+- time_align: integer, time (ms) with the first "anticipOnset" message (anticipation period) occurring at 3000 ms for every participant.
