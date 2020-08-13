@@ -56,6 +56,8 @@ ms_list_all <- read_csv(here("data", "2019_CogControl_MSL.csv"), na = "-") %>%
                                 TRUE ~ mother_edu))
 
 ms_list <- ms_list_all %>%
+  mutate(keeper = case_when(excl_reason == "incomplete_cdi" ~ 1, #we will actually keep these in the final sample
+                            TRUE ~ keeper)) %>%
   filter(keeper == 1) 
 
 
@@ -78,6 +80,9 @@ ms_list <- ms_list %>%
   mutate(cdi_tot_vocab_prod = case_when(language == "Monolinguals" & dom_lang == "french" ~ cdi_prod_fr,
                                         language == "Monolinguals" & dom_lang == "english" ~ cdi_prod_eng,
                                         language == "Bilinguals" & num_cdis == 2 ~ total_vocab_prod))
+
+ms_list_unfiltered <- ms_list
+save(ms_list_unfiltered, file = here("data", "ms_list_unfiltered.Rda"))
 
 
 ###-----------------------------------------------------------------PREP TOBII DATA----------------------------------------------
@@ -213,6 +218,15 @@ data_full_trials <- inner_join(data_tobii_cleaned, final_sample_mslist, by = "re
 
 save(data_full_trials, file = here("data", "data_full_trials.Rda"))
 
+###----------------------------------------------------------------------CREATE MERGED UNFILTERED FULL DATA----------------------------------
+
+data_full_trials_unfilterd <- inner_join(data_tobii_cleaned, ms_list, by = "recording_name") %>%
+  mutate(recording_name = as.factor(recording_name)) # this is the full time series data including infants who don't have 50% looking in 5/9 trials
+
+
+save(data_full_trials_unfilterd, file = here("data", "data_full_trials_unfiltered.Rda"))
+
+
 ###----------------------------------------------------------------------CREATE MERGED ANTICIPATION DATA----------------------------------
 
 save(data_anticipation, file = here("data", "data_anticipation.Rda"))
@@ -222,6 +236,8 @@ save(data_anticipation, file = here("data", "data_anticipation.Rda"))
 exclusions <-read_csv(here("data", "2019_CogControl_MSL.csv"), na = "-") %>%
   separate(lang.group,into = c("language", "group")) %>%
   clean_names() %>%
+  mutate(excl_reason = case_when(excl_reason == "incomplete_cdi" ~ "none", #no longer need missing cdi data to exclude
+                                 TRUE ~ excl_reason)) %>%
   full_join(data_tobii_cleaned, by = "recording_name") %>%
   mutate(trial_from_zero = case_when(recording_name == "CogControl20_S34_45196" | recording_name == "CogControl20_S40_42628" ~ 2500,
                                      TRUE ~ trial_from_zero)) %>% # replace NA trial time for 2 kids with no TOBII data so they don't get filtered out in next step
