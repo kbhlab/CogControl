@@ -1,0 +1,543 @@
+---
+title: "Time Series Figure"
+author: "Hilary Killam"
+date: "07/07/2020"
+output: html_document
+---
+##Setup
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+options(scipen = 999)
+
+library(tidyverse)
+library(lubridate)
+library(here)
+library(readxl)
+library(janitor)
+library(eyetrackingR)
+library(tidylog)
+library(lme4)
+library(ggeffects)
+library(apaTables)
+library(sjPlot)
+library(car)
+library(psych)
+
+`%notin%` <- Negate(`%in%`)
+
+```
+
+
+##Load Data
+```{r}
+
+baby_info <- read_excel(here("data", "Metadata.xlsx")) %>% clean_names() %>%
+  mutate(group = case_when(group == "monolingual sp" ~ "monolingual",
+                           group == "monoligual" ~ "monolingual",
+                           TRUE ~ group),
+         visual_tl = case_when(id == "5314" ~ auditory_tl, #looks like this kid had a mistake in the baby info sheet... they have data for auditory trackloss but no data for visual trackloss, yet they only participated in the visual session. I double checked the trackloss number for the visual session, and it matches what was put under auditory, so I think they should be swapped.
+                               TRUE ~ visual_tl),
+         auditory_tl = case_when(id == "5314" ~ NA_real_,
+                                 TRUE ~ auditory_tl)) 
+
+exclusions <- read_excel(here("data", "Metadata.xlsx"), sheet = 2) %>% clean_names() %>%
+  mutate(id = as.character(id))
+
+aud_left <- read_csv(here("data", "auditory_left_FA.csv")) %>% clean_names() %>% 
+  mutate(target_side = case_when(parse_number(trial_label) <= 12 ~ "left",
+                                 TRUE ~ "right"),
+         orig_file = "aud_left") %>% select(-x1)
+
+aud_right <- read_csv(here("data", "auditory_right_FA.csv")) %>% clean_names() %>% 
+  mutate(target_side = case_when(parse_number(trial_label) <= 12 ~ "right",
+                                 TRUE ~ "left"),
+         orig_file = "aud_right") %>% select(-x1)
+
+
+#looks like trials 9 and 17 have extra data from an attention getter so have to shift time stamps for those trials
+vis_left <- read_csv(here("data", "visual_left_FA.csv")) %>% clean_names() %>% 
+  mutate(target_side = case_when(parse_number(trial_label) <= 12 ~ "left",
+                                 TRUE ~ "right"),
+         orig_file = "vis_left") %>% select(-x1, -ia_4_id) %>%
+  rename(original_start_time = bin_start_time) %>%
+  mutate(bin_start_time = case_when(trial_label == "Trial: 9" | trial_label == "Trial: 17" ~ original_start_time - 2110,                                   
+                                           TRUE ~ original_start_time))
+
+vis_right <- read_csv(here("data", "visual_right_FA.csv")) %>% clean_names() %>% 
+  mutate(target_side = case_when(parse_number(trial_label) <= 12 ~ "right",
+                                 TRUE ~ "left"),
+         orig_file = "vis_right") %>% select(-x1) %>%
+  mutate(original_start_time = bin_start_time) #add this column so can merge with vis_left later
+
+
+##set up colours for plotting model preidctions
+blues_palette <- colorRampPalette(c("#C6DBEF", "#081D58"))
+blues <- blues_palette(12)
+
+
+```
+
+##Prep data
+```{r}
+
+###-----------------------------------------------------------PREPARE AUDITORY DATA
+
+
+aud_all <- aud_left %>%
+  dplyr::union(aud_right) %>% #merge left and right dataframes
+  filter(bin_start_time < 5400 & bin_start_time > 0) %>% #don't need anything after this point, since most trials have no data afterward 
+  mutate(id = str_remove(id, "ica"), #fix some id matching problems
+         id = str_remove(id, "ic"),
+         id = str_remove(id, "ca"),
+         id = case_when(id == "524401" ~ "5244",
+                        id == "53002" ~ "5300",
+                        id == "5588a" ~ "5588",
+                        TRUE ~ id),
+         trial_num = parse_number(trial_label), #get trial number
+         trial_type = case_when(trial_num <= 12 ~ "pre-switch",
+                                TRUE ~ "post-switch"),
+         trial_num = case_when(trial_num > 12 ~ trial_num - 12, #make 2 sets of 12 trials, instead of 1 to 24
+                               TRUE ~ trial_num),
+         trial_type = factor(trial_type, levels = c("pre-switch", "post-switch")),
+         target = case_when(target_side == "left" ~ left, #set AOI columns
+                            target_side == "right" ~ right),
+         distractor = case_when(target_side == "left" ~ right,
+                                target_side == "right" ~ left),
+         trial_name = str_c(trial_type, trial_num, sep = "_"),
+         trial_unique = str_c(id, trial_name, sep = "_")) %>%
+  inner_join(baby_info, by = "id") %>% #merge with participant info
+  mutate(id = as.factor(id),
+         trial_num = as.numeric(trial_num),
+         trial_name = as.factor(trial_name),
+         group = factor(group, levels = c("monolingual", "bilingual"))) %>%
+  filter(id %notin% exclusions$id) %>% #get rid of any kids that match an ID in the exclusions file
+  filter(auditory_tl <= 0.6) #filter for Kalashnikova's trackloss
+  
+##-------------------------------------------------------MAKE AUDITORY EYETRACKING DATA
+aud_eyetracking <- aud_all %>%
+  make_eyetrackingr_data(participant_column = "id",
+                         trial_column = "trial_name",
+                         time_column = "bin_start_time",
+                         trackloss_column = "loss",
+                         aoi_columns = c("target", "center", "distractor"),
+                         treat_non_aoi_looks_as_missing = TRUE)
+
+aud_full_trial <- make_time_sequence_data(aud_eyetracking,
+                                         time_bin_size = 200,
+                                         predictor_columns = c("group", "trial_type", "trial_num"),
+                                         aois = c("center", "target", "distractor"))
+
+# 
+aud_anticipation_window <- subset_by_window(aud_eyetracking,
+                                            window_start_time = 2350,
+                                            window_end_time = 3350,
+                                            rezero = TRUE,
+                                            remove = TRUE)
+
+
+aud_final_sample_ids <- aud_anticipation_window %>%
+  select(id) %>%
+  distinct()
+
+final_sample_aud_full_trial <- aud_full_trial %>%
+  inner_join(aud_final_sample_ids, by = "id")
+
+full_sample_aud_full_trial <- aud_eyetracking %>%
+  filter(auditory_tl <= 0.6) %>%
+  make_time_sequence_data(time_bin_size = 200,
+                          predictor_columns = c("group", "trial_type", "trial_num"),
+                          aois = c("center", "target", "distractor"))
+
+full_sample_aud_anticipation_window <- aud_eyetracking %>%
+  filter(auditory_tl <= 0.6) %>% #Kalashnikova's original trackloss threshold
+  subset_by_window(window_start_time = 2350,
+                                            window_end_time = 3350,
+                                            rezero = TRUE,
+                                            remove = TRUE) 
+
+###-----------------------------------------------------------PREPARE VISUAL DATA
+
+vis_all <- vis_left %>%
+  dplyr::union(vis_right) %>%
+  filter(bin_start_time > 0 & bin_start_time < 6740) %>%
+  mutate(id = str_remove(id, "icv"),
+         id = str_remove(id, "ica"),
+         id = case_when(str_detect(id, "5332") ~ "5532", #typo in eyetracking ID
+                        TRUE ~ id),
+         trial_num = parse_number(trial_label),
+         trial_type = case_when(trial_num <= 12 ~ "pre-switch",
+                                TRUE ~ "post-switch"),
+         trial_num = case_when(trial_num > 12 ~ trial_num - 12,
+                               TRUE ~ trial_num),
+         trial_type = factor(trial_type, levels = c("pre-switch", "post-switch")),
+         target = case_when(target_side == "left" ~ left,
+                            target_side == "right" ~ right),
+         distractor = case_when(target_side == "left" ~ right,
+                                target_side == "right" ~ left),
+         trial_name = str_c(trial_type, trial_num, sep = "_"),
+         trial_unique = str_c(id, trial_name, sep = "_")) %>%
+  inner_join(baby_info, by = "id") %>%
+  mutate(id = as.factor(id),
+         trial_num = as.numeric(trial_num),
+         trial_name = as.factor(trial_name),
+         group = factor(group, levels = c("monolingual", "bilingual"))) %>%
+  filter(id %notin% exclusions$id) %>%
+  filter(visual_tl <= 0.6) #kalashnikova's original trackloss threshold
+
+#check for babies missing info:
+
+vis_all %>% select(id) %>% distinct() %>% anti_join(baby_info, by = "id")
+baby_info %>% anti_join((vis_all %>% select(id) %>% distinct()), by = "id")
+
+#two kids in eyetracking data but not info data
+
+
+vis_eyetracking <- vis_all %>%
+  make_eyetrackingr_data(participant_column = "id",
+                         trial_column = "trial_name",
+                         time_column = "bin_start_time",
+                         trackloss_column = "loss",
+                         aoi_columns = c("target", "center", "distractor"),
+                         treat_non_aoi_looks_as_missing = TRUE)
+
+vis_full_trial <- make_time_sequence_data(vis_eyetracking,
+                                         time_bin_size = 200,
+                                         predictor_columns = c("group", "trial_type", "trial_num"),
+                                         aois = c("center", "target", "distractor"))
+
+
+vis_anticipation_window <- subset_by_window(vis_eyetracking,
+                                            window_start_time = 3650,
+                                            window_end_time = 4650,
+                                            rezero = TRUE,
+                                            remove = TRUE)
+  
+
+vis_final_sample_ids <- vis_anticipation_window %>%
+  select(id) %>%
+  distinct()
+
+final_sample_vis_full_trial <- vis_full_trial %>%
+  inner_join(vis_final_sample_ids, by = "id")
+
+full_sample_vis_full_trial <- vis_eyetracking %>%
+  filter(visual_tl <= 0.6) %>%
+  make_time_sequence_data(time_bin_size = 200,
+                          predictor_columns = c("group", "trial_type", "trial_num"),
+                          aois = c("center", "target", "distractor"))
+
+full_sample_vis_anticipation_window <- vis_eyetracking %>%
+  filter(visual_tl <= 0.6) %>% #Kalashnikova's original trackloss threshold
+  subset_by_window(window_start_time = 3650,
+                                            window_end_time = 4650,
+                                            rezero = TRUE,
+                                            remove = TRUE) 
+
+```
+
+##Descriptives
+
+```{r}
+#language group counts per condition in final sample
+
+final_sample_aud_full_trial %>%
+  select(id, group) %>%
+  distinct() %>%
+  count(group)
+
+final_sample_vis_full_trial %>%
+  select(id, group) %>%
+  distinct() %>%
+  count(group)
+
+#language group counts per condition in full sample
+
+full_sample_aud_full_trial %>%
+  select(id, group) %>%
+  distinct() %>%
+  count(group)
+
+full_sample_vis_full_trial  %>%
+  select(id, group) %>%
+  distinct() %>%
+  count(group)
+
+```
+
+
+##Models
+
+```{r}
+
+##------------------------------------AUDITORY
+
+aud_model_data <- make_time_sequence_data(aud_anticipation_window,
+                                         time_bin_size = 200,
+                                         predictor_columns = c("group", "trial_type", "trial_num", "task_order"),
+                                         aois = c("center", "target", "distractor")) %>%
+  filter(AOI == "target") %>%
+  filter(trial_num != 1) %>%
+  mutate(trial_num_scaled = trial_num - 2,
+         trial_num_halved = trial_num_scaled/2,
+         trial_num_centred = trial_num - 7,
+         time_bin_centred = TimeBin -2,
+         group = factor(group, levels = c("monolingual", "bilingual"), labels = c("Monolinguals", "Bilinguals"))) 
+
+aud_model_data_pre <- aud_model_data %>%
+  filter(trial_type == "pre-switch")
+
+aud_model_data_post <-  aud_model_data %>%
+  filter(trial_type == "post-switch") 
+
+##### Problems converging models without rescaling trial number, so estimates end up being doubled when scaling trial number to half the size. Model estimates for unscaled trial number seem to be the same as for the scaled one (though any effects that include trial number are halved), but have a warning. Models converge without rescaling if only 8 trials are included (trials 2-9 like in the CogControl analysis). I believe the warning is a false positive, but I cannot get them to converge even by changing the optimizer or maximum attempts allowed.
+
+
+aud_model_pre <- glmer(SamplesInAOI / SamplesTotal ~ group * time_bin_centred * trial_num_scaled + (trial_num_scaled | id), data = aud_model_data_pre, family = binomial, weights = SamplesTotal, control=glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000)))
+
+summary(aud_model_pre)
+
+aud_model_pre2 <- glmer(SamplesInAOI / SamplesTotal ~ group * time_bin_centred * trial_num_halved + (trial_num_scaled | id), data = aud_model_data_pre, family = binomial, weights = SamplesTotal, control = glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000))) #convergence problems with unscaled trial number & also with centred trial number
+
+summary(aud_model_pre2)
+
+
+##----------------------------------check if unscaled models will converge with other optimizers. Short answer: No. But, testing for true failure of convergence doesn't seem like there's a problem... the tt and ll code below is nowhere close to 0. So I think the regular model should be fine to report.
+
+# allFit(show.meth.tab = TRUE)
+# allFit(aud_model_pre)
+# 
+# tt <- getME(aud_model_pre,"theta")
+# ll <- getME(aud_model_pre,"lower")
+# min(tt[ll==0])
+
+
+
+aud_model_post <- glmer(SamplesInAOI / SamplesTotal ~ group * time_bin_centred * trial_num_scaled + (1 | id), data = aud_model_data_post, family = binomial, weights = SamplesTotal, control=glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000))) 
+
+summary(aud_model_post)
+
+aud_model_post2 <- glmer(SamplesInAOI / SamplesTotal ~ group * time_bin_centred * trial_num_halved + (1 | id), data = aud_model_data_post, family = binomial, weights = SamplesTotal, control = glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000))) #convergence problems with unscaled trial number & also with centred trial number
+
+summary(aud_model_post2)
+
+
+##------------------------------------VISUAL
+
+vis_model_data <- make_time_sequence_data(vis_anticipation_window,
+                                         time_bin_size = 200,
+                                         predictor_columns = c("group", "trial_type", "trial_num", "task_order"),
+                                         aois = c("center", "target", "distractor")) %>%
+  filter(AOI == "target") %>%
+  filter(trial_num != 1) %>%
+  mutate(trial_num_scaled = trial_num - 2,
+         trial_num_halved = trial_num_scaled/2,
+         trial_num_centred = trial_num - 7,
+         time_bin_centred = TimeBin -2,
+         group = factor(group, levels = c("monolingual", "bilingual"), labels = c("Monolinguals", "Bilinguals"))) 
+
+vis_model_data_pre <- vis_model_data %>%
+  filter(trial_type == "pre-switch")
+
+vis_model_data_post <-  vis_model_data %>%
+  filter(trial_type == "post-switch") 
+
+
+###Same convergence problems in visual dataset, only works with halved trial number but the estimates seem the same as for the unscaled variable (though doubled estimates for effects including trial number)
+
+vis_model_pre <- glmer(SamplesInAOI / SamplesTotal ~ group * time_bin_centred * trial_num_scaled + (1 | id), data = vis_model_data_pre, family = binomial, weights = SamplesTotal, control=glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000)))
+
+summary(vis_model_pre)
+
+vis_model_pre2 <- glmer(SamplesInAOI / SamplesTotal ~ group * time_bin_centred * trial_num_halved + (1 | id), data = vis_model_data_pre, family = binomial, weights = SamplesTotal, control=glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000)))
+
+summary(vis_model_pre2)
+
+
+vis_model_post <- glmer(SamplesInAOI / SamplesTotal ~ group * time_bin_centred * trial_num_scaled + (1 | id), data = vis_model_data_post, family = binomial, weights = SamplesTotal, control=glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000))) 
+
+summary(vis_model_post)
+
+vis_model_post2 <- glmer(SamplesInAOI / SamplesTotal ~ group * time_bin_centred * trial_num_halved + (1 | id), data = vis_model_data_post, family = binomial, weights = SamplesTotal, control=glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000))) 
+
+summary(vis_model_post2)
+
+
+###----------------------------------------------------MODEL RESULTS TABLES
+
+tab_model(aud_model_pre, show.re.var = FALSE, show.icc = FALSE)
+tab_model(aud_model_post, show.re.var = FALSE, show.icc = FALSE)
+tab_model(vis_model_pre, show.re.var = FALSE, show.icc = FALSE)
+tab_model(vis_model_post, show.re.var = FALSE, show.icc = FALSE)
+
+
+```
+
+
+##Flipped language level models (to see Bilingual baseline effects) - only using the unscaled trial number variable 
+
+```{r}
+
+##------------------------------------AUDITORY
+
+aud_model_data_pre_flipped <- aud_model_data %>%
+  filter(trial_type == "pre-switch") %>%
+  mutate(group = factor(group, levels = c("Bilinguals", "Monolinguals")))
+
+aud_model_data_post_flipped <-  aud_model_data %>%
+  filter(trial_type == "post-switch") %>%
+  mutate(group = factor(group, levels = c("Bilinguals", "Monolinguals")))
+
+
+aud_model_pre_flipped <- glmer(SamplesInAOI / SamplesTotal ~ group * time_bin_centred * trial_num_scaled + (1 | id), data = aud_model_data_pre_flipped, family = binomial, weights = SamplesTotal, control=glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000)))
+
+summary(aud_model_pre_flipped)
+
+aud_model_post_flipped <- glmer(SamplesInAOI / SamplesTotal ~ group * time_bin_centred * trial_num_scaled + (1 | id), data = aud_model_data_post_flipped, family = binomial, weights = SamplesTotal, control=glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000))) 
+
+summary(aud_model_post_flipped)
+
+##------------------------------------VISUAL
+
+vis_model_data_pre_flipped <- vis_model_data %>%
+  filter(trial_type == "pre-switch") %>%
+  mutate(group = factor(group, levels = c("Bilinguals", "Monolinguals")))
+
+vis_model_data_post_flipped <-  vis_model_data %>%
+  filter(trial_type == "post-switch") %>%
+  mutate(group = factor(group, levels = c("Bilinguals", "Monolinguals")))
+
+vis_model_pre_flipped <- glmer(SamplesInAOI / SamplesTotal ~ group * time_bin_centred * trial_num_scaled + (1 | id), data = vis_model_data_pre_flipped, family = binomial, weights = SamplesTotal, control=glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000)))
+
+summary(vis_model_pre_flipped)
+
+vis_model_post_flipped <- glmer(SamplesInAOI / SamplesTotal ~ group * time_bin_centred * trial_num_scaled + (1 | id), data = vis_model_data_post_flipped, family = binomial, weights = SamplesTotal, control=glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000))) 
+
+summary(vis_model_post_flipped)
+
+
+###----------------------------------------------------MODEL RESULTS TABLES
+# 
+tab_model(aud_model_pre_flipped, show.re.var = FALSE, show.icc = FALSE)
+tab_model(aud_model_post_flipped, show.re.var = FALSE, show.icc = FALSE)
+tab_model(vis_model_pre_flipped, show.re.var = FALSE, show.icc = FALSE)
+tab_model(vis_model_post_flipped, show.re.var = FALSE, show.icc = FALSE)
+
+
+```
+
+##Plot actual model data stacked
+
+```{r}
+
+##-----------------------------------------------------------AUDITORY
+
+
+aud_model_data_pre %>% 
+  #filter(trial_num < 10) %>% #uncomment to see data with only trials 1-9
+  ggplot(aes(x = TimeBin, y = Prop, color = as.factor(trial_num_scaled))) + 
+  geom_jitter(alpha = 0.8, shape = 21, stroke = .75) + 
+  geom_smooth(aes(color = as.factor(trial_num_scaled)), se = FALSE) + 
+  facet_grid( ~ group) + 
+  scale_color_manual(values = blues, labels = c(2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12)) +
+  labs(color = "trial_num", title = "Pre-Switch (Auditory)")
+#ggsave("plot_model_data_7pre_unfiltered.png", path = here("figures"), device = "png", width = 7, height = 4, units = "in",
+#   dpi = 300)
+
+
+
+aud_model_data_post %>% 
+  #filter(trial_num < 10) %>%
+  ggplot(aes(x = TimeBin, y = Prop, color = as.factor(trial_num_scaled))) + 
+  geom_jitter(alpha = 0.8, shape = 21, stroke = .75) + 
+  geom_smooth(aes(color = as.factor(trial_num_scaled)), se = FALSE) + 
+  facet_grid( ~ group) +
+  scale_color_manual(values = blues, labels = c(2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12)) +
+  labs(color = "trial_num", title = "Post-Switch (Auditory)")
+#ggsave("plot_model_data_7post_unfiltered.png", path = here("figures"), device = "png", width = 7, height = 4, units = "in",
+#   dpi = 300)
+
+
+##-----------------------------------------------------------VISUAL
+
+
+vis_model_data_pre %>% 
+  #filter(trial_num < 10) %>%
+  ggplot(aes(x = TimeBin, y = Prop, color = as.factor(trial_num_scaled))) + 
+  geom_jitter(alpha = 0.8, shape = 21, stroke = .75) + 
+  geom_smooth(aes(color = as.factor(trial_num_scaled)), se = FALSE) + 
+  facet_grid( ~ group) + 
+  scale_color_manual(values = blues, labels = c(2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12)) +
+  labs(color = "trial_num", title = "Pre-Switch (Visual)")
+#ggsave("plot_model_data_7pre_unfiltered.png", path = here("figures"), device = "png", width = 7, height = 4, units = "in",
+#   dpi = 300)
+
+
+
+vis_model_data_post %>% 
+  #filter(trial_num < 10) %>%  
+  ggplot(aes(x = TimeBin, y = Prop, color = as.factor(trial_num_scaled))) + 
+  geom_jitter(alpha = 0.8, shape = 21, stroke = .75) + 
+  geom_smooth(aes(color = as.factor(trial_num_scaled)), se = FALSE) + 
+  facet_grid( ~ group) +
+  scale_color_manual(values = blues, labels = c(2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12)) +
+  labs(color = "trial_num", title = "Post-Switch (Visual)")
+#ggsave("plot_model_data_7post_unfiltered.png", path = here("figures"), device = "png", width = 7, height = 4, units = "in",
+#   dpi = 300)
+
+  
+```
+
+
+
+
+##Plot model predicted values
+
+```{r}
+
+##-----------------------------------AUDITORY
+
+ggpredict(aud_model_pre, terms = c("time_bin_centred", "trial_num_scaled [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]", "group"), type = "fe", ci.lvl = FALSE) %>% plot(colors = "trial_num_scaled", line.size = 1, connect.lines = TRUE) +
+  labs(title = "Predicted values of proportion looking to target during the Training phase \nin Experiment 1c (Auditory condition)", x = "Time in milliseconds during anticipation period", y = "Proportion looking to target", color = "Trial number") +
+  scale_color_manual(values = blues, labels = c(2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12)) +
+  scale_x_continuous(breaks = c(0, 2, 4), labels = c("0", "500", "1000")) +
+  ylim(-0.1, 1) +
+  theme(axis.title.y = element_text(margin = margin(t = 0, r = 10, b = 0, l = 0)),
+        axis.title.x = element_text(margin = margin(t = 10, r = 0, b = 0, l = 0)))
+
+ #ggsave("plot_model_predictions_aud_pre_unfiltered.png", path = here("figures"), device = "png", width = 7, height = 4, units = "in", dpi = 300)
+
+ggpredict(aud_model_post, terms = c("time_bin_centred", "trial_num_scaled [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]", "group"), type = "fe", ci.lvl = FALSE) %>% plot(colors = "trial_num_scaled", line.size = 1, connect.lines = TRUE) +
+  labs(title = "Predicted values of proportion looking to target during the Test phase \nin Experiment 1c (Auditory condition)", x = "Time in milliseconds during anticipation period", y = "Proportion looking to target", color = "Trial number") +
+  scale_color_manual(values = blues, labels = c(2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12)) +
+  scale_x_continuous(breaks = c(0, 2, 4), labels = c("0", "500", "1000")) +
+  ylim(-0.1, 1) +
+  theme(axis.title.y = element_text(margin = margin(t = 0, r = 10, b = 0, l = 0)),
+        axis.title.x = element_text(margin = margin(t = 10, r = 0, b = 0, l = 0)))
+
+ #ggsave("plot_model_predictions_aud_post_unfiltered.png", path = here("figures"), device = "png", width = 7, height = 4, units = "in", dpi = 300)
+
+##-----------------------------------VISUAL
+
+ggpredict(vis_model_pre, terms = c("time_bin_centred", "trial_num_scaled [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]", "group"), type = "fe", ci.lvl = FALSE) %>% plot(colors = "trial_num_scaled", line.size = 1, connect.lines = TRUE) +
+  labs(title = "Predicted values of proportion looking to target during the Training phase \nin Experiment 1c (Visual condition)", x = "Time in milliseconds during anticipation period", y = "Proportion looking to target", color = "Trial number") +
+  scale_color_manual(values = blues, labels = c(2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12)) +
+  scale_x_continuous(breaks = c(0, 2, 4), labels = c("0", "500", "1000")) +
+  ylim(-0.1, 1) +
+  theme(axis.title.y = element_text(margin = margin(t = 0, r = 10, b = 0, l = 0)),
+        axis.title.x = element_text(margin = margin(t = 10, r = 0, b = 0, l = 0)))
+
+ #ggsave("plot_model_predictions_vis_pre_unfiltered.png", path = here("figures"), device = "png", width = 7, height = 4, units = "in", dpi = 300)
+
+ggpredict(vis_model_post, terms = c("time_bin_centred", "trial_num_scaled [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]", "group"), type = "fe", ci.lvl = FALSE) %>% plot(colors = "trial_num_scaled", line.size = 1, connect.lines = TRUE) +
+  labs(title = "Predicted values of proportion looking to target during the Test phase \nin Experiment 1c (Visual condition)", x = "Time in milliseconds during anticipation period", y = "Proportion looking to target", color = "Trial number") +
+  scale_color_manual(values = blues, labels = c(2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12)) +
+  scale_x_continuous(breaks = c(0, 2, 4), labels = c("0", "500", "1000")) +
+  ylim(-0.1, 1) +
+  theme(axis.title.y = element_text(margin = margin(t = 0, r = 10, b = 0, l = 0)),
+        axis.title.x = element_text(margin = margin(t = 10, r = 0, b = 0, l = 0)))
+
+ #ggsave("plot_model_predictions_vis_post_unfiltered.png", path = here("figures"), device = "png", width = 7, height = 4, units = "in", dpi = 300)
+
+```
+
