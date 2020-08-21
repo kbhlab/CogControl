@@ -293,11 +293,11 @@ aud_model_data_post <-  aud_model_data %>%
 ##### Problems converging models without rescaling trial number, so estimates end up being doubled when scaling trial number to half the size. Model estimates for unscaled trial number seem to be the same as for the scaled one (though any effects that include trial number are halved), but have a warning. Models converge without rescaling if only 8 trials are included (trials 2-9 like in the CogControl analysis). I believe the warning is a false positive, but I cannot get them to converge even by changing the optimizer or maximum attempts allowed.
 
 
-aud_model_pre <- glmer(SamplesInAOI / SamplesTotal ~ group * time_bin_centred * trial_num_scaled + (trial_num_scaled | id), data = aud_model_data_pre, family = binomial, weights = SamplesTotal, control=glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000)))
+aud_model_pre <- glmer(SamplesInAOI / SamplesTotal ~ group * time_bin_centred * trial_num_scaled + (1 | id), data = aud_model_data_pre, family = binomial, weights = SamplesTotal, control=glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000)))
 
 summary(aud_model_pre)
 
-aud_model_pre2 <- glmer(SamplesInAOI / SamplesTotal ~ group * time_bin_centred * trial_num_halved + (trial_num_scaled | id), data = aud_model_data_pre, family = binomial, weights = SamplesTotal, control = glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000))) #convergence problems with unscaled trial number & also with centred trial number
+aud_model_pre2 <- glmer(SamplesInAOI / SamplesTotal ~ group * time_bin_centred * trial_num_halved + (1 | id), data = aud_model_data_pre, family = binomial, weights = SamplesTotal, control = glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000))) #convergence problems with unscaled trial number & also with centred trial number
 
 summary(aud_model_pre2)
 
@@ -498,46 +498,46 @@ vis_model_data_post %>%
 ##-----------------------------------AUDITORY
 
 ggpredict(aud_model_pre, terms = c("time_bin_centred", "trial_num_scaled [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]", "group"), type = "fe", ci.lvl = FALSE) %>% plot(colors = "trial_num_scaled", line.size = 1, connect.lines = TRUE) +
-  labs(title = "Predicted values of proportion looking to target during the Training phase \nin Experiment 1c (Auditory condition)", x = "Time in milliseconds during anticipation period", y = "Proportion looking to target", color = "Trial number") +
+  labs(title = "Predicted values of proportion looking to target during the Training phase \nin Experiment 1d (Auditory condition - unfiltered data)", x = "Time in milliseconds during anticipation period", y = "Proportion looking to target", color = "Trial number") +
   scale_color_manual(values = blues, labels = c(2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12)) +
   scale_x_continuous(breaks = c(0, 2, 4), labels = c("0", "500", "1000")) +
   ylim(-0.1, 1) +
   theme(axis.title.y = element_text(margin = margin(t = 0, r = 10, b = 0, l = 0)),
         axis.title.x = element_text(margin = margin(t = 10, r = 0, b = 0, l = 0)))
 
- #ggsave("plot_model_predictions_aud_pre_unfiltered.png", path = here("figures"), device = "png", width = 7, height = 4, units = "in", dpi = 300)
+ggsave("plot_model_predictions_aud_pre_unfiltered.png", path = here("figures"), device = "png", width = 7, height = 4, units = "in", dpi = 300)
 
 ggpredict(aud_model_post, terms = c("time_bin_centred", "trial_num_scaled [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]", "group"), type = "fe", ci.lvl = FALSE) %>% plot(colors = "trial_num_scaled", line.size = 1, connect.lines = TRUE) +
-  labs(title = "Predicted values of proportion looking to target during the Test phase \nin Experiment 1c (Auditory condition)", x = "Time in milliseconds during anticipation period", y = "Proportion looking to target", color = "Trial number") +
+  labs(title = "Predicted values of proportion looking to target during the Test phase \nin Experiment 1d (Auditory condition - unfiltered data)", x = "Time in milliseconds during anticipation period", y = "Proportion looking to target", color = "Trial number") +
   scale_color_manual(values = blues, labels = c(2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12)) +
   scale_x_continuous(breaks = c(0, 2, 4), labels = c("0", "500", "1000")) +
   ylim(-0.1, 1) +
   theme(axis.title.y = element_text(margin = margin(t = 0, r = 10, b = 0, l = 0)),
         axis.title.x = element_text(margin = margin(t = 10, r = 0, b = 0, l = 0)))
 
- #ggsave("plot_model_predictions_aud_post_unfiltered.png", path = here("figures"), device = "png", width = 7, height = 4, units = "in", dpi = 300)
+ggsave("plot_model_predictions_aud_post_unfiltered.png", path = here("figures"), device = "png", width = 7, height = 4, units = "in", dpi = 300)
 
 ##-----------------------------------VISUAL
 
 ggpredict(vis_model_pre, terms = c("time_bin_centred", "trial_num_scaled [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]", "group"), type = "fe", ci.lvl = FALSE) %>% plot(colors = "trial_num_scaled", line.size = 1, connect.lines = TRUE) +
-  labs(title = "Predicted values of proportion looking to target during the Training phase \nin Experiment 1c (Visual condition)", x = "Time in milliseconds during anticipation period", y = "Proportion looking to target", color = "Trial number") +
+  labs(title = "Predicted values of proportion looking to target during the Training phase \nin Experiment 1c (Visual condition - unfiltered data)", x = "Time in milliseconds during anticipation period", y = "Proportion looking to target", color = "Trial number") +
   scale_color_manual(values = blues, labels = c(2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12)) +
   scale_x_continuous(breaks = c(0, 2, 4), labels = c("0", "500", "1000")) +
   ylim(-0.1, 1) +
   theme(axis.title.y = element_text(margin = margin(t = 0, r = 10, b = 0, l = 0)),
         axis.title.x = element_text(margin = margin(t = 10, r = 0, b = 0, l = 0)))
 
- #ggsave("plot_model_predictions_vis_pre_unfiltered.png", path = here("figures"), device = "png", width = 7, height = 4, units = "in", dpi = 300)
+#ggsave("plot_model_predictions_vis_pre_unfiltered.png", path = here("figures"), device = "png", width = 7, height = 4, units = "in", dpi = 300)
 
 ggpredict(vis_model_post, terms = c("time_bin_centred", "trial_num_scaled [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]", "group"), type = "fe", ci.lvl = FALSE) %>% plot(colors = "trial_num_scaled", line.size = 1, connect.lines = TRUE) +
-  labs(title = "Predicted values of proportion looking to target during the Test phase \nin Experiment 1c (Visual condition)", x = "Time in milliseconds during anticipation period", y = "Proportion looking to target", color = "Trial number") +
+  labs(title = "Predicted values of proportion looking to target during the Test phase \nin Experiment 1c (Visual condition - unfiltered data)", x = "Time in milliseconds during anticipation period", y = "Proportion looking to target", color = "Trial number") +
   scale_color_manual(values = blues, labels = c(2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12)) +
   scale_x_continuous(breaks = c(0, 2, 4), labels = c("0", "500", "1000")) +
   ylim(-0.1, 1) +
   theme(axis.title.y = element_text(margin = margin(t = 0, r = 10, b = 0, l = 0)),
         axis.title.x = element_text(margin = margin(t = 10, r = 0, b = 0, l = 0)))
 
- #ggsave("plot_model_predictions_vis_post_unfiltered.png", path = here("figures"), device = "png", width = 7, height = 4, units = "in", dpi = 300)
+#ggsave("plot_model_predictions_vis_post_unfiltered.png", path = here("figures"), device = "png", width = 7, height = 4, units = "in", dpi = 300)
 
 ```
 

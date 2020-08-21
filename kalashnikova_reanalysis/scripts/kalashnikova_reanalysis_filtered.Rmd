@@ -150,18 +150,6 @@ aud_final_sample_ids <- aud_anticipation_window %>%
 final_sample_aud_full_trial <- aud_full_trial %>%
   inner_join(aud_final_sample_ids, by = "id")
 
-full_sample_aud_full_trial <- aud_eyetracking %>%
-  filter(auditory_tl <= 0.6) %>%
-  make_time_sequence_data(time_bin_size = 200,
-                          predictor_columns = c("group", "trial_type", "trial_num"),
-                          aois = c("center", "target", "distractor"))
-
-full_sample_aud_anticipation_window <- aud_eyetracking %>%
-  filter(auditory_tl <= 0.6) %>% #Kalashnikova's original trackloss threshold
-  subset_by_window(window_start_time = 2350,
-                                            window_end_time = 3350,
-                                            rezero = TRUE,
-                                            remove = TRUE) 
 
 ###-----------------------------------------------------------PREPARE VISUAL DATA
 
@@ -237,18 +225,6 @@ vis_final_sample_ids <- vis_anticipation_window %>%
 final_sample_vis_full_trial <- vis_full_trial %>%
   inner_join(vis_final_sample_ids, by = "id")
 
-full_sample_vis_full_trial <- vis_eyetracking %>%
-  filter(visual_tl <= 0.6) %>%
-  make_time_sequence_data(time_bin_size = 200,
-                          predictor_columns = c("group", "trial_type", "trial_num"),
-                          aois = c("center", "target", "distractor"))
-
-full_sample_vis_anticipation_window <- vis_eyetracking %>%
-  filter(visual_tl <= 0.6) %>% #Kalashnikova's original trackloss threshold
-  subset_by_window(window_start_time = 3650,
-                                            window_end_time = 4650,
-                                            rezero = TRUE,
-                                            remove = TRUE) 
 
 ```
 
@@ -267,17 +243,6 @@ final_sample_vis_full_trial %>%
   distinct() %>%
   count(group)
 
-#language group counts per condition in full sample
-
-full_sample_aud_full_trial %>%
-  select(id, group) %>%
-  distinct() %>%
-  count(group)
-
-full_sample_vis_full_trial  %>%
-  select(id, group) %>%
-  distinct() %>%
-  count(group)
 
 ```
 
@@ -446,11 +411,11 @@ aud_model_data_post <-  aud_model_data %>%
 ##### Problems converging models without rescaling trial number, so estimates end up being doubled when scaling trial number to half the size. Model estimates for unscaled trial number seem to be the same as for the scaled one (though any effects that include trial number are halved), but have a warning. Models converge without rescaling if only 8 trials are included (trials 2-9 like in the CogControl analysis). I believe the warning is a false positive, but I cannot get them to converge even by changing the optimizer or maximum attempts allowed.
 
 
-aud_model_pre <- glmer(SamplesInAOI / SamplesTotal ~ group * time_bin_centred * trial_num_scaled + (trial_num_scaled | id), data = aud_model_data_pre, family = binomial, weights = SamplesTotal, control=glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000)))
+aud_model_pre <- glmer(SamplesInAOI / SamplesTotal ~ group * time_bin_centred * trial_num_scaled + (1 | id), data = aud_model_data_pre, family = binomial, weights = SamplesTotal, control=glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000)))
 
 summary(aud_model_pre)
 
-aud_model_pre2 <- glmer(SamplesInAOI / SamplesTotal ~ group * time_bin_centred * trial_num_halved + (trial_num_scaled | id), data = aud_model_data_pre, family = binomial, weights = SamplesTotal, control = glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000))) #convergence problems with unscaled trial number & also with centred trial number
+aud_model_pre2 <- glmer(SamplesInAOI / SamplesTotal ~ group * time_bin_centred * trial_num_halved + (1 | id), data = aud_model_data_pre, family = binomial, weights = SamplesTotal, control = glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000))) #convergence problems with unscaled trial number & also with centred trial number
 
 summary(aud_model_pre2)
 
@@ -652,45 +617,45 @@ vis_model_data_post %>%
 ##-----------------------------------AUDITORY
 
 ggpredict(aud_model_pre, terms = c("time_bin_centred", "trial_num_scaled [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]", "group"), type = "fe", ci.lvl = FALSE) %>% plot(colors = "trial_num_scaled", line.size = 1, connect.lines = TRUE) +
-  labs(title = "Predicted values of proportion looking to target during the Training phase \nin Experiment 1c (Auditory condition)", x = "Time in milliseconds during anticipation period", y = "Proportion looking to target", color = "Trial number") +
+  labs(title = "Predicted values of proportion looking to target during the Training phase \nin Experiment 1d (Auditory condition - filtered data)", x = "Time in milliseconds during anticipation period", y = "Proportion looking to target", color = "Trial number") +
   scale_color_manual(values = blues, labels = c(2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12)) +
   scale_x_continuous(breaks = c(0, 2, 4), labels = c("0", "500", "1000")) +
   ylim(-0.1, 1) +
   theme(axis.title.y = element_text(margin = margin(t = 0, r = 10, b = 0, l = 0)),
         axis.title.x = element_text(margin = margin(t = 10, r = 0, b = 0, l = 0)))
 
- #ggsave("plot_model_predictions_aud_pre_filtered.png", path = here("figures"), device = "png", width = 7, height = 4, units = "in", dpi = 300)
+#ggsave("plot_model_predictions_aud_pre_filtered.png", path = here("figures"), device = "png", width = 7, height = 4, units = "in", dpi = 300)
 
 ggpredict(aud_model_post, terms = c("time_bin_centred", "trial_num_scaled [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]", "group"), type = "fe", ci.lvl = FALSE) %>% plot(colors = "trial_num_scaled", line.size = 1, connect.lines = TRUE) +
-  labs(title = "Predicted values of proportion looking to target during the Test phase \nin Experiment 1c (Auditory condition)", x = "Time in milliseconds during anticipation period", y = "Proportion looking to target", color = "Trial number") +
+  labs(title = "Predicted values of proportion looking to target during the Test phase \nin Experiment 1d (Auditory condition - filtered data)", x = "Time in milliseconds during anticipation period", y = "Proportion looking to target", color = "Trial number") +
   scale_color_manual(values = blues, labels = c(2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12)) +
   scale_x_continuous(breaks = c(0, 2, 4), labels = c("0", "500", "1000")) +
   ylim(-0.1, 1) +
   theme(axis.title.y = element_text(margin = margin(t = 0, r = 10, b = 0, l = 0)),
         axis.title.x = element_text(margin = margin(t = 10, r = 0, b = 0, l = 0)))
 
- #ggsave("plot_model_predictions_aud_post_filtered.png", path = here("figures"), device = "png", width = 7, height = 4, units = "in", dpi = 300)
+#ggsave("plot_model_predictions_aud_post_filtered.png", path = here("figures"), device = "png", width = 7, height = 4, units = "in", dpi = 300)
 
 ##-----------------------------------VISUAL
 
 ggpredict(vis_model_pre, terms = c("time_bin_centred", "trial_num_scaled [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]", "group"), type = "fe", ci.lvl = FALSE) %>% plot(colors = "trial_num_scaled", line.size = 1, connect.lines = TRUE) +
-  labs(title = "Predicted values of proportion looking to target during the Training phase \nin Experiment 1c (Visual condition)", x = "Time in milliseconds during anticipation period", y = "Proportion looking to target", color = "Trial number") +
+  labs(title = "Predicted values of proportion looking to target during the Training phase \nin Experiment 1c (Visual condition - filtered data)", x = "Time in milliseconds during anticipation period", y = "Proportion looking to target", color = "Trial number") +
   scale_color_manual(values = blues, labels = c(2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12)) +
   scale_x_continuous(breaks = c(0, 2, 4), labels = c("0", "500", "1000")) +
   ylim(-0.1, 1) +
   theme(axis.title.y = element_text(margin = margin(t = 0, r = 10, b = 0, l = 0)),
         axis.title.x = element_text(margin = margin(t = 10, r = 0, b = 0, l = 0)))
 
- #ggsave("plot_model_predictions_vis_pre_filtered.png", path = here("figures"), device = "png", width = 7, height = 4, units = "in", dpi = 300)
+#ggsave("plot_model_predictions_vis_pre_filtered.png", path = here("figures"), device = "png", width = 7, height = 4, units = "in", dpi = 300)
 
 ggpredict(vis_model_post, terms = c("time_bin_centred", "trial_num_scaled [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]", "group"), type = "fe", ci.lvl = FALSE) %>% plot(colors = "trial_num_scaled", line.size = 1, connect.lines = TRUE) +
-  labs(title = "Predicted values of proportion looking to target during the Test phase \nin Experiment 1c (Visual condition)", x = "Time in milliseconds during anticipation period", y = "Proportion looking to target", color = "Trial number") +
+  labs(title = "Predicted values of proportion looking to target during the Test phase \nin Experiment 1c (Visual condition - filtered data)", x = "Time in milliseconds during anticipation period", y = "Proportion looking to target", color = "Trial number") +
   scale_color_manual(values = blues, labels = c(2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12)) +
   scale_x_continuous(breaks = c(0, 2, 4), labels = c("0", "500", "1000")) +
   ylim(-0.1, 1) +
   theme(axis.title.y = element_text(margin = margin(t = 0, r = 10, b = 0, l = 0)),
         axis.title.x = element_text(margin = margin(t = 10, r = 0, b = 0, l = 0)))
 
-# ggsave("plot_model_predictions_vis_post_filtered.png", path = here("figures"), device = "png", width = 7, height = 4, units = "in", dpi = 300)
+#ggsave("plot_model_predictions_vis_post_filtered.png", path = here("figures"), device = "png", width = 7, height = 4, units = "in", dpi = 300)
 
 ```
