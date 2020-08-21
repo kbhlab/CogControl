@@ -39,7 +39,35 @@ baby_info <- read_excel(here("data", "Metadata.xlsx")) %>% clean_names() %>%
          visual_tl = case_when(id == "5314" ~ auditory_tl, #looks like this kid had a mistake in the baby info sheet... they have data for auditory trackloss but no data for visual trackloss, yet they only participated in the visual session. I double checked the trackloss number for the visual session, and it matches what was put under auditory, so I think they should be swapped.
                                TRUE ~ visual_tl),
          auditory_tl = case_when(id == "5314" ~ NA_real_,
-                                 TRUE ~ auditory_tl)) 
+                                 TRUE ~ auditory_tl),
+                  do_t_s2 = excel_numeric_to_date(as.numeric(do_t_s2)),
+         do_b = lubridate::ymd(do_b),
+         do_b = case_when(id == 5629 ~ ymd(2019-07-29),
+                          TRUE ~ do_b),
+         do_t_s1 = lubridate::ymd(do_t_s1),
+         do_t_s2 = lubridate:: ymd(do_t_s2),
+         age_interval_s1 = lubridate::interval(do_b, do_t_s1),
+         age_interval_s2 = lubridate::interval(do_b, do_t_s2),
+         age_at_session_1 = lubridate::as.period(age_interval_s1),
+         age_at_session_2 = lubridate::as.period(age_interval_s2),
+         months_at_session_1 = lubridate::month(age_at_session_1),
+         days_at_session_1 = lubridate::day(age_at_session_1),
+         months_at_session_2 = lubridate::month(age_at_session_2),
+         days_at_session_2 = lubridate::day(age_at_session_2),
+         age_auditory = case_when(task_order == "Aud" ~ age_at_session_1, 
+                                  TRUE ~ age_at_session_2),
+         age_visual = case_when(task_order == "Vis" ~ age_at_session_1,
+                                TRUE ~ age_at_session_2),
+         months_auditory = case_when(task_order == "Aud" ~ months_at_session_1,
+                                     TRUE ~ months_at_session_2),
+         days_auditory = case_when(task_order == "Aud" ~ as.numeric(days_at_session_1),
+                                   TRUE ~ as.numeric(days_at_session_2)),
+         age_in_days_auditory = 30.436875 * months_auditory + days_auditory,
+         months_visual = case_when(task_order == "Vis" ~ months_at_session_1,
+                                   TRUE ~ months_at_session_2),
+         days_visual = case_when(task_order == "Vis" ~ as.numeric(days_at_session_1),
+                                 TRUE ~ as.numeric(days_at_session_2)),
+         age_in_days_visual = 30.436875 * months_visual + days_visual)
 
 exclusions <- read_excel(here("data", "Metadata.xlsx"), sheet = 2) %>% clean_names() %>%
   mutate(id = as.character(id))
@@ -262,6 +290,42 @@ full_sample_vis_full_trial  %>%
   select(id, group) %>%
   distinct() %>%
   count(group)
+
+
+
+###--------------------------AGE AUDITORY
+
+baby_info %>%
+  inner_join(aud_final_sample_ids, by = "id") %>%
+  summarize(avg_age_days = floor(mean(age_in_days_auditory, na.rm = TRUE)),
+            min_age_days = min(age_in_days_auditory, na.rm = TRUE),
+            max_age_days = max(age_in_days_auditory, na.rm = TRUE),
+            avg_age = avg_age_days/30.436875, #divide by average days in a month
+            avg_months = floor(avg_age),
+            avg_days = floor((avg_age - avg_months) * 30.436875),
+            min_age = min_age_days/30.436875,
+            min_months = floor(min_age),
+            min_days = floor((min_age - min_months) * 30.436875),
+            max_age = max_age_days/30.436875,
+            max_months = floor(max_age),
+            max_days = floor((max_age - max_months) * 30.436875))
+
+###_---------------------------AGE VISUAL
+
+baby_info %>%
+  inner_join(vis_final_sample_ids, by = "id") %>%
+  summarize(avg_age_days = floor(mean(age_in_days_visual, na.rm = TRUE)),
+            min_age_days = min(age_in_days_visual, na.rm = TRUE),
+            max_age_days = max(age_in_days_visual, na.rm = TRUE),
+            avg_age = avg_age_days/30.436875, #divide by average days in a month
+            avg_months = floor(avg_age),
+            avg_days = floor((avg_age - avg_months) * 30.436875),
+            min_age = min_age_days/30.436875,
+            min_months = floor(min_age),
+            min_days = floor((min_age - min_months) * 30.436875),
+            max_age = max_age_days/30.436875,
+            max_months = floor(max_age),
+            max_days = floor((max_age - max_months) * 30.436875))
 
 ```
 
