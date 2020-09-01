@@ -554,25 +554,25 @@ tab_model(final_model_post_7, show.re.var = FALSE, show.icc = FALSE)
 ###----------------------------------------------------PLOTS OF MODEL RESULTS - GLMER-----------------
 
 ggpredict(final_model_pre_7, terms = c("time_bin_centred", "trial_num_scaled", "language"), type = "re", ci.lvl = FALSE) %>% plot(colors = "trial_num_scaled", line.size = 1, connect.lines = TRUE) +
-  labs(title = "Predicted values of proportion looking to target during the Training phase \nin Experiment 1a (7 months)", x = "Time in milliseconds during anticipation period", y = "Proportion looking to target", color = "Trial number") +
+  labs(title = "Predicted values of proportion looking to target during the Training phase \nin Experiment 1a (filtered data)", x = "Time in milliseconds during anticipation period", y = "Proportion looking to target", color = "Trial number") +
   scale_color_manual(values = blues, labels = c(2, 3, 4, 5, 6, 7, 8, 9)) +
   scale_x_continuous(breaks = c(-2, 0, 2), labels = c("0", "500", "1000")) +
   ylim(-0.1, 1) +
   theme(axis.title.y = element_text(margin = margin(t = 0, r = 10, b = 0, l = 0)),
         axis.title.x = element_text(margin = margin(t = 10, r = 0, b = 0, l = 0)))
 
-#ggsave("plot_model_7_pre.png", path = here("figures"), device = "png", width = 7, height = 4, units = "in", dpi = 300)
+#ggsave("plot_model_7_pre_filtered.png", path = here("figures"), device = "png", width = 7, height = 4, units = "in", dpi = 300)
  
 
 ggpredict(final_model_post_7, terms = c("time_bin_centred", "trial_num_scaled", "language"), type = "fe", ci.lvl = FALSE) %>% plot(colors = "trial_num_scaled", line.size = 1, connect.lines = TRUE) +
-  labs(title = "Predicted values of proportion looking to target during the Test phase \nin Experiment 1a (7 months)", x = "Time in milliseconds during anticipation period", y = "Proportion looking to target", color = "Trial number") +
+  labs(title = "Predicted values of proportion looking to target during the Test phase \nin Experiment 1a (filtered data)", x = "Time in milliseconds during anticipation period", y = "Proportion looking to target", color = "Trial number") +
   scale_color_manual(values = blues, labels = c(2, 3, 4, 5, 6, 7, 8, 9)) +
   scale_x_continuous(breaks = c(-2, 0, 2), labels = c("0", "500", "1000")) +
   ylim(-0.1, 1) +
   theme(axis.title.y = element_text(margin = margin(t = 0, r = 10, b = 0, l = 0)),
         axis.title.x = element_text(margin = margin(t = 10, r = 0, b = 0, l = 0)))
 
-#ggsave("plot_model_7_post.png", path = here("figures"), device = "png", width = 7, height = 4, units = "in", dpi = 300)
+#ggsave("plot_model_7_post_filtered.png", path = here("figures"), device = "png", width = 7, height = 4, units = "in", dpi = 300)
  
 ```
 
@@ -607,24 +607,24 @@ tab_model(final_model_post_20, show.re.var = FALSE, show.icc = FALSE)
 ##----------------------------------------------------------PLOT OF MODEL RESULTS - GLMER------------
 
 ggpredict(final_model_pre_20, terms = c("time_bin_centred", "trial_num_scaled", "language"), type = "re", ci.lvl = FALSE) %>% plot(colors = "trial_num_scaled", line.size = 1, connect.lines = TRUE) +
-  labs(title = "Predicted values of proportion looking to target during the Training phase \nin Experiment 1a (7 months)", x = "Time in milliseconds during anticipation period", y = "Proportion looking to target", color = "Trial number") +
+  labs(title = "Predicted values of proportion looking to target during the Training phase \nin Experiment 2 (filtered data)", x = "Time in milliseconds during anticipation period", y = "Proportion looking to target", color = "Trial number") +
   scale_color_manual(values = blues, labels = c(2, 3, 4, 5, 6, 7, 8, 9)) +
   scale_x_continuous(breaks = c(-2, 0, 2), labels = c("0", "500", "1000")) +
   ylim(-0.1, 1) +
   theme(axis.title.y = element_text(margin = margin(t = 0, r = 10, b = 0, l = 0)),
         axis.title.x = element_text(margin = margin(t = 10, r = 0, b = 0, l = 0)))
 
-#ggsave("plot_model_20_pre_filtered_final.png", path = here("figures"), device = "png", width = 7, height = 7, units = "in",  dpi = 300)
+#ggsave("plot_model_20_pre_filtered_final.png", path = here("figures"), device = "png", width = 7, height = 4, units = "in",  dpi = 300)
 
 ggpredict(final_model_post_20, terms = c("time_bin_centred", "trial_num_scaled", "language"), type = "re", ci.lvl = FALSE) %>% plot(colors = "trial_num_scaled", line.size = 1, connect.lines = TRUE) +
-  labs(title = "Predicted values of proportion looking to target during the Training phase \nin Experiment 1a (7 months)", x = "Time in milliseconds during anticipation period", y = "Proportion looking to target", color = "Trial number") +
+  labs(title = "Predicted values of proportion looking to target during the Test phase \nin Experiment 2 (filtered data)", x = "Time in milliseconds during anticipation period", y = "Proportion looking to target", color = "Trial number") +
   scale_color_manual(values = blues, labels = c(2, 3, 4, 5, 6, 7, 8, 9)) +
   scale_x_continuous(breaks = c(-2, 0, 2), labels = c("0", "500", "1000")) +
   ylim(-0.1, 1) +
   theme(axis.title.y = element_text(margin = margin(t = 0, r = 10, b = 0, l = 0)),
         axis.title.x = element_text(margin = margin(t = 10, r = 0, b = 0, l = 0)))
 
-#ggsave("plot_model_20_post_filtered_final.png", path = here("figures"), device = "png", width = 7, height = 7, units = "in", dpi = 300)
+#ggsave("plot_model_20_post_filtered_final.png", path = here("figures"), device = "png", width = 7, height = 4, units = "in", dpi = 300)
 
 ```
 
@@ -644,7 +644,7 @@ flipped_post_7 <-glmer(SamplesInAOI / SamplesTotal ~ factor(language, levels = c
 
 flipped_pre_20 <- glmer(SamplesInAOI / SamplesTotal ~ factor(language, levels = c("Bilinguals", "Monolinguals")) * time_bin_centred * trial_num_scaled + (1 | recording_name), data = model_data_20_pre, family = binomial, weights = SamplesTotal, control=glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000)))
 
-flipped_post_20 <- glmer(SamplesInAOI / SamplesTotal ~ factor(language, levels = c("Bilinguals", "Monolinguals")) * time_bin_centred * trial_num_scaled (1 | recording_name), data = model_data_20_post, family = binomial, weights = SamplesTotal, control=glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000)))
+flipped_post_20 <- glmer(SamplesInAOI / SamplesTotal ~ factor(language, levels = c("Bilinguals", "Monolinguals")) * time_bin_centred * trial_num_scaled + (1 | recording_name), data = model_data_20_post, family = binomial, weights = SamplesTotal, control=glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000)))
 
 
 tab_model(flipped_pre_7)

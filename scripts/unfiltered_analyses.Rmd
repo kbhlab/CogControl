@@ -241,16 +241,18 @@ ms_list_unfiltered %>%
   fontsize(size = 12, part = "all") %>%
   italic(i = 1, part = "header")  %>% save_as_docx(path = paste0(here("figures", "table_lang_7.docx")))
 
+
 #---------------------------------------------------------------------20 month old Table 2
+
 
 ms_list_unfiltered %>%
   filter(age_group == "20 months" & language == "Bilinguals") %>%
-  select(recording_name, dom_lang, per_eng, per_fr, other_lang_1, per_other_1) %>%
-  pivot_longer(cols = c(per_eng, per_fr, per_other_1), names_to = "lang", values_to = "lang_percent") %>%
+  select(recording_name, dom_lang, per_eng, per_fr, other_lang1, per_other1) %>%
+  pivot_longer(cols = c(per_eng, per_fr, per_other1), names_to = "lang", values_to = "lang_percent") %>%
   mutate(lang = str_remove(lang, "per_"),
          lang = case_when(lang == "eng" ~ "English",
                           lang == "fr" ~ "French",
-                          lang == "other1" ~ other_lang_1,
+                          lang == "other1" ~ other_lang1,
                           TRUE ~ "oops"),
          lang = str_to_title(lang)) %>%
   group_by(recording_name) %>%
@@ -274,22 +276,76 @@ ms_list_unfiltered %>%
          `Third Language` = case_when(`% 3` == "0" ~ "",
                                       TRUE ~ `Third Language`),
          `% 3` = case_when(`% 3` == "0" ~ "",
-                           TRUE ~ `% 3`)) %>%
+                           TRUE ~ `% 3`),
+         `Filtered Sample` = case_when(recording_name %in% final_sample_mslist$recording_name ~ "yes",
+                                       TRUE ~ "no")) %>%
   select(-recording_name) %>%
-  select(`participant` = id, 1:6) %>%
+  select(`participant` = id, 1:6, `Filtered Sample`) %>%
   flextable() %>%
   set_header_labels(`Domnant Languge` = "language",
              `Non-Dominant Language` = "language",
              `Third Language` = "language",
+             `Filtered Sample` = "filtered",
              `% 1` = "%",
              `% 2` = "%",
              `% 3` = "%") %>%
-  add_header_row(values = c("", "Dominant Language", "Non-Dominant Language", "Third Language"), colwidths = c(1, 2, 2, 2, 1)) %>%
+  add_header_row(values = c("", "Dominant Language", "Non-Dominant Language", "Third Language", ""), colwidths = c(1, 2, 2, 2, 1)) %>%
   autofit() %>%
   add_header_lines(values = "Language pairs spoken to bilinguals in Experiment 2 (20-month-olds)") %>%
-  font(fontname = "Times", part = "all") %>%
+  flextable::font(fontname = "Times", part = "all") %>%
   fontsize(size = 12, part = "all") %>%
-  italic(i = 1, part = "header") %>% save_as_docx(path = "table_lang_20.docx")
+  italic(i = 1, part = "header")  %>% save_as_docx(path = paste0(here("figures", "table_lang_20.docx")))
+
+
+
+# 
+# ms_list_unfiltered %>%
+#   filter(age_group == "20 months" & language == "Bilinguals") %>%
+#   select(recording_name, dom_lang, per_eng, per_fr, other_lang_1, per_other_1) %>%
+#   pivot_longer(cols = c(per_eng, per_fr, per_other_1), names_to = "lang", values_to = "lang_percent") %>%
+#   mutate(lang = str_remove(lang, "per_"),
+#          lang = case_when(lang == "eng" ~ "English",
+#                           lang == "fr" ~ "French",
+#                           lang == "other1" ~ other_lang_1,
+#                           TRUE ~ "oops"),
+#          lang = str_to_title(lang)) %>%
+#   group_by(recording_name) %>%
+#   mutate(lang_order = case_when(lang_percent == max(lang_percent) ~ "L1",
+#                                 lang_percent == min(lang_percent) ~ "L3",
+#                                 TRUE ~ "L2")) %>%
+#   ungroup() %>%
+#   mutate(lang_percent = paste0(lang, "_", lang_percent)) %>%
+#   pivot_wider(names_from = lang_order, values_from = lang_percent, id_cols = "recording_name") %>%
+#   separate(L1, into = c("L1", "L1_pct"), sep = "_") %>%
+#   separate(L2, into = c("L2", "L2_pct"), sep = "_") %>%
+#   separate(L3, into = c("L3", "L3_pct"), sep = "_") %>%
+#   select(recording_name, L1, L1_pct, L2, L2_pct, L3, L3_pct) %>%
+#   rename(`Domnant Languge` = L1,
+#          `Non-Dominant Language` = L2,
+#          `Third Language` = L3,
+#          `% 1` = L1_pct,
+#          `% 2` = L2_pct,
+#          `% 3` = L3_pct) %>%
+#   mutate(id = row_number(),
+#          `Third Language` = case_when(`% 3` == "0" ~ "",
+#                                       TRUE ~ `Third Language`),
+#          `% 3` = case_when(`% 3` == "0" ~ "",
+#                            TRUE ~ `% 3`)) %>%
+#   select(-recording_name) %>%
+#   select(`participant` = id, 1:6) %>%
+#   flextable() %>%
+#   set_header_labels(`Domnant Languge` = "language",
+#              `Non-Dominant Language` = "language",
+#              `Third Language` = "language",
+#              `% 1` = "%",
+#              `% 2` = "%",
+#              `% 3` = "%") %>%
+#   add_header_row(values = c("", "Dominant Language", "Non-Dominant Language", "Third Language"), colwidths = c(1, 2, 2, 2, 1)) %>%
+#   autofit() %>%
+#   add_header_lines(values = "Language pairs spoken to bilinguals in Experiment 2 (20-month-olds)") %>%
+#   font(fontname = "Times", part = "all") %>%
+#   fontsize(size = 12, part = "all") %>%
+#   italic(i = 1, part = "header") %>% save_as_docx(path = "table_lang_20.docx")
 
 #----------------------------------------------------Noticed in tables, some pcts don't add to 100
 
@@ -550,7 +606,7 @@ tab_model(final_model_post_7, show.re.var = FALSE, show.icc = FALSE)
 ###----------------------------------------------------PLOTS OF MODEL RESULTS - GLMER-----------------
 
 ggpredict(final_model_pre_7, terms = c("time_bin_centred", "trial_num_scaled", "language"), type = "re", ci.lvl = FALSE) %>% plot(colors = "trial_num_scaled", line.size = 1, connect.lines = TRUE) +
-  labs(title = "Predicted values of proportion looking to target during the Training phase \nin Experiment 1a (7 months)", x = "Time in milliseconds during anticipation period", y = "Proportion looking to target", color = "Trial number") +
+  labs(title = "Predicted values of proportion looking to target during the Training phase \nin Experiment 1a (unfiltered data)", x = "Time in milliseconds during anticipation period", y = "Proportion looking to target", color = "Trial number") +
   scale_color_manual(values = blues, labels = c(2, 3, 4, 5, 6, 7, 8, 9)) +
   scale_x_continuous(breaks = c(-2, 0, 2), labels = c("0", "500", "1000")) +
   ylim(-0.1, 1) +
@@ -561,7 +617,7 @@ ggpredict(final_model_pre_7, terms = c("time_bin_centred", "trial_num_scaled", "
  
 
 ggpredict(final_model_post_7, terms = c("time_bin_centred", "trial_num_scaled", "language"), type = "fe", ci.lvl = FALSE) %>% plot(colors = "trial_num_scaled", line.size = 1, connect.lines = TRUE) +
-  labs(title = "Predicted values of proportion looking to target during the Test phase \nin Experiment 1a (7 months)", x = "Time in milliseconds during anticipation period", y = "Proportion looking to target", color = "Trial number") +
+  labs(title = "Predicted values of proportion looking to target during the Test phase \nin Experiment 1a (unfiltered data)", x = "Time in milliseconds during anticipation period", y = "Proportion looking to target", color = "Trial number") +
   scale_color_manual(values = blues, labels = c(2, 3, 4, 5, 6, 7, 8, 9)) +
   scale_x_continuous(breaks = c(-2, 0, 2), labels = c("0", "500", "1000")) +
   ylim(-0.1, 1) +
@@ -602,24 +658,24 @@ tab_model(final_model_post_20, show.re.var = FALSE, show.icc = FALSE)
 ##----------------------------------------------------------PLOT OF MODEL RESULTS - GLMER------------
 
 ggpredict(final_model_pre_20, terms = c("time_bin_centred", "trial_num_scaled", "language"), type = "re", ci.lvl = FALSE) %>% plot(colors = "trial_num_scaled", line.size = 1, connect.lines = TRUE) +
-  labs(title = "Predicted values of proportion looking to target during the Training phase \nin Experiment 1a (7 months)", x = "Time in milliseconds during anticipation period", y = "Proportion looking to target", color = "Trial number") +
+  labs(title = "Predicted values of proportion looking to target during the Training phase \nin Experiment 2 (unfiltered data)", x = "Time in milliseconds during anticipation period", y = "Proportion looking to target", color = "Trial number") +
   scale_color_manual(values = blues, labels = c(2, 3, 4, 5, 6, 7, 8, 9)) +
   scale_x_continuous(breaks = c(-2, 0, 2), labels = c("0", "500", "1000")) +
   ylim(-0.1, 1) +
   theme(axis.title.y = element_text(margin = margin(t = 0, r = 10, b = 0, l = 0)),
         axis.title.x = element_text(margin = margin(t = 10, r = 0, b = 0, l = 0)))
 
-#ggsave("plot_model_20_pre_unfiltered_final.png", path = here("figures"), device = "png", width = 7, height = 7, units = "in",  dpi = 300)
+#ggsave("plot_model_20_pre_unfiltered_final.png", path = here("figures"), device = "png", width = 7, height = 4, units = "in",  dpi = 300)
 
 ggpredict(final_model_post_20, terms = c("time_bin_centred", "trial_num_scaled", "language"), type = "re", ci.lvl = FALSE) %>% plot(colors = "trial_num_scaled", line.size = 1, connect.lines = TRUE) +
-  labs(title = "Predicted values of proportion looking to target during the Training phase \nin Experiment 1a (7 months)", x = "Time in milliseconds during anticipation period", y = "Proportion looking to target", color = "Trial number") +
+  labs(title = "Predicted values of proportion looking to target during the Test phase \nin Experiment 2 (unfiltered data)", x = "Time in milliseconds during anticipation period", y = "Proportion looking to target", color = "Trial number") +
   scale_color_manual(values = blues, labels = c(2, 3, 4, 5, 6, 7, 8, 9)) +
   scale_x_continuous(breaks = c(-2, 0, 2), labels = c("0", "500", "1000")) +
   ylim(-0.1, 1) +
   theme(axis.title.y = element_text(margin = margin(t = 0, r = 10, b = 0, l = 0)),
         axis.title.x = element_text(margin = margin(t = 10, r = 0, b = 0, l = 0)))
 
-#ggsave("plot_model_20_post_unfiltered_final.png", path = here("figures"), device = "png", width = 7, height = 7, units = "in", dpi = 300)
+#ggsave("plot_model_20_post_unfiltered_final.png", path = here("figures"), device = "png", width = 7, height = 4, units = "in", dpi = 300)
 
 ```
 

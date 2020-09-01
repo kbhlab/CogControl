@@ -39,7 +39,35 @@ baby_info <- read_excel(here("data", "Metadata.xlsx")) %>% clean_names() %>%
          visual_tl = case_when(id == "5314" ~ auditory_tl, #looks like this kid had a mistake in the baby info sheet... they have data for auditory trackloss but no data for visual trackloss, yet they only participated in the visual session. I double checked the trackloss number for the visual session, and it matches what was put under auditory, so I think they should be swapped.
                                TRUE ~ visual_tl),
          auditory_tl = case_when(id == "5314" ~ NA_real_,
-                                 TRUE ~ auditory_tl)) 
+                                 TRUE ~ auditory_tl),
+         do_t_s2 = excel_numeric_to_date(as.numeric(do_t_s2)),
+         do_b = lubridate::ymd(do_b),
+         do_b = case_when(id == 5629 ~ ymd(2019-07-29),
+                          TRUE ~ do_b),
+         do_t_s1 = lubridate::ymd(do_t_s1),
+         do_t_s2 = lubridate:: ymd(do_t_s2),
+         age_interval_s1 = lubridate::interval(do_b, do_t_s1),
+         age_interval_s2 = lubridate::interval(do_b, do_t_s2),
+         age_at_session_1 = lubridate::as.period(age_interval_s1),
+         age_at_session_2 = lubridate::as.period(age_interval_s2),
+         months_at_session_1 = lubridate::month(age_at_session_1),
+         days_at_session_1 = lubridate::day(age_at_session_1),
+         months_at_session_2 = lubridate::month(age_at_session_2),
+         days_at_session_2 = lubridate::day(age_at_session_2),
+         age_auditory = case_when(task_order == "Aud" ~ age_at_session_1, 
+                                  TRUE ~ age_at_session_2),
+         age_visual = case_when(task_order == "Vis" ~ age_at_session_1,
+                                TRUE ~ age_at_session_2),
+         months_auditory = case_when(task_order == "Aud" ~ months_at_session_1,
+                                     TRUE ~ months_at_session_2),
+         days_auditory = case_when(task_order == "Aud" ~ as.numeric(days_at_session_1),
+                                   TRUE ~ as.numeric(days_at_session_2)),
+         age_in_days_auditory = 30.436875 * months_auditory + days_auditory,
+         months_visual = case_when(task_order == "Vis" ~ months_at_session_1,
+                                   TRUE ~ months_at_session_2),
+         days_visual = case_when(task_order == "Vis" ~ as.numeric(days_at_session_1),
+                                 TRUE ~ as.numeric(days_at_session_2)),
+         age_in_days_visual = 30.436875 * months_visual + days_visual)
 
 exclusions <- read_excel(here("data", "Metadata.xlsx"), sheet = 2) %>% clean_names() %>%
   mutate(id = as.character(id))
@@ -150,18 +178,6 @@ aud_final_sample_ids <- aud_anticipation_window %>%
 final_sample_aud_full_trial <- aud_full_trial %>%
   inner_join(aud_final_sample_ids, by = "id")
 
-full_sample_aud_full_trial <- aud_eyetracking %>%
-  filter(auditory_tl <= 0.6) %>%
-  make_time_sequence_data(time_bin_size = 200,
-                          predictor_columns = c("group", "trial_type", "trial_num"),
-                          aois = c("center", "target", "distractor"))
-
-full_sample_aud_anticipation_window <- aud_eyetracking %>%
-  filter(auditory_tl <= 0.6) %>% #Kalashnikova's original trackloss threshold
-  subset_by_window(window_start_time = 2350,
-                                            window_end_time = 3350,
-                                            rezero = TRUE,
-                                            remove = TRUE) 
 
 ###-----------------------------------------------------------PREPARE VISUAL DATA
 
@@ -237,18 +253,6 @@ vis_final_sample_ids <- vis_anticipation_window %>%
 final_sample_vis_full_trial <- vis_full_trial %>%
   inner_join(vis_final_sample_ids, by = "id")
 
-full_sample_vis_full_trial <- vis_eyetracking %>%
-  filter(visual_tl <= 0.6) %>%
-  make_time_sequence_data(time_bin_size = 200,
-                          predictor_columns = c("group", "trial_type", "trial_num"),
-                          aois = c("center", "target", "distractor"))
-
-full_sample_vis_anticipation_window <- vis_eyetracking %>%
-  filter(visual_tl <= 0.6) %>% #Kalashnikova's original trackloss threshold
-  subset_by_window(window_start_time = 3650,
-                                            window_end_time = 4650,
-                                            rezero = TRUE,
-                                            remove = TRUE) 
 
 ```
 
@@ -267,17 +271,39 @@ final_sample_vis_full_trial %>%
   distinct() %>%
   count(group)
 
-#language group counts per condition in full sample
+###--------------------------AGE AUDITORY
 
-full_sample_aud_full_trial %>%
-  select(id, group) %>%
-  distinct() %>%
-  count(group)
+baby_info %>%
+  inner_join(aud_final_sample_ids, by = "id") %>%
+  summarize(avg_age_days = floor(mean(age_in_days_auditory, na.rm = TRUE)),
+            min_age_days = min(age_in_days_auditory, na.rm = TRUE),
+            max_age_days = max(age_in_days_auditory, na.rm = TRUE),
+            avg_age = avg_age_days/30.436875, #divide by average days in a month
+            avg_months = floor(avg_age),
+            avg_days = floor((avg_age - avg_months) * 30.436875),
+            min_age = min_age_days/30.436875,
+            min_months = floor(min_age),
+            min_days = floor((min_age - min_months) * 30.436875),
+            max_age = max_age_days/30.436875,
+            max_months = floor(max_age),
+            max_days = floor((max_age - max_months) * 30.436875))
 
-full_sample_vis_full_trial  %>%
-  select(id, group) %>%
-  distinct() %>%
-  count(group)
+###_---------------------------AGE VISUAL
+
+baby_info %>%
+  inner_join(vis_final_sample_ids, by = "id") %>%
+  summarize(avg_age_days = floor(mean(age_in_days_visual, na.rm = TRUE)),
+            min_age_days = min(age_in_days_visual, na.rm = TRUE),
+            max_age_days = max(age_in_days_visual, na.rm = TRUE),
+            avg_age = avg_age_days/30.436875, #divide by average days in a month
+            avg_months = floor(avg_age),
+            avg_days = floor((avg_age - avg_months) * 30.436875),
+            min_age = min_age_days/30.436875,
+            min_months = floor(min_age),
+            min_days = floor((min_age - min_months) * 30.436875),
+            max_age = max_age_days/30.436875,
+            max_months = floor(max_age),
+            max_days = floor((max_age - max_months) * 30.436875))
 
 ```
 
@@ -446,11 +472,11 @@ aud_model_data_post <-  aud_model_data %>%
 ##### Problems converging models without rescaling trial number, so estimates end up being doubled when scaling trial number to half the size. Model estimates for unscaled trial number seem to be the same as for the scaled one (though any effects that include trial number are halved), but have a warning. Models converge without rescaling if only 8 trials are included (trials 2-9 like in the CogControl analysis). I believe the warning is a false positive, but I cannot get them to converge even by changing the optimizer or maximum attempts allowed.
 
 
-aud_model_pre <- glmer(SamplesInAOI / SamplesTotal ~ group * time_bin_centred * trial_num_scaled + (trial_num_scaled | id), data = aud_model_data_pre, family = binomial, weights = SamplesTotal, control=glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000)))
+aud_model_pre <- glmer(SamplesInAOI / SamplesTotal ~ group * time_bin_centred * trial_num_scaled + (1 | id), data = aud_model_data_pre, family = binomial, weights = SamplesTotal, control=glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000)))
 
 summary(aud_model_pre)
 
-aud_model_pre2 <- glmer(SamplesInAOI / SamplesTotal ~ group * time_bin_centred * trial_num_halved + (trial_num_scaled | id), data = aud_model_data_pre, family = binomial, weights = SamplesTotal, control = glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000))) #convergence problems with unscaled trial number & also with centred trial number
+aud_model_pre2 <- glmer(SamplesInAOI / SamplesTotal ~ group * time_bin_centred * trial_num_halved + (1 | id), data = aud_model_data_pre, family = binomial, weights = SamplesTotal, control = glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000))) #convergence problems with unscaled trial number & also with centred trial number
 
 summary(aud_model_pre2)
 
@@ -652,45 +678,45 @@ vis_model_data_post %>%
 ##-----------------------------------AUDITORY
 
 ggpredict(aud_model_pre, terms = c("time_bin_centred", "trial_num_scaled [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]", "group"), type = "fe", ci.lvl = FALSE) %>% plot(colors = "trial_num_scaled", line.size = 1, connect.lines = TRUE) +
-  labs(title = "Predicted values of proportion looking to target during the Training phase \nin Experiment 1c (Auditory condition)", x = "Time in milliseconds during anticipation period", y = "Proportion looking to target", color = "Trial number") +
+  labs(title = "Predicted values of proportion looking to target during the Training phase \nin Experiment 1d (Auditory condition - filtered data)", x = "Time in milliseconds during anticipation period", y = "Proportion looking to target", color = "Trial number") +
   scale_color_manual(values = blues, labels = c(2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12)) +
   scale_x_continuous(breaks = c(0, 2, 4), labels = c("0", "500", "1000")) +
   ylim(-0.1, 1) +
   theme(axis.title.y = element_text(margin = margin(t = 0, r = 10, b = 0, l = 0)),
         axis.title.x = element_text(margin = margin(t = 10, r = 0, b = 0, l = 0)))
 
- #ggsave("plot_model_predictions_aud_pre_filtered.png", path = here("figures"), device = "png", width = 7, height = 4, units = "in", dpi = 300)
+#ggsave("plot_model_predictions_aud_pre_filtered.png", path = here("figures"), device = "png", width = 7, height = 4, units = "in", dpi = 300)
 
 ggpredict(aud_model_post, terms = c("time_bin_centred", "trial_num_scaled [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]", "group"), type = "fe", ci.lvl = FALSE) %>% plot(colors = "trial_num_scaled", line.size = 1, connect.lines = TRUE) +
-  labs(title = "Predicted values of proportion looking to target during the Test phase \nin Experiment 1c (Auditory condition)", x = "Time in milliseconds during anticipation period", y = "Proportion looking to target", color = "Trial number") +
+  labs(title = "Predicted values of proportion looking to target during the Test phase \nin Experiment 1d (Auditory condition - filtered data)", x = "Time in milliseconds during anticipation period", y = "Proportion looking to target", color = "Trial number") +
   scale_color_manual(values = blues, labels = c(2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12)) +
   scale_x_continuous(breaks = c(0, 2, 4), labels = c("0", "500", "1000")) +
   ylim(-0.1, 1) +
   theme(axis.title.y = element_text(margin = margin(t = 0, r = 10, b = 0, l = 0)),
         axis.title.x = element_text(margin = margin(t = 10, r = 0, b = 0, l = 0)))
 
- #ggsave("plot_model_predictions_aud_post_filtered.png", path = here("figures"), device = "png", width = 7, height = 4, units = "in", dpi = 300)
+#ggsave("plot_model_predictions_aud_post_filtered.png", path = here("figures"), device = "png", width = 7, height = 4, units = "in", dpi = 300)
 
 ##-----------------------------------VISUAL
 
 ggpredict(vis_model_pre, terms = c("time_bin_centred", "trial_num_scaled [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]", "group"), type = "fe", ci.lvl = FALSE) %>% plot(colors = "trial_num_scaled", line.size = 1, connect.lines = TRUE) +
-  labs(title = "Predicted values of proportion looking to target during the Training phase \nin Experiment 1c (Visual condition)", x = "Time in milliseconds during anticipation period", y = "Proportion looking to target", color = "Trial number") +
+  labs(title = "Predicted values of proportion looking to target during the Training phase \nin Experiment 1c (Visual condition - filtered data)", x = "Time in milliseconds during anticipation period", y = "Proportion looking to target", color = "Trial number") +
   scale_color_manual(values = blues, labels = c(2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12)) +
   scale_x_continuous(breaks = c(0, 2, 4), labels = c("0", "500", "1000")) +
   ylim(-0.1, 1) +
   theme(axis.title.y = element_text(margin = margin(t = 0, r = 10, b = 0, l = 0)),
         axis.title.x = element_text(margin = margin(t = 10, r = 0, b = 0, l = 0)))
 
- #ggsave("plot_model_predictions_vis_pre_filtered.png", path = here("figures"), device = "png", width = 7, height = 4, units = "in", dpi = 300)
+#ggsave("plot_model_predictions_vis_pre_filtered.png", path = here("figures"), device = "png", width = 7, height = 4, units = "in", dpi = 300)
 
 ggpredict(vis_model_post, terms = c("time_bin_centred", "trial_num_scaled [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]", "group"), type = "fe", ci.lvl = FALSE) %>% plot(colors = "trial_num_scaled", line.size = 1, connect.lines = TRUE) +
-  labs(title = "Predicted values of proportion looking to target during the Test phase \nin Experiment 1c (Visual condition)", x = "Time in milliseconds during anticipation period", y = "Proportion looking to target", color = "Trial number") +
+  labs(title = "Predicted values of proportion looking to target during the Test phase \nin Experiment 1c (Visual condition - filtered data)", x = "Time in milliseconds during anticipation period", y = "Proportion looking to target", color = "Trial number") +
   scale_color_manual(values = blues, labels = c(2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12)) +
   scale_x_continuous(breaks = c(0, 2, 4), labels = c("0", "500", "1000")) +
   ylim(-0.1, 1) +
   theme(axis.title.y = element_text(margin = margin(t = 0, r = 10, b = 0, l = 0)),
         axis.title.x = element_text(margin = margin(t = 10, r = 0, b = 0, l = 0)))
 
-# ggsave("plot_model_predictions_vis_post_filtered.png", path = here("figures"), device = "png", width = 7, height = 4, units = "in", dpi = 300)
+#ggsave("plot_model_predictions_vis_post_filtered.png", path = here("figures"), device = "png", width = 7, height = 4, units = "in", dpi = 300)
 
 ```
