@@ -5,7 +5,7 @@ date: "July, 6, 2020"
 output: html_document
 ---
 
-Article: Iliaei, S. P., Killam, H., Dal Ben, R., & Byers-Heinlein, K. (under review). The bilingual advantage in infancy: Evidence from 7- and 20-month-olds.
+Article: Iliaei, S. P., Killam, H., Dal Ben, R., & Byers-Heinlein, K. (under review). Bilingualism affects infant cognition: Insights from new and open data.
 
 This script was adapted from the analysis script for Study 1a and Study 2. 
 Original author: Hilary Kilam
@@ -42,6 +42,7 @@ library(ggeffects)
 library(interactions)
 library(car)
 library(ez)
+library(ggpubr)
 
 library(apa)
 library(apaTables)
@@ -54,23 +55,56 @@ library(eyetrackingR)
 options(scipen = 999) # remove scientific notation
 
 kovacs09 <- "Kovács & Mehler 2009"
-
-## Define minimum looking and minimum trial numbers for this study
-MIN_LOOK_PROPORTION <- .5
-MIN_NUMBER_TRIALS <- 5
 ```
 
 # Load data
 
-Analysis were ran for the filtered sample (n = 51), as reported on the main article, and on the full sample (n = 102), as reported on the supplementary materials.
-
 ```{r}
 load(here("03_output/01_wrangling/data_full_trials.rda")) # data_full_trials = filtered 51 sample - main article
 load(here("03_output/01_wrangling/dataset_exp1_v3.rda")) # dataset_exp1_v3 = full 102 sample - comparison on supplements
+```
 
-analysis_dataset <- 
-  #data_full_trials #filtered sample (53 infants - article)
-  dataset_exp1_v3 #full sample (102 infants - supplementary)
+# Define dataset and specifications
+
+* Analyses were ran for the **filtered** sample (n = 51), as reported on the main article, and on the **unfiltered** sample (n = 102), as reported on the supplementary materials.
+
+```{r}
+# options: TRUE or FALSE
+# TRUE = filtered sample (n = 53)
+# FALSE = unfiltered sample (n = 102)
+filtered <- TRUE 
+```
+
+* Define dataset (automatically)
+
+* Anticipation interval: Based on D'Souza et al. (2020) description, the anticipation interval started at `3500ms` after trial onset (p. 6, Fig 1: `500 + (800*3) + (300*2) = 3500`), but there is no events for "fixation". 
+Thus, the "fixation" time is not included. The anticipation starts at `3000` + `150` offset = `3150`, until `4150`.
+
+```{r}
+ANTICIP_START_OFF <- 3000 + 150 # anticipation start + offset 
+ANTICIP_END_OFF <- 4000 + 150 # anticipation start + offset 
+
+if (filtered == TRUE){
+  
+  dataset <- "1b_filtered"
+  analysis_dataset <- data_full_trials #filtered sample (53 infants - article)
+  MIN_LOOK_PROPORTION <- .5 ## NOT SURE IF WE NEED THIS! CHECK IT OUT
+  MIN_NUMBER_TRIALS <- 5
+  print("Data from Study 1b with filtered sample will be analyzed.")
+  
+} else if (filtered == FALSE){
+  
+  dataset <- "1b_unfiltered"
+  analysis_dataset <- dataset_exp1_v3 #full sample (102 infants - supplementary)
+  MIN_LOOK_PROPORTION <- 1
+  MIN_NUMBER_TRIALS <- 0
+  print(paste("Data from Study", study, "with the", filtered_or_not, "sample will be analyzed.", sep = " "))
+  
+} else {
+  
+  print("Please review the parameters you have selected in the previous code chunk. We didn't find a matching pattern.")
+
+}
 ```
 
 # Descriptives 
@@ -136,15 +170,6 @@ t.test(ses_score ~ language, data = ses_summary) # no ses diff between mono and 
 D'Souza et al. (2020) article and supplementals do not provide information about participants' dominant/other languages or the percentages of exposure to different languages.
 Unable to produce language tables.
 
-# Anticipation interval
-
-Based on D'Souza et al. (2020) description, the anticipation interval started at `3500ms` after trial onset (p. 6, Fig 1: `500 + (800*3) + (300*2) = 3500`), but there is no events for "fixation". 
-Thus, the "fixation" time is not included. The anticipation starts at `3000` + `150` offset = `3150`, until `4150`.
-
-```{r}
-ANTICIP_START_OFF <- 3000 + 150 # anticipation start + offset 
-ANTICIP_END_OFF <- 4000 + 150 # anticipation start + offset 
-```
 
 # EyeTrackingR Data
 
@@ -175,18 +200,7 @@ data_eyetracking_antic_window <- subset_by_window(data_eyetracking_full_trials,
 
 trackloss <- trackloss_analysis(data = data_eyetracking_antic_window)
 
-data_eyetracking_clean <- clean_by_trackloss(data = data_eyetracking_antic_window, trial_prop_thresh = .5) #this eliminates all data from trials with 50% or more trackloss (we merged the baby IDs who made it through to the final sample back with the full data, so makes sense we will re-exclude some trials here)
-
-data_eyetracking_clean_nocircle <- make_eyetrackingr_data(analysis_dataset, 
-                                participant_column = "id",
-                                trial_column = "trial_name", 
-                                time_column = "time_align", 
-                                trackloss_column = "trackloss", 
-                                aoi_columns = c('target', 'distractor'), # this will calculate prop looking in relation to just target vs distractor
-                                treat_non_aoi_looks_as_missing = TRUE) %>%
-  subset_by_window(window_start_time = ANTICIP_START_OFF,
-                   window_end_time = ANTICIP_END_OFF, rezero = TRUE, remove = TRUE) %>%
-  clean_by_trackloss(trial_prop_thresh = .5)
+data_eyetracking_clean <- clean_by_trackloss(data = data_eyetracking_antic_window, trial_prop_thresh = MIN_LOOK_PROPORTION) 
 
 data_time_series_antic <- make_time_sequence_data(data_eyetracking_clean,
                                          time_bin_size = 200,
@@ -265,7 +279,7 @@ time_series_full_trial <-
 
 time_series_full_trial
 
-ggsave("plot_time_series_full_trial_full_v2.png", 
+ggsave(paste("plot_time_series_", dataset, ".png", sep = ""),
        path = here("03_output/02_re_analysis/"), 
        width = 9, height = 9, units = "in", dpi = 300) # 2700 x 2700 pixels 
 
@@ -401,10 +415,11 @@ summary(final_model_post)
 
 ###----------------------------------------------------TABLE OF MODEL RESULTS-----------------
 
-tab_model(final_model_pre, show.re.var = FALSE, show.icc = FALSE)
-          #file = here("03_Output/02_re_analysis/glermodel_pre_dsouza_pruned_full_full_v2.doc")) # uncomment to save
-tab_model(final_model_post, show.re.var = FALSE, show.icc = FALSE) 
-          #file = here("03_Output/02_re_analysis/glermodel_pos_dsouza_pruned_full_full_v2.doc"))
+tab_model(final_model_pre, show.re.var = FALSE, show.icc = FALSE,
+          file = here(paste("03_Output/02_re_analysis/glermodel_pre_", dataset, ".doc", sep = ""))) # uncomment to save
+tab_model(final_model_post, show.re.var = FALSE, show.icc = FALSE, 
+          file = here(paste("03_Output/02_re_analysis/glermodel_pos_", dataset, ".doc", sep = "")))
+            
 
 ###----------------------------------------------------PLOT OF MODEL RESULTS-----------------
 
@@ -419,7 +434,7 @@ ggpredict(final_model_pre, terms = c("time_bin_centred", "trial_num_scaled", "la
   theme(axis.title.y = element_text(margin = margin(t = 0, r = 10, b = 0, l = 0)),
         axis.title.x = element_text(margin = margin(t = 10, r = 0, b = 0, l = 0)))
 
-ggsave("plot_model_dsouza_pre_glmer_full_v2.png", 
+ggsave(paste("plot_model_glmer_pre_", dataset, ".png", sep = ""), 
        path = here("03_output/02_re_analysis/"), 
        device = "png", width = 7, height = 4, units = "in", dpi = 300)
 
@@ -435,7 +450,7 @@ ggpredict(final_model_post, terms = c("time_bin_centred", "trial_num_scaled", "l
   theme(axis.title.y = element_text(margin = margin(t = 0, r = 10, b = 0, l = 0)),
         axis.title.x = element_text(margin = margin(t = 10, r = 0, b = 0, l = 0)))
 
-ggsave("plot_model_dsouza_post_glmer_full_v2.png", 
+ggsave(paste("plot_model_glmer_post_", dataset, ".png", sep = ""), 
        path = here("03_output/02_re_analysis/"), 
        device = "png", width = 7, height = 4, units = "in", dpi = 300)
 ```
@@ -468,9 +483,6 @@ corr_bi <-
 
 ```{r}
 ###----------------------------------------------------Bilinguals -----------------
-# package for visualization
-library("ggpubr")
-
 # correlations
 cor(corr_bi$`pre-switch`, corr_bi$`post-switch`, method = "pearson")
 cor.test(corr_bi$`pre-switch`, corr_bi$`post-switch`, method = "pearson")

@@ -215,7 +215,7 @@ baby_info %>% anti_join((vis_all %>% select(id) %>% distinct()), by = "id")
 
 #two kids in eyetracking data but not info data
 
-
+##-------------------------------------------------------MAKE VISUAL EYETRACKING DATA
 vis_eyetracking <- vis_all %>%
   make_eyetrackingr_data(participant_column = "id",
                          trial_column = "trial_name",
