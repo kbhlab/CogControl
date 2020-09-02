@@ -7,7 +7,7 @@ output: html_document
 
 Article: Iliaei, S. P., Killam, H., Dal Ben, R., & Byers-Heinlein, K. (under review). Bilingualism affects infant cognition: Insights from new and open data.
 
-This script was by Hilay Killam and Rodrigo Dal Ben.
+This script was by Hilary Killam and Rodrigo Dal Ben.
 
 It analyses two new datasets (Study 1a & 2) and reanalyzes three open datasets (Study 1b, 1c, 1d).
 The reanalyzed datasets come from: 
@@ -28,13 +28,13 @@ Feedback and suggestions:
 
 # User defined parameters
 
-Please indicate which study (1a, 1b, 1c, 1d, or 2) and which sample (filtered or unfiltered) you want to analyze. For Study 2 - filtered sample, it is also possible to include `vocabulary` as predictor. 
+Please indicate which study (1a, 1b, 1c, 1d, or 2) and which sample (filtered or unfiltered) you want to analyze. For Study 2 - filtered sample, it is also possible to include `vocabulary` as a predictor. 
 
 ```{r}
-study <- "1a" # options: "1a", "1b", "1c", "1d", "2"
-filtered <- TRUE # options: TRUE = "filtered" OR FALSE = "unfiltered"
+study <- "1d" # options: "1a", "1b", "1c", "1d", "2"
+filtered <- FALSE # options: TRUE = "filtered" OR FALSE = "unfiltered"
 
-# TRUE can only be selected if 
+# TRUE can only be selected for vocabulary if 
 # study <- "2" & filtered == TRUE; 
 # and you want vocabulary as predictor
 # otherwise, leave FALSE
@@ -708,13 +708,13 @@ if (study == "1a" | study == "2"){
   
   if (study == "1c"){
     
-    WST <- ANTICIP_START_OFF
-    WET <- ANTICIP_END_OFF
+    WST <- 0
+    WET <- 6740
     
   } else {
     
-    WST <- ANTICIP_START_OFF
-    WET <- ANTICIP_END_OFF
+    WST <- 0
+    WET <- 5400
     
   }
 }
@@ -735,13 +735,13 @@ full_trial_window <- subset_by_window(data_eyetracking_full_trials,
                                      remove = TRUE)
 
 if (study == "1c" | study == "1d"){
-  
+
   data_time_series_full <- make_time_sequence_data(data_eyetracking_full_trials,
                                                    time_bin_size = 200,
                                                    predictor_columns = PRED_COL,
                                                    aois = c("circle", "target",
                                                             "distractor"))
-  
+
 } else {
   
   data_time_series_full <- make_time_sequence_data(full_trial_window,
@@ -795,6 +795,13 @@ X1 <- ANTICIP_START_OFF - 150
 X2 <- X1 + 1000
 X3 <- X2 + 1000
 
+if (study == "1c"){
+  FACET_PLACEMENT_TIMESTAMP <- X1 + 100
+} else {
+  FACET_PLACEMENT_TIMESTAMP <- X1
+}
+
+
 ###----------------------------------------------------------PLOT FULL TRIALS-----------------------------------------
 line_colors <- c("#D55E00", "#0072B2") # color-blind friendly
 line_types <- c("dotted", "solid", "dashed")
@@ -825,13 +832,13 @@ time_series_full_trial <-
          trial_labels = fct_reorder(trial_labels, trial_num),
          
          #setting up the layer for the transparent rectangle showing the anticipation period
-         xmin = case_when(Time == X1 & language == "Monolinguals" & aoi == "target" ~ ANTICIP_START_OFF, 
+         xmin = case_when(Time == FACET_PLACEMENT_TIMESTAMP & language == "Monolinguals" & aoi == "target" ~ ANTICIP_START_OFF, 
          TRUE ~ X1),
-         xmax = case_when(Time == X1 & language == "Monolinguals" & aoi == "target" ~ ANTICIP_END_OFF, 
+         xmax = case_when(Time == FACET_PLACEMENT_TIMESTAMP & language == "Monolinguals" & aoi == "target" ~ ANTICIP_END_OFF, 
          TRUE ~ X1),
-         ymin = case_when(Time == X1 & language == "Monolinguals" & aoi == "target" ~ Inf, 
+         ymin = case_when(Time == FACET_PLACEMENT_TIMESTAMP & language == "Monolinguals" & aoi == "target" ~ Inf, 
          TRUE ~ 0),
-         ymax = case_when(Time == X1 & language == "Monolinguals" & aoi == "target" ~ -Inf,
+         ymax = case_when(Time == FACET_PLACEMENT_TIMESTAMP & language == "Monolinguals" & aoi == "target" ~ -Inf,
          TRUE ~ 0)) %>% 
   ggplot(aes(x = Time, y = prop_looking, color = language, linetype = aoi)) + 
   geom_rect(aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax, fill = "Anticipation Period"), alpha = .1, colour = "transparent", show.legend = FALSE) +
@@ -872,10 +879,10 @@ time_series_full_trial <-
 
 time_series_full_trial
 
-# 2700 x 2700 pixels 
+#2700 x 2700 pixels
 ggsave(paste0("plot_time_series_", dataset, ".png"),
-       path = here("output/table_figure/"), 
-       width = 9, height = 9, units = "in", dpi = 300) 
+       path = here("output/table_figure/"),
+       width = 9, height = 9, units = "in", dpi = 300)
 
 ###------------------------------------------PLOT ANTICIPATION PERIOD------------------------------------------
 
@@ -962,9 +969,11 @@ if (study == "1a"){
 ```
 
 
-# Raw model data plots
+## Raw model data plots
 
 ```{r}
+###------------------To compare visually with plotted model results later
+
 if (study == "2" & vocabulary == TRUE){
 
   # Training
@@ -1114,10 +1123,10 @@ model_data_post %>%
 ```
 
 
-# Models
+## Models
 
 For study 1c and 1d, the `gmler()` show a convergence warning. after further inspection/testing with transformed variables (trial number), the model converged and the estimates were proportional. Thus, it is a false negative. See code below for further checking.
-
+###Training phase
 ```{r}
 ###------------------------------------------------------------- TRAINING--------------
 ###------------------------------------------------------------GLMER ----------------
@@ -1195,7 +1204,7 @@ tab_model(final_model_pre,
 # ll <- getME(glmermodel_pre,"lower")
 # min(tt[ll==0])
 ```
-
+###Test phase
 ```{r}
 ###------------------------------------------------------------TEST--------------
 ###-------------------------------------------------------------GLMER ----------------
@@ -1260,6 +1269,8 @@ tab_model(final_model_post,
 # min(tt[ll==0])
 ```
 
+
+##Model result plots
 ```{r}
 ###----------------------------------------------------PLOT OF MODEL RESULTS-----------------
 if (study == "2" & vocabulary == TRUE){
@@ -1332,7 +1343,7 @@ if (study == "2" & vocabulary == TRUE){
          path = here("output/table_figure/"), 
          device = "png", width = 7, height = 4, units = "in", dpi = 300)
   
-} else {
+} else if(study == "1a" | study == "1b" | (study == "2" & vocabulary == FALSE)) {
   
   # training
   print(
@@ -1372,6 +1383,44 @@ if (study == "2" & vocabulary == TRUE){
          path = here("output/table_figure/"), 
          device = "png", width = 7, height = 4, units = "in", dpi = 300)
 
+} else {
+  # training
+  print(
+  ggpredict(final_model_pre, terms = c("time_bin_centred", "trial_num_scaled [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]",
+                                       "language"), type = "re", ci.lvl = FALSE) %>%
+      plot(colors = "trial_num_scaled", line.size = 1, connect.lines = TRUE) +
+    labs(title = paste0("Predicted values of proportion looking to target during the Training phase \n in Study ", study, " (", filtered_name, ")"), 
+         x = "Time in milliseconds during anticipation period", 
+         y = "Proportion looking to target", color = "Trial number") +
+    scale_color_manual(values = blues, labels = c(2, 3, 4, 5, 6, 7, 8, 9, 10, 11)) +
+    scale_x_continuous(breaks = c(0, 2, 4), labels = c("0", "500", "1000")) +
+    ylim(-0.1, 1) +
+    theme(axis.title.y = element_text(margin = margin(t = 0, r = 10, b = 0, l = 0)),
+          axis.title.x = element_text(margin = margin(t = 10, r = 0, b = 0, l = 0)))
+  )
+  
+  ggsave(paste0("plot_model_glmer_training_", dataset, ".png"), 
+         path = here("output/table_figure/"), 
+         device = "png", width = 7, height = 4, units = "in", dpi = 300)
+
+  # test
+  print(
+  ggpredict(final_model_post, terms = c("time_bin_centred", "trial_num_scaled [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]",
+                                        "language"), type = "fe", ci.lvl = FALSE) %>% 
+    plot(colors = "trial_num_scaled", line.size = 1, connect.lines = TRUE) +
+    labs(title = paste0("Predicted values of proportion looking to target during the Test phase \n in Study ", study, " (", filtered_name, ")"), 
+         x = "Time in milliseconds during anticipation period", 
+         y = "Proportion looking to target", color = "Trial number") +
+    scale_color_manual(values = blues, labels = c(2, 3, 4, 5, 6, 7, 8, 9, 10, 11)) +
+    scale_x_continuous(breaks = c(0, 2, 4), labels = c("0", "500", "1000")) +
+    ylim(-0.1, 1) +
+    theme(axis.title.y = element_text(margin = margin(t = 0, r = 10, b = 0, l = 0)),
+          axis.title.x = element_text(margin = margin(t = 10, r = 0, b = 0, l = 0)))
+  )
+  
+  ggsave(paste0("plot_model_glmer_test_", dataset, ".png"), 
+         path = here("output/table_figure/"), 
+         device = "png", width = 7, height = 4, units = "in", dpi = 300)
 }
 ```
 

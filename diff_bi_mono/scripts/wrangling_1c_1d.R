@@ -36,7 +36,7 @@ baby_info <-
          # calculate age
          do_t_s2 = excel_numeric_to_date(as.numeric(do_t_s2)),
          do_b = lubridate::ymd(do_b),
-         do_b = case_when(id == 5629 ~ ymd(2019-07-29),
+         do_b = case_when(id == 5629 ~ ymd(2019-07-29), #fix dob for this kid
                           TRUE ~ do_b),
          do_t_s1 = lubridate::ymd(do_t_s1),
          do_t_s2 = lubridate:: ymd(do_t_s2),
@@ -163,7 +163,7 @@ vis_all_filtered <-
   mutate(look_any = case_when(target == TRUE | distractor == TRUE | circle == TRUE ~ 1, TRUE ~ 0)) %>% 
   filter(bin_start_time >= ANTICIP_START_OFF & bin_start_time <= ANTICIP_END_OFF) %>%
   group_by(trial_unique) %>%
-  mutate(prop_fixations = mean(look_any)) %>% # trackloss column
+  mutate(prop_fixations = round(mean(look_any), digits = 2)) %>% # trackloss column
   filter(prop_fixations >= MIN_LOOK_PROPORTION) %>% #removes trials where the child did not fixate on anything for at least 50% of the anticipation period
   group_by(id, trial_type) %>%
   mutate(num_good_trials = length(unique(trial_num))) %>%
@@ -173,8 +173,16 @@ vis_all_filtered <-
   filter(num_trial_types == BOTH_PHASES) %>% #removes babies who don't have data in both trial types
   ungroup()
 
+vis_all_filtered_ids <-
+  vis_all_filtered %>%
+  select(id) %>%
+  distinct()
 
-### PROBLEM HERE - 1 BILINGUAL IS MISSING COME BACK HERE!!! 
+vis_all_filtered <-
+  vis_all_filtered_ids %>%
+  left_join(vis_all, by = "id")
+
+
 vis_all_filtered %>% 
 select(id, group) %>%
   distinct() %>%
@@ -240,7 +248,7 @@ aud_all_filtered <-
   mutate(look_any = case_when(target == TRUE | distractor == TRUE | circle == TRUE ~ 1, TRUE ~ 0)) %>% 
   filter(bin_start_time >= ANTICIP_START_OFF & bin_start_time <= ANTICIP_END_OFF) %>%
   group_by(trial_unique) %>%
-  mutate(prop_fixations = mean(look_any)) %>% # trackloss column
+  mutate(prop_fixations = round(mean(look_any), digits = 2)) %>% # trackloss column
   filter(prop_fixations >= MIN_LOOK_PROPORTION) %>% #removes trials where the child did not fixate on anything for at least 50% of the anticipation period
   group_by(id, trial_type) %>%
   mutate(num_good_trials = length(unique(trial_num))) %>%
@@ -249,6 +257,15 @@ aud_all_filtered <-
   mutate(num_trial_types = length(unique(trial_type))) %>%
   filter(num_trial_types == BOTH_PHASES) %>% #removes babies who don't have data in both trial types
   ungroup()
+
+aud_all_filtered_ids <-
+  aud_all_filtered %>%
+  select(id) %>%
+  distinct()
+
+aud_all_filtered <-
+  aud_all_filtered_ids %>%
+  left_join(aud_all, by = "id")
 
 # double check filtering
 aud_all_filtered %>% 
