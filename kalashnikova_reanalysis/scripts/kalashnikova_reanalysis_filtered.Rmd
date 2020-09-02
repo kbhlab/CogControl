@@ -678,7 +678,7 @@ vis_model_data_post %>%
 ##-----------------------------------AUDITORY
 
 ggpredict(aud_model_pre, terms = c("time_bin_centred", "trial_num_scaled [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]", "group"), type = "fe", ci.lvl = FALSE) %>% plot(colors = "trial_num_scaled", line.size = 1, connect.lines = TRUE) +
-  labs(title = "Predicted values of proportion looking to target during the Training phase \nin Experiment 1d (Auditory condition - filtered data)", x = "Time in milliseconds during anticipation period", y = "Proportion looking to target", color = "Trial number") +
+  labs(title = "Predicted values of proportion looking to target during the Training phase \nin Study 1d (Auditory condition - filtered data)", x = "Time in milliseconds during anticipation period", y = "Proportion looking to target", color = "Trial number") +
   scale_color_manual(values = blues, labels = c(2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12)) +
   scale_x_continuous(breaks = c(0, 2, 4), labels = c("0", "500", "1000")) +
   ylim(-0.1, 1) +
@@ -688,7 +688,7 @@ ggpredict(aud_model_pre, terms = c("time_bin_centred", "trial_num_scaled [0, 1, 
 #ggsave("plot_model_predictions_aud_pre_filtered.png", path = here("figures"), device = "png", width = 7, height = 4, units = "in", dpi = 300)
 
 ggpredict(aud_model_post, terms = c("time_bin_centred", "trial_num_scaled [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]", "group"), type = "fe", ci.lvl = FALSE) %>% plot(colors = "trial_num_scaled", line.size = 1, connect.lines = TRUE) +
-  labs(title = "Predicted values of proportion looking to target during the Test phase \nin Experiment 1d (Auditory condition - filtered data)", x = "Time in milliseconds during anticipation period", y = "Proportion looking to target", color = "Trial number") +
+  labs(title = "Predicted values of proportion looking to target during the Test phase \nin Study 1d (Auditory condition - filtered data)", x = "Time in milliseconds during anticipation period", y = "Proportion looking to target", color = "Trial number") +
   scale_color_manual(values = blues, labels = c(2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12)) +
   scale_x_continuous(breaks = c(0, 2, 4), labels = c("0", "500", "1000")) +
   ylim(-0.1, 1) +
@@ -700,7 +700,7 @@ ggpredict(aud_model_post, terms = c("time_bin_centred", "trial_num_scaled [0, 1,
 ##-----------------------------------VISUAL
 
 ggpredict(vis_model_pre, terms = c("time_bin_centred", "trial_num_scaled [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]", "group"), type = "fe", ci.lvl = FALSE) %>% plot(colors = "trial_num_scaled", line.size = 1, connect.lines = TRUE) +
-  labs(title = "Predicted values of proportion looking to target during the Training phase \nin Experiment 1c (Visual condition - filtered data)", x = "Time in milliseconds during anticipation period", y = "Proportion looking to target", color = "Trial number") +
+  labs(title = "Predicted values of proportion looking to target during the Training phase \nin Study 1c (Visual condition - filtered data)", x = "Time in milliseconds during anticipation period", y = "Proportion looking to target", color = "Trial number") +
   scale_color_manual(values = blues, labels = c(2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12)) +
   scale_x_continuous(breaks = c(0, 2, 4), labels = c("0", "500", "1000")) +
   ylim(-0.1, 1) +
@@ -710,7 +710,7 @@ ggpredict(vis_model_pre, terms = c("time_bin_centred", "trial_num_scaled [0, 1, 
 #ggsave("plot_model_predictions_vis_pre_filtered.png", path = here("figures"), device = "png", width = 7, height = 4, units = "in", dpi = 300)
 
 ggpredict(vis_model_post, terms = c("time_bin_centred", "trial_num_scaled [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]", "group"), type = "fe", ci.lvl = FALSE) %>% plot(colors = "trial_num_scaled", line.size = 1, connect.lines = TRUE) +
-  labs(title = "Predicted values of proportion looking to target during the Test phase \nin Experiment 1c (Visual condition - filtered data)", x = "Time in milliseconds during anticipation period", y = "Proportion looking to target", color = "Trial number") +
+  labs(title = "Predicted values of proportion looking to target during the Test phase \nin Study 1c (Visual condition - filtered data)", x = "Time in milliseconds during anticipation period", y = "Proportion looking to target", color = "Trial number") +
   scale_color_manual(values = blues, labels = c(2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12)) +
   scale_x_continuous(breaks = c(0, 2, 4), labels = c("0", "500", "1000")) +
   ylim(-0.1, 1) +
