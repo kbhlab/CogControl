@@ -3,7 +3,17 @@
 # Last update: 08/19/2020 
 # Aim: script to create raw datasets from Kalashnikova et al. (2020) data.
 # To recreate this analysis, you will need to download the data available on 
-# Kalashnikova et al. (2020) OSF repository as of 04/14/2020
+# Kalashnikova et al. (2020) OSF repository (https://osf.io/k3e9z/) as of 04/14/2020. 
+# Specifically, you will need the "Version: 1" of:
+#   "Metadata.xlsx" - https://osf.io/6mfbu/ 
+#   "Anticipation_Long.csv" - https://osf.io/qupmd/
+#   "Anticipation_Short.csv" - https://osf.io/tsk35/ 
+#   "Reward_Long.csv" - https://osf.io/er3nw/
+#   "Reward_Short.csv" - https://osf.io/m2fd6/
+#   "auditory_left_FA.csv" - https://osf.io/zq6s2/
+#   "auditory_right_FA.csv" - https://osf.io/uwb9z/
+#   "visual_left_FA.csv" - https://osf.io/yk2qg/
+#   "visual_right_FA.csv" - https://osf.io/fqsdh/
 
 # Feedback and suggestions: <kbh.coordinator@concordia.ca>
 

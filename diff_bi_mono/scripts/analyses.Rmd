@@ -7,7 +7,7 @@ output: html_document
 
 Article: Iliaei, S. P., Killam, H., Dal Ben, R., & Byers-Heinlein, K. (under review). Bilingualism affects infant cognition: Insights from new and open data.
 
-This script was by Hilary Killam and Rodrigo Dal Ben.
+This script was written by Hilary Killam and Rodrigo Dal Ben.
 
 It analyses two new datasets (Study 1a & 2) and reanalyzes three open datasets (Study 1b, 1c, 1d).
 The reanalyzed datasets come from: 
@@ -31,7 +31,7 @@ Feedback and suggestions:
 Please indicate which study (1a, 1b, 1c, 1d, or 2) and which sample (filtered or unfiltered) you want to analyze. For Study 2 - filtered sample, it is also possible to include `vocabulary` as a predictor. 
 
 ```{r}
-study <- "1d" # options: "1a", "1b", "1c", "1d", "2"
+study <- "1b" # options: "1a", "1b", "1c", "1d", "2"
 filtered <- FALSE # options: TRUE = "filtered" OR FALSE = "unfiltered"
 
 # TRUE can only be selected for vocabulary if 
@@ -65,7 +65,6 @@ library(interactions)
 library(car)
 library(ez)
 library(ggpubr)
-#library(psych) # UNCOMMENT HERE ############
 
 library(apa)
 library(apaTables)
@@ -690,7 +689,7 @@ if (study == "1a" | study == "2"){
      
   } else {
     
-    "Against logic, the code worked until now. Please revise the parameters you defined in the first code chunk; we didn't find a matching pattern"
+    "Against logic, the code worked until now. Please review the parameters you defined in the first code chunk; we didn't find a matching pattern"
     
   }
   
@@ -783,9 +782,13 @@ image(1:length(cb_palette), 1, as.matrix(1:length(cb_palette)),
 ```{r time_series_plots, echo = FALSE}
 ###----------------------------------------------------SET PARAMETERS
 if (study == "2" & vocabulary == TRUE){
+  
   FIG_TITLE <- paste0("Time course of infant looking for Study ", study, " (", filtered_name, " - vocabulary )")
+  
 } else {
+  
   FIG_TITLE <- paste0("Time course of infant looking for Study ", study, " (", filtered_name, ")")
+  
 }
 
 FACET_TIME <- ANTICIP_START_OFF + 500
@@ -796,11 +799,14 @@ X2 <- X1 + 1000
 X3 <- X2 + 1000
 
 if (study == "1c"){
+  
   FACET_PLACEMENT_TIMESTAMP <- X1 + 100
+  
 } else {
+  
   FACET_PLACEMENT_TIMESTAMP <- X1
+  
 }
-
 
 ###----------------------------------------------------------PLOT FULL TRIALS-----------------------------------------
 line_colors <- c("#D55E00", "#0072B2") # color-blind friendly
@@ -1392,7 +1398,7 @@ if (study == "2" & vocabulary == TRUE){
     labs(title = paste0("Predicted values of proportion looking to target during the Training phase \n in Study ", study, " (", filtered_name, ")"), 
          x = "Time in milliseconds during anticipation period", 
          y = "Proportion looking to target", color = "Trial number") +
-    scale_color_manual(values = blues, labels = c(2, 3, 4, 5, 6, 7, 8, 9, 10, 11)) +
+    scale_color_manual(values = blues, labels = c(2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12)) +
     scale_x_continuous(breaks = c(0, 2, 4), labels = c("0", "500", "1000")) +
     ylim(-0.1, 1) +
     theme(axis.title.y = element_text(margin = margin(t = 0, r = 10, b = 0, l = 0)),
@@ -1411,7 +1417,7 @@ if (study == "2" & vocabulary == TRUE){
     labs(title = paste0("Predicted values of proportion looking to target during the Test phase \n in Study ", study, " (", filtered_name, ")"), 
          x = "Time in milliseconds during anticipation period", 
          y = "Proportion looking to target", color = "Trial number") +
-    scale_color_manual(values = blues, labels = c(2, 3, 4, 5, 6, 7, 8, 9, 10, 11)) +
+    scale_color_manual(values = blues, labels = c(2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12)) +
     scale_x_continuous(breaks = c(0, 2, 4), labels = c("0", "500", "1000")) +
     ylim(-0.1, 1) +
     theme(axis.title.y = element_text(margin = margin(t = 0, r = 10, b = 0, l = 0)),
@@ -1887,7 +1893,7 @@ apa.ezANOVA.table(pre_20,
                   table.number = 6,
                   correction = "none",
                   table.title = "Mixed ANOVA results for the Training phase in Study 2 (20-month-olds)",
-                  filename =  here(paste0("output/table_figure/anova_table_post_", dataset, ".doc")))
+                  filename =  here(paste0("output/table_figure/anova_table_pre_", dataset, ".doc")))
 
 pre_20_mono <-  block_data %>%
   filter(age_group == "20 months") %>%
