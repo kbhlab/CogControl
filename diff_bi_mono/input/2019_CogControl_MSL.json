@@ -1,0 +1,216 @@
+{
+    "@context": "https://schema.org/",
+    "@type": "Dataset",
+    "name": "2019_CogControl_MSL",
+    "schemaVersion": "Psych-DS 0.1.0",
+    "description": "Demographic information for Studies 1a and 2.",
+    "license": "Other (write in)",
+    "citation": "Iliaei, S. P., Killam, H., Dal Ben, R., & Byers-Heinlein, K. (under review). Bilingualism affects infant cognition: Insights from new and open data.",
+    "url": "https://osf.io/bz8jn/",
+    "privacyPolicy": "open",
+    "author": [
+        {
+            "@type": "Person",
+            "surname": "Iliaei",
+            "given": "S.P."
+        },
+        {
+            "@type": "Person",
+            "surname": "Killam",
+            "given": "H."
+        },
+        {
+            "@type": "Person",
+            "surname": "Dal Ben",
+            "given": "R."
+        },
+        {
+            "@type": "Person",
+            "surname": "Byers-Heinlen",
+            "given": "K."
+        }
+    ],
+    "variableMeasured": [
+        {
+            "@type": "PropertyValue",
+            "name": "study",
+            "description": "study",
+            "type": "string"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "study.id",
+            "description": "study.id",
+            "type": "string"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "baby.id",
+            "description": "baby.id",
+            "type": "int"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "age.group",
+            "description": "age.group",
+            "type": "string"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "recording.name",
+            "description": "recording.name",
+            "type": "string"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "lang.group",
+            "description": "lang.group",
+            "type": "string"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "do.birth",
+            "description": "do.birth",
+            "type": "int"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "do.participation",
+            "description": "do.participation",
+            "type": "int"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "full.baby.age",
+            "description": "full.baby.age",
+            "type": "string"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "months",
+            "description": "months",
+            "type": "int"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "days",
+            "description": "days",
+            "type": "int"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "total.age.days.excel",
+            "description": "total.age.days.excel",
+            "type": "int"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "gender",
+            "description": "gender",
+            "type": "int"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "per.eng",
+            "description": "per.eng",
+            "type": "float"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "per.fr",
+            "description": "per.fr",
+            "type": "float"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "per.other1",
+            "description": "per.other1",
+            "type": "float"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "per.other2",
+            "description": "per.other2",
+            "type": "float"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "other.lang1",
+            "description": "other.lang1",
+            "type": "string"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "other.lang2",
+            "description": "other.lang2",
+            "type": "string"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "dom.lang",
+            "description": "dom.lang",
+            "type": "string"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "keeper",
+            "description": "keeper",
+            "type": "int"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "excl.reason",
+            "description": "excl.reason",
+            "type": "string"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "comments",
+            "description": "comments",
+            "type": "string"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "cdi.prod.eng",
+            "description": "cdi.prod.eng",
+            "type": "string"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "cdi.prod.fr",
+            "description": "cdi.prod.fr",
+            "type": "string"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "total.vocab.prod",
+            "description": "total.vocab.prod",
+            "type": "string"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "total.concept.prod",
+            "description": "total.concept.prod",
+            "type": "string"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "te.prod",
+            "description": "te.prod",
+            "type": "string"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "study.order",
+            "description": "study.order",
+            "type": "int"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "lang.mix",
+            "description": "lang.mix",
+            "type": "int"
+        }
+    ]
+}
+

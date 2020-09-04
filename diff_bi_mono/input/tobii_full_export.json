@@ -1,0 +1,1164 @@
+{
+    "@context": "https://schema.org/",
+    "@type": "Dataset",
+    "name": "tobii_full_export",
+    "schemaVersion": "Psych-DS 0.1.0",
+    "description": "Raw eye gaze data for Studies 1a and 2.",
+    "license": "Other (write in)",
+    "citation": "Iliaei, S. P., Killam, H., Dal Ben, R., & Byers-Heinlein, K. (under review). Bilingualism affects infant cognition: Insights from new and open data.",
+    "url": "https://osf.io/bz8jn/",
+    "privacyPolicy": "open",
+    "author": [
+        {
+            "@type": "Person",
+            "surname": "Iliaei",
+            "given": "S.P."
+        },
+        {
+            "@type": "Person",
+            "surname": "Killam",
+            "given": "H."
+        },
+        {
+            "@type": "Person",
+            "surname": "Dal Ben",
+            "given": "R."
+        },
+        {
+            "@type": "Person",
+            "surname": "Byers-Heinlen",
+            "given": "K."
+        }
+    ],
+    "variableMeasured": [
+        {
+            "@type": "PropertyValue",
+            "name": "V1",
+            "description": "V1",
+            "type": "int"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "StudioProjectName",
+            "description": "StudioProjectName",
+            "type": "string"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "StudioTestName",
+            "description": "StudioTestName",
+            "type": "string"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "RecordingName",
+            "description": "RecordingName",
+            "type": "string"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "RecordingDuration",
+            "description": "RecordingDuration",
+            "type": "int"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "MediaName",
+            "description": "MediaName",
+            "type": "bool"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "MediaPosX (ADCSpx)",
+            "description": "MediaPosX (ADCSpx)",
+            "type": "bool"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "MediaPosY (ADCSpx)",
+            "description": "MediaPosY (ADCSpx)",
+            "type": "bool"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "MediaWidth",
+            "description": "MediaWidth",
+            "type": "bool"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "MediaHeight",
+            "description": "MediaHeight",
+            "type": "bool"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "SegmentName",
+            "description": "SegmentName",
+            "type": "bool"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "SegmentStart",
+            "description": "SegmentStart",
+            "type": "bool"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "SegmentEnd",
+            "description": "SegmentEnd",
+            "type": "bool"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "SegmentDuration",
+            "description": "SegmentDuration",
+            "type": "bool"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "SceneName",
+            "description": "SceneName",
+            "type": "bool"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "SceneSegmentStart",
+            "description": "SceneSegmentStart",
+            "type": "bool"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "SceneSegmentEnd",
+            "description": "SceneSegmentEnd",
+            "type": "bool"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "SceneSegmentDuration",
+            "description": "SceneSegmentDuration",
+            "type": "bool"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "RecordingTimestamp",
+            "description": "RecordingTimestamp",
+            "type": "int"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "LocalTimeStamp",
+            "description": "LocalTimeStamp",
+            "type": "string"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "EyeTrackerTimestamp",
+            "description": "EyeTrackerTimestamp",
+            "type": "float"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "MouseEventIndex",
+            "description": "MouseEventIndex",
+            "type": "bool"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "MouseEvent",
+            "description": "MouseEvent",
+            "type": "bool"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "MouseEventX (ADCSpx)",
+            "description": "MouseEventX (ADCSpx)",
+            "type": "bool"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "MouseEventY (ADCSpx)",
+            "description": "MouseEventY (ADCSpx)",
+            "type": "bool"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "MouseEventX (MCSpx)",
+            "description": "MouseEventX (MCSpx)",
+            "type": "bool"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "MouseEventY (MCSpx)",
+            "description": "MouseEventY (MCSpx)",
+            "type": "bool"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "KeyPressEventIndex",
+            "description": "KeyPressEventIndex",
+            "type": "bool"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "KeyPressEvent",
+            "description": "KeyPressEvent",
+            "type": "bool"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "StudioEventIndex",
+            "description": "StudioEventIndex",
+            "type": "bool"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "StudioEvent",
+            "description": "StudioEvent",
+            "type": "bool"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "StudioEventData",
+            "description": "StudioEventData",
+            "type": "bool"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "ExternalEventIndex",
+            "description": "ExternalEventIndex",
+            "type": "bool"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "ExternalEvent",
+            "description": "ExternalEvent",
+            "type": "bool"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "ExternalEventValue",
+            "description": "ExternalEventValue",
+            "type": "bool"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "EventMarkerValue",
+            "description": "EventMarkerValue",
+            "type": "bool"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "FixationIndex",
+            "description": "FixationIndex",
+            "type": "int"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "SaccadeIndex",
+            "description": "SaccadeIndex",
+            "type": "bool"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "GazeEventType",
+            "description": "GazeEventType",
+            "type": "string"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "GazeEventDuration",
+            "description": "GazeEventDuration",
+            "type": "int"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "FixationPointX (MCSpx)",
+            "description": "FixationPointX (MCSpx)",
+            "type": "bool"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "FixationPointY (MCSpx)",
+            "description": "FixationPointY (MCSpx)",
+            "type": "bool"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "SaccadicAmplitude",
+            "description": "SaccadicAmplitude",
+            "type": "bool"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "AbsoluteSaccadicDirection",
+            "description": "AbsoluteSaccadicDirection",
+            "type": "bool"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "RelativeSaccadicDirection",
+            "description": "RelativeSaccadicDirection",
+            "type": "bool"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "AOI[Target]Hit",
+            "description": "AOI[Target]Hit",
+            "type": "bool"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "AOI[Circle]Hit",
+            "description": "AOI[Circle]Hit",
+            "type": "bool"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "AOI[Distractor]Hit",
+            "description": "AOI[Distractor]Hit",
+            "type": "bool"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "AOI[Target]Hit_1",
+            "description": "AOI[Target]Hit_1",
+            "type": "bool"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "AOI[Distractor]Hit_1",
+            "description": "AOI[Distractor]Hit_1",
+            "type": "bool"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "AOI[Circle]Hit_1",
+            "description": "AOI[Circle]Hit_1",
+            "type": "bool"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "AOI[Target]Hit_2",
+            "description": "AOI[Target]Hit_2",
+            "type": "bool"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "AOI[Circle]Hit_2",
+            "description": "AOI[Circle]Hit_2",
+            "type": "bool"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "AOI[Distractor]Hit_2",
+            "description": "AOI[Distractor]Hit_2",
+            "type": "bool"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "AOI[Target]Hit_3",
+            "description": "AOI[Target]Hit_3",
+            "type": "bool"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "AOI[Distractor]Hit_3",
+            "description": "AOI[Distractor]Hit_3",
+            "type": "bool"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "AOI[Circle]Hit_3",
+            "description": "AOI[Circle]Hit_3",
+            "type": "bool"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "AOI[Target]Hit_4",
+            "description": "AOI[Target]Hit_4",
+            "type": "bool"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "AOI[Circle]Hit_4",
+            "description": "AOI[Circle]Hit_4",
+            "type": "bool"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "AOI[Distractor]Hit_4",
+            "description": "AOI[Distractor]Hit_4",
+            "type": "bool"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "AOI[Target]Hit_5",
+            "description": "AOI[Target]Hit_5",
+            "type": "bool"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "AOI[Distractor]Hit_5",
+            "description": "AOI[Distractor]Hit_5",
+            "type": "bool"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "AOI[Circle]Hit_5",
+            "description": "AOI[Circle]Hit_5",
+            "type": "bool"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "AOI[Target]Hit_6",
+            "description": "AOI[Target]Hit_6",
+            "type": "bool"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "AOI[Circle]Hit_6",
+            "description": "AOI[Circle]Hit_6",
+            "type": "bool"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "AOI[Distractor]Hit_6",
+            "description": "AOI[Distractor]Hit_6",
+            "type": "bool"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "AOI[Target]Hit_7",
+            "description": "AOI[Target]Hit_7",
+            "type": "bool"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "AOI[Circle]Hit_7",
+            "description": "AOI[Circle]Hit_7",
+            "type": "bool"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "AOI[Distractor]Hit_7",
+            "description": "AOI[Distractor]Hit_7",
+            "type": "bool"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "AOI[Target]Hit_8",
+            "description": "AOI[Target]Hit_8",
+            "type": "bool"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "AOI[Circle]Hit_8",
+            "description": "AOI[Circle]Hit_8",
+            "type": "bool"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "AOI[Distractor]Hit_8",
+            "description": "AOI[Distractor]Hit_8",
+            "type": "bool"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "AOI[Target]Hit_9",
+            "description": "AOI[Target]Hit_9",
+            "type": "bool"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "AOI[Circle]Hit_9",
+            "description": "AOI[Circle]Hit_9",
+            "type": "bool"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "AOI[Distractor]Hit_9",
+            "description": "AOI[Distractor]Hit_9",
+            "type": "bool"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "AOI[Target]Hit_10",
+            "description": "AOI[Target]Hit_10",
+            "type": "bool"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "AOI[Circle]Hit_10",
+            "description": "AOI[Circle]Hit_10",
+            "type": "bool"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "AOI[Distractor]Hit_10",
+            "description": "AOI[Distractor]Hit_10",
+            "type": "bool"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "AOI[Target]Hit_11",
+            "description": "AOI[Target]Hit_11",
+            "type": "bool"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "AOI[Circle]Hit_11",
+            "description": "AOI[Circle]Hit_11",
+            "type": "bool"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "AOI[Distractor]Hit_11",
+            "description": "AOI[Distractor]Hit_11",
+            "type": "bool"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "AOI[Target]Hit_12",
+            "description": "AOI[Target]Hit_12",
+            "type": "bool"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "AOI[Circle]Hit_12",
+            "description": "AOI[Circle]Hit_12",
+            "type": "bool"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "AOI[Distractor]Hit_12",
+            "description": "AOI[Distractor]Hit_12",
+            "type": "bool"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "AOI[Target]Hit_13",
+            "description": "AOI[Target]Hit_13",
+            "type": "bool"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "AOI[Circle]Hit_13",
+            "description": "AOI[Circle]Hit_13",
+            "type": "bool"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "AOI[Distractor]Hit_13",
+            "description": "AOI[Distractor]Hit_13",
+            "type": "bool"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "AOI[Target]Hit_14",
+            "description": "AOI[Target]Hit_14",
+            "type": "bool"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "AOI[Circle]Hit_14",
+            "description": "AOI[Circle]Hit_14",
+            "type": "bool"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "AOI[Distractor]Hit_14",
+            "description": "AOI[Distractor]Hit_14",
+            "type": "bool"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "AOI[Target]Hit_15",
+            "description": "AOI[Target]Hit_15",
+            "type": "bool"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "AOI[Circle]Hit_15",
+            "description": "AOI[Circle]Hit_15",
+            "type": "bool"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "AOI[Distractor]Hit_15",
+            "description": "AOI[Distractor]Hit_15",
+            "type": "bool"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "AOI[Target]Hit_16",
+            "description": "AOI[Target]Hit_16",
+            "type": "bool"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "AOI[Distractor]Hit_16",
+            "description": "AOI[Distractor]Hit_16",
+            "type": "bool"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "AOI[Circle]Hit_16",
+            "description": "AOI[Circle]Hit_16",
+            "type": "bool"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "AOI[Target]Hit_17",
+            "description": "AOI[Target]Hit_17",
+            "type": "bool"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "AOI[Circle]Hit_17",
+            "description": "AOI[Circle]Hit_17",
+            "type": "bool"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "AOI[Distractor]Hit_17",
+            "description": "AOI[Distractor]Hit_17",
+            "type": "bool"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "AOI[Distractor]Hit_18",
+            "description": "AOI[Distractor]Hit_18",
+            "type": "bool"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "AOI[Target]Hit_18",
+            "description": "AOI[Target]Hit_18",
+            "type": "bool"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "AOI[Circle]Hit_18",
+            "description": "AOI[Circle]Hit_18",
+            "type": "bool"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "AOI[Distractor]Hit_19",
+            "description": "AOI[Distractor]Hit_19",
+            "type": "bool"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "AOI[Target]Hit_19",
+            "description": "AOI[Target]Hit_19",
+            "type": "bool"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "AOI[Circle]Hit_19",
+            "description": "AOI[Circle]Hit_19",
+            "type": "bool"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "AOI[Distractor]Hit_20",
+            "description": "AOI[Distractor]Hit_20",
+            "type": "bool"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "AOI[Target]Hit_20",
+            "description": "AOI[Target]Hit_20",
+            "type": "bool"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "AOI[Circle]Hit_20",
+            "description": "AOI[Circle]Hit_20",
+            "type": "bool"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "AOI[Distractor]Hit_21",
+            "description": "AOI[Distractor]Hit_21",
+            "type": "bool"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "AOI[Target]Hit_21",
+            "description": "AOI[Target]Hit_21",
+            "type": "bool"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "AOI[Circle]Hit_21",
+            "description": "AOI[Circle]Hit_21",
+            "type": "bool"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "AOI[Distractor]Hit_22",
+            "description": "AOI[Distractor]Hit_22",
+            "type": "bool"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "AOI[Target]Hit_22",
+            "description": "AOI[Target]Hit_22",
+            "type": "bool"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "AOI[Circle]Hit_22",
+            "description": "AOI[Circle]Hit_22",
+            "type": "bool"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "AOI[Distractor]Hit_23",
+            "description": "AOI[Distractor]Hit_23",
+            "type": "bool"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "AOI[Target]Hit_23",
+            "description": "AOI[Target]Hit_23",
+            "type": "bool"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "AOI[Circle]Hit_23",
+            "description": "AOI[Circle]Hit_23",
+            "type": "bool"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "AOI[Distractor]Hit_24",
+            "description": "AOI[Distractor]Hit_24",
+            "type": "bool"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "AOI[Target]Hit_24",
+            "description": "AOI[Target]Hit_24",
+            "type": "bool"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "AOI[Circle]Hit_24",
+            "description": "AOI[Circle]Hit_24",
+            "type": "bool"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "AOI[Distractor]Hit_25",
+            "description": "AOI[Distractor]Hit_25",
+            "type": "bool"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "AOI[Target]Hit_25",
+            "description": "AOI[Target]Hit_25",
+            "type": "bool"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "AOI[Circle]Hit_25",
+            "description": "AOI[Circle]Hit_25",
+            "type": "bool"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "AOI[Distractor]Hit_26",
+            "description": "AOI[Distractor]Hit_26",
+            "type": "bool"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "AOI[Target]Hit_26",
+            "description": "AOI[Target]Hit_26",
+            "type": "bool"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "AOI[Circle]Hit_26",
+            "description": "AOI[Circle]Hit_26",
+            "type": "bool"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "AOI[Target]Hit_27",
+            "description": "AOI[Target]Hit_27",
+            "type": "bool"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "AOI[Distractor]Hit_27",
+            "description": "AOI[Distractor]Hit_27",
+            "type": "bool"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "AOI[Circle]Hit_27",
+            "description": "AOI[Circle]Hit_27",
+            "type": "bool"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "AOI[Target]Hit_28",
+            "description": "AOI[Target]Hit_28",
+            "type": "bool"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "AOI[Distractor]Hit_28",
+            "description": "AOI[Distractor]Hit_28",
+            "type": "bool"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "AOI[Circle]Hit_28",
+            "description": "AOI[Circle]Hit_28",
+            "type": "bool"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "AOI[Target]Hit_29",
+            "description": "AOI[Target]Hit_29",
+            "type": "bool"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "AOI[Distractor]Hit_29",
+            "description": "AOI[Distractor]Hit_29",
+            "type": "bool"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "AOI[Circle]Hit_29",
+            "description": "AOI[Circle]Hit_29",
+            "type": "bool"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "AOI[Target]Hit_30",
+            "description": "AOI[Target]Hit_30",
+            "type": "bool"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "AOI[Distractor]Hit_30",
+            "description": "AOI[Distractor]Hit_30",
+            "type": "bool"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "AOI[Circle]Hit_30",
+            "description": "AOI[Circle]Hit_30",
+            "type": "bool"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "AOI[Target]Hit_31",
+            "description": "AOI[Target]Hit_31",
+            "type": "bool"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "AOI[Distractor]Hit_31",
+            "description": "AOI[Distractor]Hit_31",
+            "type": "bool"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "AOI[Circle]Hit_31",
+            "description": "AOI[Circle]Hit_31",
+            "type": "bool"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "AOI[Target]Hit_32",
+            "description": "AOI[Target]Hit_32",
+            "type": "bool"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "AOI[Distractor]Hit_32",
+            "description": "AOI[Distractor]Hit_32",
+            "type": "bool"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "AOI[Circle]Hit_32",
+            "description": "AOI[Circle]Hit_32",
+            "type": "bool"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "AOI[Target]Hit_33",
+            "description": "AOI[Target]Hit_33",
+            "type": "bool"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "AOI[Distractor]Hit_33",
+            "description": "AOI[Distractor]Hit_33",
+            "type": "bool"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "AOI[Circle]Hit_33",
+            "description": "AOI[Circle]Hit_33",
+            "type": "bool"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "AOI[Target]Hit_34",
+            "description": "AOI[Target]Hit_34",
+            "type": "bool"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "AOI[Distractor]Hit_34",
+            "description": "AOI[Distractor]Hit_34",
+            "type": "bool"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "AOI[Circle]Hit_34",
+            "description": "AOI[Circle]Hit_34",
+            "type": "bool"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "AOI[Target]Hit_35",
+            "description": "AOI[Target]Hit_35",
+            "type": "bool"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "AOI[Distractor]Hit_35",
+            "description": "AOI[Distractor]Hit_35",
+            "type": "bool"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "AOI[Circle]Hit_35",
+            "description": "AOI[Circle]Hit_35",
+            "type": "bool"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "GazePointIndex",
+            "description": "GazePointIndex",
+            "type": "int"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "GazePointLeftX (ADCSpx)",
+            "description": "GazePointLeftX (ADCSpx)",
+            "type": "int"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "GazePointLeftY (ADCSpx)",
+            "description": "GazePointLeftY (ADCSpx)",
+            "type": "int"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "GazePointRightX (ADCSpx)",
+            "description": "GazePointRightX (ADCSpx)",
+            "type": "int"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "GazePointRightY (ADCSpx)",
+            "description": "GazePointRightY (ADCSpx)",
+            "type": "int"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "GazePointX (ADCSpx)",
+            "description": "GazePointX (ADCSpx)",
+            "type": "int"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "GazePointY (ADCSpx)",
+            "description": "GazePointY (ADCSpx)",
+            "type": "int"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "GazePointX (MCSpx)",
+            "description": "GazePointX (MCSpx)",
+            "type": "bool"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "GazePointY (MCSpx)",
+            "description": "GazePointY (MCSpx)",
+            "type": "bool"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "GazePointLeftX (ADCSmm)",
+            "description": "GazePointLeftX (ADCSmm)",
+            "type": "float"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "GazePointLeftY (ADCSmm)",
+            "description": "GazePointLeftY (ADCSmm)",
+            "type": "float"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "GazePointRightX (ADCSmm)",
+            "description": "GazePointRightX (ADCSmm)",
+            "type": "float"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "GazePointRightY (ADCSmm)",
+            "description": "GazePointRightY (ADCSmm)",
+            "type": "float"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "StrictAverageGazePointX (ADCSmm)",
+            "description": "StrictAverageGazePointX (ADCSmm)",
+            "type": "float"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "StrictAverageGazePointY (ADCSmm)",
+            "description": "StrictAverageGazePointY (ADCSmm)",
+            "type": "float"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "EyePosLeftX (ADCSmm)",
+            "description": "EyePosLeftX (ADCSmm)",
+            "type": "float"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "EyePosLeftY (ADCSmm)",
+            "description": "EyePosLeftY (ADCSmm)",
+            "type": "int"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "EyePosLeftZ (ADCSmm)",
+            "description": "EyePosLeftZ (ADCSmm)",
+            "type": "float"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "EyePosRightX (ADCSmm)",
+            "description": "EyePosRightX (ADCSmm)",
+            "type": "float"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "EyePosRightY (ADCSmm)",
+            "description": "EyePosRightY (ADCSmm)",
+            "type": "float"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "EyePosRightZ (ADCSmm)",
+            "description": "EyePosRightZ (ADCSmm)",
+            "type": "float"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "CamLeftX",
+            "description": "CamLeftX",
+            "type": "bool"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "CamLeftY",
+            "description": "CamLeftY",
+            "type": "bool"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "CamRightX",
+            "description": "CamRightX",
+            "type": "bool"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "CamRightY",
+            "description": "CamRightY",
+            "type": "bool"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "DistanceLeft",
+            "description": "DistanceLeft",
+            "type": "float"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "DistanceRight",
+            "description": "DistanceRight",
+            "type": "float"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "PupilLeft",
+            "description": "PupilLeft",
+            "type": "float"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "PupilRight",
+            "description": "PupilRight",
+            "type": "float"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "ValidityLeft",
+            "description": "ValidityLeft",
+            "type": "int"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "ValidityRight",
+            "description": "ValidityRight",
+            "type": "int"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "IRMarkerCount",
+            "description": "IRMarkerCount",
+            "type": "bool"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "IRMarkerID",
+            "description": "IRMarkerID",
+            "type": "bool"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "PupilGlassesRight",
+            "description": "PupilGlassesRight",
+            "type": "bool"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "X187",
+            "description": "X187",
+            "type": "bool"
+        }
+    ]
+}
+

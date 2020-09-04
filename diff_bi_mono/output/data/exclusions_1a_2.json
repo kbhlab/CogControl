@@ -1,0 +1,126 @@
+{
+    "@context": "https://schema.org/",
+    "@type": "Dataset",
+    "name": "exclusions_1a_2",
+    "schemaVersion": "Psych-DS 0.1.0",
+    "description": "Exclusions details for Studies 1a and 2.",
+    "license": "Other (write in)",
+    "citation": "Iliaei, S. P., Killam, H., Dal Ben, R., & Byers-Heinlein, K. (under review). Bilingualism affects infant cognition: Insights from new and open data.",
+    "url": "https://osf.io/bz8jn/",
+    "privacyPolicy": "open",
+    "author": [
+        {
+            "@type": "Person",
+            "surname": "Iliaei",
+            "given": "S.P."
+        },
+        {
+            "@type": "Person",
+            "surname": "Killam",
+            "given": "H."
+        },
+        {
+            "@type": "Person",
+            "surname": "Dal Ben",
+            "given": "R."
+        },
+        {
+            "@type": "Person",
+            "surname": "Byers-Heinlen",
+            "given": "K."
+        }
+    ],
+    "variableMeasured": [
+        {
+            "@type": "PropertyValue",
+            "name": "V1",
+            "description": "V1",
+            "type": "int"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "recording_name",
+            "description": "recording_name",
+            "type": "string"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "age_group",
+            "description": "age_group",
+            "type": "string"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "language",
+            "description": "language",
+            "type": "string"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "total_age_days_excel",
+            "description": "total_age_days_excel",
+            "type": "int"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "gender",
+            "description": "gender",
+            "type": "int"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "per_eng",
+            "description": "per_eng",
+            "type": "int"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "per_fr",
+            "description": "per_fr",
+            "type": "int"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "per_other1",
+            "description": "per_other1",
+            "type": "int"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "per_other2",
+            "description": "per_other2",
+            "type": "int"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "excl_reason",
+            "description": "excl_reason",
+            "type": "string"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "keeper",
+            "description": "keeper",
+            "type": "int"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "comments",
+            "description": "comments",
+            "type": "bool"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "keep_baby",
+            "description": "keep_baby",
+            "type": "string"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "excl",
+            "description": "excl",
+            "type": "int"
+        }
+    ]
+}
+

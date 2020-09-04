@@ -1,0 +1,210 @@
+{
+    "@context": "https://schema.org/",
+    "@type": "Dataset",
+    "name": "data_full_trials_filtered_1b",
+    "schemaVersion": "Psych-DS 0.1.0",
+    "description": "Tidy data for the full trial period for the filtered sample from Study 1b.",
+    "license": "Other (write in)",
+    "citation": "Iliaei, S. P., Killam, H., Dal Ben, R., & Byers-Heinlein, K. (under review). Bilingualism affects infant cognition: Insights from new and open data.",
+    "url": "https://osf.io/bz8jn/",
+    "privacyPolicy": "open",
+    "author": [
+        {
+            "@type": "Person",
+            "surname": "Iliaei",
+            "given": "S.P."
+        },
+        {
+            "@type": "Person",
+            "surname": "Killam",
+            "given": "H."
+        },
+        {
+            "@type": "Person",
+            "surname": "Dal Ben",
+            "given": "R."
+        },
+        {
+            "@type": "Person",
+            "surname": "Byers-Heinlen",
+            "given": "K."
+        }
+    ],
+    "variableMeasured": [
+        {
+            "@type": "PropertyValue",
+            "name": "V1",
+            "description": "V1",
+            "type": "int"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "id",
+            "description": "id",
+            "type": "string"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "time",
+            "description": "time",
+            "type": "float"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "duration",
+            "description": "duration",
+            "type": "float"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "x_axis_1",
+            "description": "x_axis_1",
+            "type": "float"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "x_axis_2",
+            "description": "x_axis_2",
+            "type": "float"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "y_axis_1",
+            "description": "y_axis_1",
+            "type": "float"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "y_axis_2",
+            "description": "y_axis_2",
+            "type": "float"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "look_away",
+            "description": "look_away",
+            "type": "bool"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "look_direction",
+            "description": "look_direction",
+            "type": "string"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "experiment",
+            "description": "experiment",
+            "type": "string"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "counter_balance",
+            "description": "counter_balance",
+            "type": "int"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "trial_num",
+            "description": "trial_num",
+            "type": "int"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "reward_side",
+            "description": "reward_side",
+            "type": "string"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "event",
+            "description": "event",
+            "type": "string"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "exposure",
+            "description": "exposure",
+            "type": "int"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "age_in_days",
+            "description": "age_in_days",
+            "type": "int"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "exclude",
+            "description": "exclude",
+            "type": "int"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "ses_score",
+            "description": "ses_score",
+            "type": "float"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "gender",
+            "description": "gender",
+            "type": "int"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "language",
+            "description": "language",
+            "type": "string"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "trial_type",
+            "description": "trial_type",
+            "type": "string"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "circle",
+            "description": "circle",
+            "type": "int"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "target",
+            "description": "target",
+            "type": "int"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "distractor",
+            "description": "distractor",
+            "type": "int"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "trackloss",
+            "description": "trackloss",
+            "type": "bool"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "trial_name",
+            "description": "trial_name",
+            "type": "string"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "trial_from_zero",
+            "description": "trial_from_zero",
+            "type": "int"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "time_align",
+            "description": "time_align",
+            "type": "int"
+        }
+    ]
+}
+

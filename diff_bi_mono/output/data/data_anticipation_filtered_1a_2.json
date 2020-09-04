@@ -1,0 +1,324 @@
+{
+    "@context": "https://schema.org/",
+    "@type": "Dataset",
+    "name": "data_anticipation_filtered_1a_2",
+    "schemaVersion": "Psych-DS 0.1.0",
+    "description": "Tidy data for the anticipation period for the filtered sample from Studies 1a and 2.",
+    "license": "Other (write in)",
+    "citation": "Iliaei, S. P., Killam, H., Dal Ben, R., & Byers-Heinlein, K. (under review). Bilingualism affects infant cognition: Insights from new and open data.",
+    "url": "https://osf.io/bz8jn/",
+    "privacyPolicy": "open",
+    "author": [
+        {
+            "@type": "Person",
+            "surname": "Iliaei",
+            "given": "S.P."
+        },
+        {
+            "@type": "Person",
+            "surname": "Killam",
+            "given": "H."
+        },
+        {
+            "@type": "Person",
+            "surname": "Dal Ben",
+            "given": "R."
+        },
+        {
+            "@type": "Person",
+            "surname": "Byers-Heinlen",
+            "given": "K."
+        }
+    ],
+    "variableMeasured": [
+        {
+            "@type": "PropertyValue",
+            "name": "V1",
+            "description": "V1",
+            "type": "int"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "order",
+            "description": "order",
+            "type": "string"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "recording_name",
+            "description": "recording_name",
+            "type": "string"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "recording_duration",
+            "description": "recording_duration",
+            "type": "int"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "media_name",
+            "description": "media_name",
+            "type": "string"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "timestamp",
+            "description": "timestamp",
+            "type": "int"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "studio_event",
+            "description": "studio_event",
+            "type": "bool"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "fixation_index",
+            "description": "fixation_index",
+            "type": "int"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "gaze_event_type",
+            "description": "gaze_event_type",
+            "type": "string"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "gaze_event_duration",
+            "description": "gaze_event_duration",
+            "type": "int"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "gaze_point_x",
+            "description": "gaze_point_x",
+            "type": "int"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "gaze_point_y",
+            "description": "gaze_point_y",
+            "type": "int"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "validity_left",
+            "description": "validity_left",
+            "type": "int"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "validity_right",
+            "description": "validity_right",
+            "type": "int"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "trial_num",
+            "description": "trial_num",
+            "type": "int"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "trial_type",
+            "description": "trial_type",
+            "type": "string"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "trial_name",
+            "description": "trial_name",
+            "type": "string"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "trial_unique",
+            "description": "trial_unique",
+            "type": "string"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "trial_start",
+            "description": "trial_start",
+            "type": "int"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "trial_end",
+            "description": "trial_end",
+            "type": "int"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "trial_from_zero",
+            "description": "trial_from_zero",
+            "type": "int"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "trackloss",
+            "description": "trackloss",
+            "type": "bool"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "aoi_target_x_left",
+            "description": "aoi_target_x_left",
+            "type": "int"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "aoi_target_x_length",
+            "description": "aoi_target_x_length",
+            "type": "int"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "aoi_target_x_right",
+            "description": "aoi_target_x_right",
+            "type": "int"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "aoi_target_y_top",
+            "description": "aoi_target_y_top",
+            "type": "int"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "aoi_target_y_length",
+            "description": "aoi_target_y_length",
+            "type": "int"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "aoi_target_y_bottom",
+            "description": "aoi_target_y_bottom",
+            "type": "int"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "aoi_distractor_x_left",
+            "description": "aoi_distractor_x_left",
+            "type": "int"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "aoi_distractor_x_length",
+            "description": "aoi_distractor_x_length",
+            "type": "int"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "aoi_distractor_x_right",
+            "description": "aoi_distractor_x_right",
+            "type": "int"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "aoi_distractor_y_top",
+            "description": "aoi_distractor_y_top",
+            "type": "int"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "aoi_distractor_y_length",
+            "description": "aoi_distractor_y_length",
+            "type": "int"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "aoi_distractor_y_bottom",
+            "description": "aoi_distractor_y_bottom",
+            "type": "int"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "aoi_circle_x_left",
+            "description": "aoi_circle_x_left",
+            "type": "int"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "aoi_circle_x_length",
+            "description": "aoi_circle_x_length",
+            "type": "int"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "aoi_circle_x_right",
+            "description": "aoi_circle_x_right",
+            "type": "int"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "aoi_circle_y_top",
+            "description": "aoi_circle_y_top",
+            "type": "int"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "aoi_circle_y_length",
+            "description": "aoi_circle_y_length",
+            "type": "int"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "aoi_circle_y_bottom",
+            "description": "aoi_circle_y_bottom",
+            "type": "int"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "remove_row",
+            "description": "remove_row",
+            "type": "string"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "target",
+            "description": "target",
+            "type": "int"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "distractor",
+            "description": "distractor",
+            "type": "int"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "circle",
+            "description": "circle",
+            "type": "int"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "look_any",
+            "description": "look_any",
+            "type": "int"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "prop_fixations",
+            "description": "prop_fixations",
+            "type": "float"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "num_good_trials",
+            "description": "num_good_trials",
+            "type": "int"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "num_trial_types",
+            "description": "num_trial_types",
+            "type": "int"
+        }
+    ]
+}
+

@@ -1,0 +1,456 @@
+{
+    "@context": "https://schema.org/",
+    "@type": "Dataset",
+    "name": "data_full_trials_filtered_1d",
+    "schemaVersion": "Psych-DS 0.1.0",
+    "description": "Tidy data for the full trial period for the filtered sample from Study 1d.",
+    "license": "Other (write in)",
+    "citation": "Iliaei, S. P., Killam, H., Dal Ben, R., & Byers-Heinlein, K. (under review). Bilingualism affects infant cognition: Insights from new and open data.",
+    "url": "https://osf.io/bz8jn/",
+    "privacyPolicy": "open",
+    "author": [
+        {
+            "@type": "Person",
+            "surname": "Iliaei",
+            "given": "S.P."
+        },
+        {
+            "@type": "Person",
+            "surname": "Killam",
+            "given": "H."
+        },
+        {
+            "@type": "Person",
+            "surname": "Dal Ben",
+            "given": "R."
+        },
+        {
+            "@type": "Person",
+            "surname": "Byers-Heinlen",
+            "given": "K."
+        }
+    ],
+    "variableMeasured": [
+        {
+            "@type": "PropertyValue",
+            "name": "V1",
+            "description": "V1",
+            "type": "int"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "id",
+            "description": "id",
+            "type": "int"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "x_bin_duration",
+            "description": "x_bin_duration",
+            "type": "int"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "bin_end_time",
+            "description": "bin_end_time",
+            "type": "int"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "bin_index",
+            "description": "bin_index",
+            "type": "int"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "bin_sample_count",
+            "description": "bin_sample_count",
+            "type": "int"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "bin_start_time",
+            "description": "bin_start_time",
+            "type": "int"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "eye_tracked",
+            "description": "eye_tracked",
+            "type": "string"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "ia_1_id",
+            "description": "ia_1_id",
+            "type": "string"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "ia_2_id",
+            "description": "ia_2_id",
+            "type": "string"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "ia_3_id",
+            "description": "ia_3_id",
+            "type": "string"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "ia_4_id",
+            "description": "ia_4_id",
+            "type": "string"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "ia_0_id",
+            "description": "ia_0_id",
+            "type": "string"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "left",
+            "description": "left",
+            "type": "bool"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "center",
+            "description": "center",
+            "type": "bool"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "right",
+            "description": "right",
+            "type": "bool"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "loss",
+            "description": "loss",
+            "type": "int"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "right_ia_4_sample_count",
+            "description": "right_ia_4_sample_count",
+            "type": "int"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "right_ia_0_sample_count",
+            "description": "right_ia_0_sample_count",
+            "type": "int"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "right_off_screen_sample_count",
+            "description": "right_off_screen_sample_count",
+            "type": "string"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "trial_index",
+            "description": "trial_index",
+            "type": "int"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "trial_label",
+            "description": "trial_label",
+            "type": "string"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "message",
+            "description": "message",
+            "type": "int"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "target_side",
+            "description": "target_side",
+            "type": "string"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "orig_file",
+            "description": "orig_file",
+            "type": "string"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "trial_num",
+            "description": "trial_num",
+            "type": "int"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "trial_type",
+            "description": "trial_type",
+            "type": "string"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "target",
+            "description": "target",
+            "type": "bool"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "distractor",
+            "description": "distractor",
+            "type": "bool"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "trial_name",
+            "description": "trial_name",
+            "type": "string"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "trial_unique",
+            "description": "trial_unique",
+            "type": "string"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "group",
+            "description": "group",
+            "type": "string"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "sex",
+            "description": "sex",
+            "type": "string"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "do_b",
+            "description": "do_b",
+            "type": "int"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "do_t_s1",
+            "description": "do_t_s1",
+            "type": "int"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "do_t_s2",
+            "description": "do_t_s2",
+            "type": "int"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "task_order",
+            "description": "task_order",
+            "type": "string"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "side_s1",
+            "description": "side_s1",
+            "type": "string"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "side_s2",
+            "description": "side_s2",
+            "type": "string"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "l1",
+            "description": "l1",
+            "type": "string"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "l2",
+            "description": "l2",
+            "type": "bool"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "l1_percent",
+            "description": "l1_percent",
+            "type": "int"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "l2_percent",
+            "description": "l2_percent",
+            "type": "bool"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "auditory_tl",
+            "description": "auditory_tl",
+            "type": "float"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "visual_tl",
+            "description": "visual_tl",
+            "type": "float"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "ed_level",
+            "description": "ed_level",
+            "type": "int"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "income_level",
+            "description": "income_level",
+            "type": "int"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "exposure",
+            "description": "exposure",
+            "type": "bool"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "notes",
+            "description": "notes",
+            "type": "bool"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "age_interval_s1",
+            "description": "age_interval_s1",
+            "type": "string"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "age_interval_s2",
+            "description": "age_interval_s2",
+            "type": "string"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "age_at_session_1",
+            "description": "age_at_session_1",
+            "type": "string"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "age_at_session_2",
+            "description": "age_at_session_2",
+            "type": "string"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "months_at_session_1",
+            "description": "months_at_session_1",
+            "type": "int"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "days_at_session_1",
+            "description": "days_at_session_1",
+            "type": "int"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "months_at_session_2",
+            "description": "months_at_session_2",
+            "type": "int"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "days_at_session_2",
+            "description": "days_at_session_2",
+            "type": "int"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "age_auditory",
+            "description": "age_auditory",
+            "type": "string"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "age_visual",
+            "description": "age_visual",
+            "type": "string"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "months_auditory",
+            "description": "months_auditory",
+            "type": "int"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "days_auditory",
+            "description": "days_auditory",
+            "type": "int"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "age_in_days_auditory",
+            "description": "age_in_days_auditory",
+            "type": "float"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "months_visual",
+            "description": "months_visual",
+            "type": "int"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "days_visual",
+            "description": "days_visual",
+            "type": "int"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "age_in_days_visual",
+            "description": "age_in_days_visual",
+            "type": "float"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "trackloss",
+            "description": "trackloss",
+            "type": "int"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "circle",
+            "description": "circle",
+            "type": "bool"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "age_in_days",
+            "description": "age_in_days",
+            "type": "float"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "gender",
+            "description": "gender",
+            "type": "int"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "language",
+            "description": "language",
+            "type": "string"
+        }
+    ]
+}
+

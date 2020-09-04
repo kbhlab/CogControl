@@ -1,0 +1,66 @@
+{
+    "@context": "https://schema.org/",
+    "@type": "Dataset",
+    "name": "cogcontrol_20_parent_ed",
+    "schemaVersion": "Psych-DS 0.1.0",
+    "description": "Parental educational level for Study 2.",
+    "license": "Other (write in)",
+    "citation": "Iliaei, S. P., Killam, H., Dal Ben, R., & Byers-Heinlein, K. (under review). Bilingualism affects infant cognition: Insights from new and open data.",
+    "url": "https://osf.io/bz8jn/",
+    "privacyPolicy": "open",
+    "author": [
+        {
+            "@type": "Person",
+            "surname": "Iliaei",
+            "given": "S.P."
+        },
+        {
+            "@type": "Person",
+            "surname": "Killam",
+            "given": "H."
+        },
+        {
+            "@type": "Person",
+            "surname": "Dal Ben",
+            "given": "R."
+        },
+        {
+            "@type": "Person",
+            "surname": "Byers-Heinlen",
+            "given": "K."
+        }
+    ],
+    "variableMeasured": [
+        {
+            "@type": "PropertyValue",
+            "name": "Sepal.Length",
+            "description": "recording_name",
+            "type": "string"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "Sepal.Width",
+            "description": "parent_A_gender",
+            "type": "string"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "Petal.Length",
+            "description": "parent_A_education",
+            "type": "string"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "Petal.Width",
+            "description": "parent_B_gender",
+            "type": "string"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "Species",
+            "description": "parent_B_education",
+            "type": "string"
+        }
+    ]
+}
+

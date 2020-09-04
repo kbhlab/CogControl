@@ -1,0 +1,558 @@
+{
+    "@context": "https://schema.org/",
+    "@type": "Dataset",
+    "name": "data_full_trials_filtered_1a_2",
+    "schemaVersion": "Psych-DS 0.1.0",
+    "description": "Tidy data for the full trial period for the filtered sample from Studies 1a and 2.",
+    "license": "Other (write in)",
+    "citation": "Iliaei, S. P., Killam, H., Dal Ben, R., & Byers-Heinlein, K. (under review). Bilingualism affects infant cognition: Insights from new and open data.",
+    "url": "https://osf.io/bz8jn/",
+    "privacyPolicy": "open",
+    "author": [
+        {
+            "@type": "Person",
+            "surname": "Iliaei",
+            "given": "S.P."
+        },
+        {
+            "@type": "Person",
+            "surname": "Killam",
+            "given": "H."
+        },
+        {
+            "@type": "Person",
+            "surname": "Dal Ben",
+            "given": "R."
+        },
+        {
+            "@type": "Person",
+            "surname": "Byers-Heinlen",
+            "given": "K."
+        }
+    ],
+    "variableMeasured": [
+        {
+            "@type": "PropertyValue",
+            "name": "V1",
+            "description": "V1",
+            "type": "int"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "order",
+            "description": "order",
+            "type": "string"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "recording_name",
+            "description": "recording_name",
+            "type": "string"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "recording_duration",
+            "description": "recording_duration",
+            "type": "int"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "media_name",
+            "description": "media_name",
+            "type": "string"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "timestamp",
+            "description": "timestamp",
+            "type": "int"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "studio_event",
+            "description": "studio_event",
+            "type": "bool"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "fixation_index",
+            "description": "fixation_index",
+            "type": "int"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "gaze_event_type",
+            "description": "gaze_event_type",
+            "type": "string"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "gaze_event_duration",
+            "description": "gaze_event_duration",
+            "type": "int"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "gaze_point_x",
+            "description": "gaze_point_x",
+            "type": "int"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "gaze_point_y",
+            "description": "gaze_point_y",
+            "type": "int"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "validity_left",
+            "description": "validity_left",
+            "type": "int"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "validity_right",
+            "description": "validity_right",
+            "type": "int"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "trial_num",
+            "description": "trial_num",
+            "type": "int"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "trial_type",
+            "description": "trial_type",
+            "type": "string"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "trial_name",
+            "description": "trial_name",
+            "type": "string"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "trial_unique",
+            "description": "trial_unique",
+            "type": "string"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "trial_start",
+            "description": "trial_start",
+            "type": "int"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "trial_end",
+            "description": "trial_end",
+            "type": "int"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "trial_from_zero",
+            "description": "trial_from_zero",
+            "type": "int"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "trackloss",
+            "description": "trackloss",
+            "type": "bool"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "aoi_target_x_left",
+            "description": "aoi_target_x_left",
+            "type": "int"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "aoi_target_x_length",
+            "description": "aoi_target_x_length",
+            "type": "int"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "aoi_target_x_right",
+            "description": "aoi_target_x_right",
+            "type": "int"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "aoi_target_y_top",
+            "description": "aoi_target_y_top",
+            "type": "int"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "aoi_target_y_length",
+            "description": "aoi_target_y_length",
+            "type": "int"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "aoi_target_y_bottom",
+            "description": "aoi_target_y_bottom",
+            "type": "int"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "aoi_distractor_x_left",
+            "description": "aoi_distractor_x_left",
+            "type": "int"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "aoi_distractor_x_length",
+            "description": "aoi_distractor_x_length",
+            "type": "int"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "aoi_distractor_x_right",
+            "description": "aoi_distractor_x_right",
+            "type": "int"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "aoi_distractor_y_top",
+            "description": "aoi_distractor_y_top",
+            "type": "int"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "aoi_distractor_y_length",
+            "description": "aoi_distractor_y_length",
+            "type": "int"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "aoi_distractor_y_bottom",
+            "description": "aoi_distractor_y_bottom",
+            "type": "int"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "aoi_circle_x_left",
+            "description": "aoi_circle_x_left",
+            "type": "int"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "aoi_circle_x_length",
+            "description": "aoi_circle_x_length",
+            "type": "int"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "aoi_circle_x_right",
+            "description": "aoi_circle_x_right",
+            "type": "int"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "aoi_circle_y_top",
+            "description": "aoi_circle_y_top",
+            "type": "int"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "aoi_circle_y_length",
+            "description": "aoi_circle_y_length",
+            "type": "int"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "aoi_circle_y_bottom",
+            "description": "aoi_circle_y_bottom",
+            "type": "int"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "remove_row",
+            "description": "remove_row",
+            "type": "string"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "target",
+            "description": "target",
+            "type": "int"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "distractor",
+            "description": "distractor",
+            "type": "int"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "circle",
+            "description": "circle",
+            "type": "int"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "look_any",
+            "description": "look_any",
+            "type": "int"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "study",
+            "description": "study",
+            "type": "string"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "study_id",
+            "description": "study_id",
+            "type": "string"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "baby_id",
+            "description": "baby_id",
+            "type": "int"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "age_group",
+            "description": "age_group",
+            "type": "string"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "language",
+            "description": "language",
+            "type": "string"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "group",
+            "description": "group",
+            "type": "string"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "do_birth",
+            "description": "do_birth",
+            "type": "int"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "do_participation",
+            "description": "do_participation",
+            "type": "int"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "full_baby_age",
+            "description": "full_baby_age",
+            "type": "string"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "months",
+            "description": "months",
+            "type": "int"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "days",
+            "description": "days",
+            "type": "int"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "total_age_days_excel",
+            "description": "total_age_days_excel",
+            "type": "int"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "gender",
+            "description": "gender",
+            "type": "int"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "per_eng",
+            "description": "per_eng",
+            "type": "int"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "per_fr",
+            "description": "per_fr",
+            "type": "int"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "per_other1",
+            "description": "per_other1",
+            "type": "int"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "per_other2",
+            "description": "per_other2",
+            "type": "int"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "other_lang1",
+            "description": "other_lang1",
+            "type": "string"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "other_lang2",
+            "description": "other_lang2",
+            "type": "string"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "dom_lang",
+            "description": "dom_lang",
+            "type": "string"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "keeper",
+            "description": "keeper",
+            "type": "int"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "excl_reason",
+            "description": "excl_reason",
+            "type": "string"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "comments",
+            "description": "comments",
+            "type": "bool"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "cdi_prod_eng",
+            "description": "cdi_prod_eng",
+            "type": "bool"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "cdi_prod_fr",
+            "description": "cdi_prod_fr",
+            "type": "bool"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "total_vocab_prod",
+            "description": "total_vocab_prod",
+            "type": "bool"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "total_concept_prod",
+            "description": "total_concept_prod",
+            "type": "bool"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "te_prod",
+            "description": "te_prod",
+            "type": "bool"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "study_order",
+            "description": "study_order",
+            "type": "int"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "lang_mix",
+            "description": "lang_mix",
+            "type": "int"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "parent_A_gender",
+            "description": "parent_A_gender",
+            "type": "string"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "parent_A_education",
+            "description": "parent_A_education",
+            "type": "string"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "parent_B_gender",
+            "description": "parent_B_gender",
+            "type": "string"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "parent_B_education",
+            "description": "parent_B_education",
+            "type": "string"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "mother_edu",
+            "description": "mother_edu",
+            "type": "string"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "age_days_r",
+            "description": "age_days_r",
+            "type": "int"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "num_cdis",
+            "description": "num_cdis",
+            "type": "int"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "cdi_tot_vocab_prod",
+            "description": "cdi_tot_vocab_prod",
+            "type": "bool"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "median_vocab",
+            "description": "median_vocab",
+            "type": "bool"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "vocab_group",
+            "description": "vocab_group",
+            "type": "bool"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "vocab_centred",
+            "description": "vocab_centred",
+            "type": "bool"
+        },
+        {
+            "@type": "PropertyValue",
+            "name": "vocab_scaled",
+            "description": "vocab_scaled",
+            "type": "bool"
+        }
+    ]
+}
+
