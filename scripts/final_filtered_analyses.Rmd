@@ -654,6 +654,71 @@ tab_model(flipped_post_20)
 
 ```
 
+###Models to check learning
+
+```{r}
+###---------------------------------------------------Compare Training trial 9 to Test trial 1 to verify infants learned
+
+
+#------------------------------------7 Months
+
+############ First try with summarized data: one point per infant per trial (remove complexity of TimeBin)
+
+learning_7_data <- data_time_series_antic %>%
+  filter(AOI == "target",
+         age_group == "7 months",
+         trial_name == "pre-switch_9" | trial_name == "post-switch_1") %>%
+  mutate(time_bin_centred = TimeBin - 2) %>%
+  group_by(recording_name, trial_name, trial_type, language, SamplesTotal) %>%
+  summarize(mean_prop = mean(Prop, na.rm = TRUE))
+
+learning_model_7  <- glmer(mean_prop ~ language * trial_type + (1 | recording_name), data = learning_7_data, family = binomial, weights = SamplesTotal, control=glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000))) 
+
+summary(learning_model_7) #result is as expected (significantly worse scores at test)
+
+########### Next try including TimeBin
+
+learning_7_data2 <- data_time_series_antic %>%
+  filter(AOI == "target",
+         age_group == "7 months",
+         trial_name == "pre-switch_9" | trial_name == "post-switch_1") %>%
+  mutate(time_bin_centred = TimeBin - 2)
+
+learning_model_7_2 <- glmer(SamplesInAOI / SamplesTotal ~ language * trial_type * time_bin_centred + (1 | recording_name), data = learning_7_data2, family = binomial, weights = SamplesTotal, control=glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000))) 
+
+summary(learning_model_7_2) #result is still as expected (significantly worse scores at test)
+
+
+
+#------------------------------------20 Months
+
+############ First try with summarized data: one point per infant per trial (remove complexity of TimeBin)
+
+learning_20_data <- data_time_series_antic %>%
+  filter(AOI == "target",
+         age_group == "20 months",
+         trial_name == "pre-switch_9" | trial_name == "post-switch_1") %>%
+  mutate(time_bin_centred = TimeBin - 2) %>%
+  group_by(recording_name, trial_name, trial_type, language, SamplesTotal) %>%
+  summarize(mean_prop = mean(Prop, na.rm = TRUE))
+
+learning_model_20  <- glmer(mean_prop ~ language * trial_type + (1 | recording_name), data = learning_20_data, family = binomial, weights = SamplesTotal, control=glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000))) 
+
+summary(learning_model_20) #result is NOT as expected (huge effect, but not significant because the standard error is even larger)
+
+########### Next try including TimeBin
+
+learning_20_data2 <- data_time_series_antic %>%
+  filter(AOI == "target",
+         age_group == "20 months",
+         trial_name == "pre-switch_9" | trial_name == "post-switch_1") %>%
+  mutate(time_bin_centred = TimeBin - 2)
+
+learning_model_20_2 <- glmer(SamplesInAOI / SamplesTotal ~ language * trial_type * time_bin_centred + (1 | recording_name), data = learning_20_data2, family = binomial, weights = SamplesTotal, control=glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000))) 
+
+summary(learning_model_20_2) #result is still NOT as expected (huge effect, but not significant because the standard error is even larger)
+
+```
 
 ##Anovas
 
