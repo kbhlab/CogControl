@@ -676,20 +676,24 @@ learning_model_7  <- glmer(mean_prop ~ language * trial_type + (1 | recording_na
 
 summary(learning_model_7) #result is as expected (significantly worse scores at test)
 
-########### Next try including TimeBin
+# try to move the 0s a bit for the monolinguals - post-switch
+learning_7_data2 <- 
+  learning_7_data %>% 
+  mutate(mean_prop = case_when(language == "Monolinguals" & trial_type == "post-switch" & mean_prop == 0 ~ 0.04,
+                               TRUE ~ mean_prop))
 
-learning_7_data2 <- data_time_series_antic %>%
-  filter(AOI == "target",
-         age_group == "7 months",
-         trial_name == "pre-switch_9" | trial_name == "post-switch_1") %>%
-  mutate(time_bin_centred = TimeBin - 2)
+learning_7_data2 %>% 
+  ggplot(., aes(x = mean_prop)) +
+  geom_histogram() +
+  facet_wrap(language ~ trial_type)
 
-learning_model_7_2 <- glmer(SamplesInAOI / SamplesTotal ~ language * trial_type * time_bin_centred + (1 | recording_name), data = learning_7_data2, family = binomial, weights = SamplesTotal, control=glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000))) 
+learning_model_7_2  <- glmer(mean_prop ~ language * trial_type + (1 | recording_name), data = learning_7_data2, family = binomial, weights = SamplesTotal, control=glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000))) 
 
-summary(learning_model_7_2) #result is still as expected (significantly worse scores at test)
+summary(learning_model_7_2) #result is as expected (significantly worse scores at test)
 
+```
 
-
+```{r}
 #------------------------------------20 Months
 
 ############ First try with summarized data: one point per infant per trial (remove complexity of TimeBin)
@@ -702,9 +706,44 @@ learning_20_data <- data_time_series_antic %>%
   group_by(recording_name, trial_name, trial_type, language, SamplesTotal) %>%
   summarize(mean_prop = mean(Prop, na.rm = TRUE))
 
-learning_model_20  <- glmer(mean_prop ~ language * trial_type + (1 | recording_name), data = learning_20_data, family = binomial, weights = SamplesTotal, control=glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000))) 
+# try to move the 0s a bit for the monolinguals - post-switch
+learning_20_data2 <- 
+  learning_20_data %>% 
+  mutate(mean_prop = case_when(language == "Monolinguals" & trial_type == "post-switch" & mean_prop == 0 ~ 0.04,
+                               TRUE ~ mean_prop))
+
+### Visualizations to understand the huge SEs
+learning_20_data2 %>% 
+  ggplot(., aes(x = mean_prop)) +
+  geom_histogram() + 
+  facet_wrap(language ~ trial_type)
+
+# model
+learning_model_20  <- glmer(mean_prop ~ language * trial_type + (1 | recording_name), 
+                            data = learning_20_data2, 
+                            family = binomial, 
+                            weights = SamplesTotal, 
+                            control = glmerControl(optimizer="bobyqa", 
+                                                   optCtrl = list(maxfun = 100000))) 
 
 summary(learning_model_20) #result is NOT as expected (huge effect, but not significant because the standard error is even larger)
+
+```
+
+#### Try to incldude timebin
+
+```{r}
+########### Next try including TimeBin
+
+learning_7_data2 <- data_time_series_antic %>%
+  filter(AOI == "target",
+         age_group == "7 months",
+         trial_name == "pre-switch_9" | trial_name == "post-switch_1") %>%
+  mutate(time_bin_centred = TimeBin - 2)
+
+learning_model_7_2 <- glmer(SamplesInAOI / SamplesTotal ~ language * trial_type * time_bin_centred + (1 | recording_name), data = learning_7_data2, family = binomial, weights = SamplesTotal, control=glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000))) 
+
+summary(learning_model_7_2) #result is still as expected (significantly worse scores at test)
 
 ########### Next try including TimeBin
 
