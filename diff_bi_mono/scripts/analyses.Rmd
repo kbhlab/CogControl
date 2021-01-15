@@ -31,8 +31,8 @@ Feedback and suggestions:
 Please indicate which study (1a, 1b, 1c, 1d, or 2) and which sample (filtered or unfiltered) you want to analyze. For Study 2 - filtered sample, it is also possible to include `vocabulary` as a predictor. 
 
 ```{r}
-study <- "1b" # options: "1a", "1b", "1c", "1d", "2"
-filtered <- FALSE # options: TRUE = "filtered" OR FALSE = "unfiltered"
+study <- "2" # options: "1a", "1b", "1c", "1d", "2"
+filtered <- TRUE # options: TRUE = "filtered" OR FALSE = "unfiltered"
 
 # TRUE can only be selected for vocabulary if 
 # study <- "2" & filtered == TRUE; 
@@ -735,7 +735,7 @@ full_trial_window <- subset_by_window(data_eyetracking_full_trials,
 
 if (study == "1c" | study == "1d"){
 
-  data_time_series_full <- make_time_sequence_data(data_eyetracking_full_trials,
+    data_time_series_full <- make_time_sequence_data(data_eyetracking_full_trials,
                                                    time_bin_size = 200,
                                                    predictor_columns = PRED_COL,
                                                    aois = c("circle", "target",
@@ -2149,3 +2149,91 @@ ggscatter(corr_mono, x = "post_switch", y = "pre_switch",
           cor.coef = TRUE, cor.method = "pearson",
           xlab = "Test", ylab = "Training")
 ```
+
+# Learning models
+
+Compare Training trial 9 to Test trial 1 to verify infants learned
+
+```{r}
+# create dataset from raw data
+if (study == "1c" | study == "1d"){
+  
+  last_trial = 12
+  
+} else{
+  
+  last_trial = 9
+  
+  if (study == "1a"){
+    
+    data_eyetracking_clean <- 
+      data_eyetracking_clean %>% 
+      filter(age_group == "7 months")
+    
+  } else if (study == "2"){
+    
+    data_eyetracking_clean <- 
+      data_eyetracking_clean %>% 
+      filter(age_group == "20 months")
+    
+  }
+}
+
+learning_data <- 
+  make_time_window_data(data_eyetracking_clean,
+                        aois = "target",
+                        predictor_columns = c("language", "trial_type", "trial_num"),
+                        ) %>%
+  filter((trial_num == last_trial & trial_type == "pre-switch") |
+         (trial_num == 1 & trial_type == "post-switch"))
+
+
+if (study == "2") { # add 0.05 to avoid the all-zeros distribution
+  
+    new_temp <- tibble(id = "fake_p", 
+                       trial_name = c("pre-switch_9", "post-switch_1"), 
+                       trial_type = c("pre-switch", "post-switch"), 
+                       language = "Monolinguals", 
+                       SamplesTotal = c(60, 60), 
+                       SamplesInAOI = c(3, 3))
+    
+    learning_data <- 
+      bind_rows(learning_data, new_temp) %>% 
+      mutate(trial_type = fct_rev(trial_type),
+             language = fct_rev(language))
+  
+}
+
+# visualizations
+learning_data %>% 
+  ggplot(., aes(x = trial_type, y = SamplesInAOI / SamplesTotal, color = language)) +
+  stat_summary()
+
+learning_data %>% 
+  ggplot(., aes(x = SamplesInAOI / SamplesTotal)) +
+  geom_histogram() +
+  facet_wrap(language ~ trial_type)
+
+# models
+learning_model <- glmer(SamplesInAOI / SamplesTotal ~ language * trial_type + (1 | id), 
+                        data = learning_data, 
+                        family = binomial, 
+                        weights = SamplesTotal, 
+                        control = glmerControl(optimizer="bobyqa", 
+                                               optCtrl = list(maxfun = 100000))) 
+
+summary(learning_model) 
+tab_model(learning_model)
+
+# plot model fit
+ggpredict(learning_model, terms = c("trial_type", "language"), type = "fe", ci.lvl = FALSE) %>% 
+  plot(colors = cb_palette, line.size = 1, connect.lines = TRUE) +
+  labs(title = paste0("Predicted values of proportion looking to target in Study ", study, " (", filtered_name, ")"), 
+       x = "Trial type", 
+       y = "Predicted proportion looking to target", color = "Language \n group")
+
+ggsave(paste0("plot_learning_model_", dataset, ".png"), 
+       path = here("output/table_figure/"), 
+       device = "png", width = 7, height = 4, units = "in", dpi = 300)
+```
+
