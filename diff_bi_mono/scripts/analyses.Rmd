@@ -2215,12 +2215,21 @@ learning_data %>%
   facet_wrap(language ~ trial_type)
 
 # models
+# fixed and random effects
 learning_model <- glmer(SamplesInAOI / SamplesTotal ~ language * trial_type + (1 | id), 
                         data = learning_data, 
                         family = binomial, 
                         weights = SamplesTotal, 
                         control = glmerControl(optimizer="bobyqa", 
                                                optCtrl = list(maxfun = 100000))) 
+
+# fixed effects only 
+learning_model <- glm(SamplesInAOI / SamplesTotal ~ language * trial_type, 
+                        data = learning_data, 
+                        family = binomial, 
+                        weights = SamplesTotal)#, 
+                        #control = glmerControl(optimizer="bobyqa", 
+                         #                      optCtrl = list(maxfun = 100000)))
 
 summary(learning_model) 
 tab_model(learning_model)
@@ -2232,8 +2241,8 @@ ggpredict(learning_model, terms = c("trial_type", "language"), type = "fe", ci.l
        x = "Trial type", 
        y = "Predicted proportion looking to target", color = "Language \n group")
 
-ggsave(paste0("plot_learning_model_", dataset, ".png"), 
-       path = here("output/table_figure/"), 
-       device = "png", width = 7, height = 4, units = "in", dpi = 300)
+#ggsave(paste0("plot_learning_model_", dataset, ".png"), 
+#       path = here("output/table_figure/"), 
+#       device = "png", width = 7, height = 4, units = "in", dpi = 300)
 ```
 
