@@ -2188,14 +2188,14 @@ learning_data <-
          (trial_num == 1 & trial_type == "post-switch"))
 
 
-if (study == "2") { # add 0.05 to avoid the all-zeros distribution
+if (study == "2") { # add 0.05 to avoid the all-zeros distribution on Test phase
   
     new_temp <- tibble(id = "fake_p", 
-                       trial_name = c("pre-switch_9", "post-switch_1"), 
-                       trial_type = c("pre-switch", "post-switch"), 
+                       trial_name = "post-switch_1", 
+                       trial_type = "post-switch", 
                        language = "Monolinguals", 
-                       SamplesTotal = c(60, 60), 
-                       SamplesInAOI = c(3, 3))
+                       SamplesTotal = 60, 
+                       SamplesInAOI = 3)
     
     learning_data <- 
       bind_rows(learning_data, new_temp) %>% 
@@ -2214,22 +2214,12 @@ learning_data %>%
   geom_histogram() +
   facet_wrap(language ~ trial_type)
 
-# models
-# fixed and random effects
-learning_model <- glmer(SamplesInAOI / SamplesTotal ~ language * trial_type + (1 | id), 
-                        data = learning_data, 
-                        family = binomial, 
-                        weights = SamplesTotal, 
-                        control = glmerControl(optimizer="bobyqa", 
-                                               optCtrl = list(maxfun = 100000))) 
-
+# model
 # fixed effects only 
 learning_model <- glm(SamplesInAOI / SamplesTotal ~ language * trial_type, 
                         data = learning_data, 
                         family = binomial, 
-                        weights = SamplesTotal)#, 
-                        #control = glmerControl(optimizer="bobyqa", 
-                         #                      optCtrl = list(maxfun = 100000)))
+                        weights = SamplesTotal)
 
 summary(learning_model) 
 tab_model(learning_model)
